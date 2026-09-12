@@ -28,10 +28,12 @@ export class Boy {
     this.isPointMatched = false;
 
     // Autonomous behavior & agility variables
-    this.runSpeed = 215;
-    this.dangerZoneRadius = 115;
+    this.runSpeed = 240;
+    this.dangerZoneRadius = 160;
+    this.catchThreshold = 14;
     this.alignReflexTimer = 0;
-    this.autoHopTimer = 1.6 + Math.random() * 2.0;
+    this.cornerDodgeCooldown = 0;
+    this.autoHopTimer = 1.4 + Math.random() * 2.0;
     this.turnTimer = 3.5 + Math.random() * 3.0;
 
     // Caught & Modak Reward state
@@ -74,6 +76,7 @@ export class Boy {
 
   update(dt, physics, particleSystem, audioEngine, mom) {
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+    this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
 
     if (this.speechTimer > 0) {
       this.speechTimer -= dt;
@@ -103,7 +106,7 @@ export class Boy {
         this.isEating = false;
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
         this.facing = Math.random() < 0.5 ? 1 : -1;
-        this.vel.set(this.facing * this.runSpeed * 1.45, -370);
+        this.vel.set(this.facing * this.runSpeed * 1.5, -420);
         this.say("Full of energy now! Catch me if you can! 🚀", 1.8);
         audioEngine.playDashWhoosh(520);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -117,45 +120,103 @@ export class Boy {
     const distToMomCatch = this.pos.distanceTo(mom.catchPoint);
     const escapeDirX = Math.sign(this.pos.x - mom.pos.x) || this.facing;
 
-    if (distToMomCatch < this.dangerZoneRadius) {
-      // Danger detected! Aarav reacts with acrobatic evasion
+    // A. CORNER TRAP DETECTION & EXPLOSIVE WALL-KICK SUPER LONG DODGE
+    // Corners are near left wall (x < 240) or right wall (x > width - 240).
+    // If Mom approaches while Aarav is backed towards a wall/corner, Aarav explodes out!
+    const isNearLeftCorner = this.pos.x < 240;
+    const isNearRightCorner = this.pos.x > physics.width - 240;
+    const momTrappingLeft = isNearLeftCorner && mom.pos.x > this.pos.x && (mom.pos.x - this.pos.x) < 260;
+    const momTrappingRight = isNearRightCorner && mom.pos.x < this.pos.x && (this.pos.x - mom.pos.x) < 260;
+
+    if ((momTrappingLeft || momTrappingRight) && this.cornerDodgeCooldown <= 0) {
+      // Launch sharply toward open center of the courtyard
+      const launchDirX = momTrappingLeft ? 1 : -1;
+      
+      if (!physics.isAntiGravityActive) {
+        this.vel.x = launchDirX * (530 + Math.random() * 80);
+        this.vel.y = -470 - Math.random() * 60; // High somersault arch clearing Mom completely!
+      } else {
+        this.vel.x = launchDirX * (490 + Math.random() * 70);
+        this.vel.y = (this.pos.y < mom.pos.y ? -320 : 340);
+      }
+
+      this.facing = launchDirX;
+      this.dashTimer = 0.70; // Extended super long dodge trajectory
+      this.state = "DASHING";
+      this.dashCooldown = 1.1;
+      this.cornerDodgeCooldown = 1.6;
+      this.alignReflexTimer = 0;
+
+      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 190, 2.0);
+      for (let s = 0; s < 20; s++) {
+        particleSystem.addSparkle(this.pos.x + (Math.random() - 0.5) * 40, this.pos.y + (Math.random() - 0.5) * 40, "#fde047");
+      }
+      audioEngine.playDashWhoosh(690);
+
+      const cornerQuips = [
+        "Wall-kick blast! ⚡",
+        "Can't corner me, Ma! 💨",
+        "Acrobatic corner dodge! 🚀",
+        "Super long leap! ✨",
+        "Flying high across the courtyard! 🪔"
+      ];
+      this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.5);
+    }
+    // B. PROACTIVE EVASIVE ACROBATICS (Mid-field & airborne)
+    else if (distToMomCatch < this.dangerZoneRadius) {
       if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 30) {
-        // If Mom gets dangerously close on the floor, Aarav does an acrobatic vault leap
-        if (distToMomCatch < 88 && this.dashCooldown <= 0) {
-          this.vel.y = -375 - Math.random() * 55;
-          this.vel.x = escapeDirX * 290;
+        // Floor vault leap when Mom gets within 100px
+        if (distToMomCatch < 100 && this.dashCooldown <= 0) {
+          this.vel.y = -410 - Math.random() * 60;
+          this.vel.x = escapeDirX * (360 + Math.random() * 60);
           this.facing = escapeDirX;
+          this.dashTimer = 0.50;
+          this.state = "DASHING";
           this.dashCooldown = 0.85;
           particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-          audioEngine.playDashWhoosh(420);
+          audioEngine.playDashWhoosh(460);
           const evasionQuips = ["Too slow, Ma! 💨", "Wheee! Almost! ✨", "Hehe, can't catch me! 🥟", "Zoom! 🪔"];
           this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
         } else {
-          // Sprint burst away from Mom
-          this.acc.x += escapeDirX * 680;
+          // Accelerated sprint burst away from Mom
+          this.acc.x += escapeDirX * 840;
           this.facing = escapeDirX;
         }
+      } else if (this.pos.y < physics.groundY - 30 && distToMomCatch < 95 && this.dashCooldown <= 0) {
+        // Airborne feint / mid-air flip if Mom tracks him below
+        this.vel.y = -260;
+        this.vel.x = escapeDirX * 420;
+        this.facing = escapeDirX;
+        this.dashTimer = 0.45;
+        this.state = "DASHING";
+        this.dashCooldown = 0.9;
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+        audioEngine.playDashWhoosh(540);
+        this.say("Mid-air flip! 💨", 1.0);
       } else if (physics.isAntiGravityActive) {
         // In AG-04 low-buoyancy: glide swiftly away using atmospheric currents
-        this.acc.x += escapeDirX * 590;
-        this.acc.y += (this.pos.y < mom.pos.y ? -190 : 190);
+        this.acc.x += escapeDirX * 720;
+        this.acc.y += (this.pos.y < mom.pos.y ? -240 : 240);
         this.facing = escapeDirX;
       }
     }
 
-    // 3. Reflex Escape: If points are closely matched (<= 26px), start reflex timer!
-    if (distToMomCatch <= 26) {
+    // 3. Lightning Reflex Escape: If points are closely matched (<= 14px), ultra-fast 0.12s window!
+    const distPoints = this.targetPoint.distanceTo(mom.catchPoint);
+    if (distPoints <= 14) {
       this.alignReflexTimer += dt;
-      if (this.alignReflexTimer >= 0.28) {
-        // Emergency escape roll/dash before Mom can press Shift!
-        this.vel.x = escapeDirX * 360;
-        this.vel.y = -260;
+      if (this.alignReflexTimer >= 0.12) {
+        // Emergency escape slide dash before Mom can press Shift!
+        this.vel.x = escapeDirX * 460;
+        this.vel.y = -280;
         this.facing = escapeDirX;
+        this.dashTimer = 0.50;
+        this.state = "DASHING";
         this.alignReflexTimer = 0;
         this.dashCooldown = 0.9;
-        this.say("Whoa, close one! 💨", 1.2);
-        audioEngine.playDashWhoosh(480);
-        particleSystem.addDistortionWave(this.pos.x, this.pos.y, 80, 0.7);
+        this.say("Whoa, razor close! 💨", 1.0);
+        audioEngine.playDashWhoosh(520);
+        particleSystem.addDistortionWave(this.pos.x, this.pos.y, 110, 1.1);
       }
     } else {
       this.alignReflexTimer = 0;
@@ -167,8 +228,8 @@ export class Boy {
 
     // Periodic spontaneous leaps in 1G
     if (!physics.isAntiGravityActive && this.state === "RUNNING" && this.autoHopTimer <= 0) {
-      this.vel.y = -280 - Math.random() * 80;
-      this.autoHopTimer = 2.0 + Math.random() * 2.5;
+      this.vel.y = -290 - Math.random() * 80;
+      this.autoHopTimer = 1.8 + Math.random() * 2.2;
       if (Math.random() < 0.3) this.say("Wheee! ✨", 1.2);
     }
 
@@ -186,15 +247,15 @@ export class Boy {
 
     // Maintain running horizontal drive
     const desiredVx = this.facing * this.runSpeed;
-    this.acc.x += (desiredVx - this.vel.x) * 4.8;
+    this.acc.x += (desiredVx - this.vel.x) * 5.8;
 
     // Handle dash state
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       this.state = "DASHING";
-      this.angle += this.facing * 18 * dt;
+      this.angle += this.facing * 26 * dt;
       this.trailTimer += dt;
-      if (this.trailTimer > 0.035) {
+      if (this.trailTimer > 0.03) {
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
         this.trailTimer = 0;
       }
@@ -219,18 +280,40 @@ export class Boy {
 
     this.floatingMomentum.copy(this.vel);
 
-    // Boundaries
+    // Boundaries with Emergency Wall-Kick Spring
     const minX = 60, maxX = physics.width - 60;
     const minY = 50, maxY = physics.groundY;
 
-    if (this.pos.x < minX) {
+    if (this.pos.x <= minX) {
       this.pos.x = minX;
-      this.vel.x *= -0.7;
-      this.facing = 1;
-    } else if (this.pos.x > maxX) {
+      if (distToMomCatch < 280) {
+        // Emergency wall-kick spring out of corner
+        this.vel.x = 520;
+        this.vel.y = -440;
+        this.facing = 1;
+        this.dashTimer = 0.60;
+        this.state = "DASHING";
+        audioEngine.playDashWhoosh(620);
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+      } else {
+        this.vel.x *= -0.7;
+        this.facing = 1;
+      }
+    } else if (this.pos.x >= maxX) {
       this.pos.x = maxX;
-      this.vel.x *= -0.7;
-      this.facing = -1;
+      if (distToMomCatch < 280) {
+        // Emergency wall-kick spring out of corner
+        this.vel.x = -520;
+        this.vel.y = -440;
+        this.facing = -1;
+        this.dashTimer = 0.60;
+        this.state = "DASHING";
+        audioEngine.playDashWhoosh(620);
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+      } else {
+        this.vel.x *= -0.7;
+        this.facing = -1;
+      }
     }
 
     if (this.pos.y < minY) {

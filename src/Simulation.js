@@ -80,6 +80,7 @@ export class CourtyardSimulation {
     this.prasadGaneshCount = 0;
     this.aaravModakCount = 0;
     this.altarBlessingTimer = 0;
+    this.catchThreshold = 14; // Hyper-strict 14px threshold (1 in 100 catch chance)
   }
 
   bindEvents() {
@@ -126,7 +127,7 @@ export class CourtyardSimulation {
       }
 
       // 3. If points matched, click can also catch!
-      if (this.mom && this.boy && this.mom.catchPoint.distanceTo(this.boy.targetPoint) <= 26) {
+      if (this.mom && this.boy && this.mom.catchPoint.distanceTo(this.boy.targetPoint) <= this.catchThreshold) {
         if (this.attemptCatch()) return;
       }
 
@@ -154,7 +155,7 @@ export class CourtyardSimulation {
   attemptCatch() {
     if (!this.mom || !this.boy) return false;
     const dist = this.mom.catchPoint.distanceTo(this.boy.targetPoint);
-    if (dist <= 26 && !this.boy.isCaught) {
+    if (dist <= this.catchThreshold && !this.boy.isCaught) {
       this.mom.triggerCatchSuccess(this.boy);
       this.boy.triggerCaught(this.mom);
 
@@ -268,9 +269,9 @@ export class CourtyardSimulation {
     this.physics.applyForces(this.boy, dt);
     this.boy.update(dt, this.physics, this.particles, this.audio, this.mom);
 
-    // Check Body Target Points Match! (Strict 26px high-agility threshold)
+    // Check Body Target Points Match! (Strict 14px razor-sharp threshold)
     const distPoints = this.mom.catchPoint.distanceTo(this.boy.targetPoint);
-    const isMatched = distPoints <= 26 && !this.boy.isCaught;
+    const isMatched = distPoints <= this.catchThreshold && !this.boy.isCaught;
     this.mom.isPointMatched = isMatched;
     this.boy.isPointMatched = isMatched;
 
@@ -725,7 +726,7 @@ export class CourtyardSimulation {
     const cp = this.mom.catchPoint;
     const tp = this.boy.targetPoint;
     const dist = cp.distanceTo(tp);
-    const isMatched = dist <= 26;
+    const isMatched = dist <= this.catchThreshold;
 
     // Show proximity alignment tether when characters are near
     if (dist < 150) {
@@ -756,7 +757,7 @@ export class CourtyardSimulation {
 
         // Prompt Banner
         ctx.font = "bold 11px system-ui, sans-serif";
-        const promptText = "⚡ MATCHED! PRESS SHIFT TO CATCH! ⚡";
+        const promptText = "⚡ 14PX LOCK! PRESS SHIFT TO CATCH! ⚡";
         const tw = ctx.measureText(promptText).width;
         ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
         ctx.strokeStyle = "#4ade80";

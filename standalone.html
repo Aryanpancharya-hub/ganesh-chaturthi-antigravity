@@ -42,7 +42,7 @@
         </h1>
         <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/40">ZONE: AG-04</span>
       </div>
-      <p class="text-xs text-slate-400 mt-1">High-Agility Evasion &bull; Match body points (&le;26px) &amp; press <strong>Shift</strong> &bull; 🥟 Feed Aarav &amp; 🙏 Offer Prasad to Ganesh Ji</p>
+      <p class="text-xs text-slate-400 mt-1">High-Agility Evasion &bull; Match body points (&le;14px Rare Catch) &amp; press <strong>Shift</strong> &bull; 🥟 Feed Aarav &amp; 🙏 Offer Prasad to Ganesh Ji</p>
     </div>
     <div class="flex items-center gap-3 text-xs">
       <div class="px-3 py-1 rounded-full border border-amber-500/50 bg-amber-950/40 font-mono flex items-center gap-1.5">
@@ -597,10 +597,12 @@
         this.dashTimer = 0;
         this.dashCooldown = 0;
         this.floatingMomentum = new Vector2(0, 0);
-        this.runSpeed = 215;
-        this.dangerZoneRadius = 115;
+        this.runSpeed = 240;
+        this.dangerZoneRadius = 160;
+        this.catchThreshold = 14;
         this.alignReflexTimer = 0;
-        this.autoHopTimer = 1.6;
+        this.cornerDodgeCooldown = 0;
+        this.autoHopTimer = 1.4;
         this.turnTimer = 3.5;
 
         // Catch target point on Aarav's chest
@@ -642,6 +644,8 @@
 
       update(dt, phys, part, audio, mom) {
         this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+        this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
+
         if (this.speechTimer > 0) {
           this.speechTimer -= dt;
           if (this.speechTimer <= 0) this.speechText = "";
@@ -663,7 +667,7 @@
             this.isEating = false;
             this.state = phys.isAntiGravity ? "FLOATING" : "RUNNING";
             this.facing = Math.random() < 0.5 ? 1 : -1;
-            this.vel.set(this.facing * this.runSpeed * 1.45, -370);
+            this.vel.set(this.facing * this.runSpeed * 1.5, -420);
             this.say("Full of energy now! Catch me if you can! 🚀", 1.8);
             audio.playDashWhoosh(520);
             part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -676,40 +680,87 @@
         const distToMomCatch = this.pos.distanceTo(mom.catchPoint);
         const escapeDirX = Math.sign(this.pos.x - mom.pos.x) || this.facing;
 
-        if (distToMomCatch < this.dangerZoneRadius) {
+        // A. CORNER TRAP DETECTION & EXPLOSIVE WALL-KICK SUPER LONG DODGE
+        const isNearLeftCorner = this.pos.x < 240;
+        const isNearRightCorner = this.pos.x > phys.w - 240;
+        const momTrappingLeft = isNearLeftCorner && mom.pos.x > this.pos.x && (mom.pos.x - this.pos.x) < 260;
+        const momTrappingRight = isNearRightCorner && mom.pos.x < this.pos.x && (this.pos.x - mom.pos.x) < 260;
+
+        if ((momTrappingLeft || momTrappingRight) && this.cornerDodgeCooldown <= 0) {
+          const launchDirX = momTrappingLeft ? 1 : -1;
+          if (!phys.isAntiGravity) {
+            this.vel.x = launchDirX * (530 + Math.random() * 80);
+            this.vel.y = -470 - Math.random() * 60;
+          } else {
+            this.vel.x = launchDirX * (490 + Math.random() * 70);
+            this.vel.y = (this.pos.y < mom.pos.y ? -320 : 340);
+          }
+          this.facing = launchDirX;
+          this.dashTimer = 0.70;
+          this.state = "DASHING";
+          this.dashCooldown = 1.1;
+          this.cornerDodgeCooldown = 1.6;
+          this.alignReflexTimer = 0;
+
+          part.addWave(this.pos.x, this.pos.y, 190, 2.0);
+          for (let s = 0; s < 18; s++) {
+            part.addSparkle(this.pos.x + (Math.random() - 0.5) * 40, this.pos.y + (Math.random() - 0.5) * 40, "#fde047");
+          }
+          audio.playDashWhoosh(690);
+
+          const cornerQuips = ["Wall-kick blast! ⚡", "Can't corner me, Ma! 💨", "Acrobatic corner dodge! 🚀", "Super long leap! ✨"];
+          this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.5);
+        }
+        // B. PROACTIVE EVASION (Mid-field & airborne)
+        else if (distToMomCatch < this.dangerZoneRadius) {
           if (!phys.isAntiGravity && this.pos.y >= phys.groundY - 30) {
-            if (distToMomCatch < 88 && this.dashCooldown <= 0) {
-              this.vel.y = -375 - Math.random() * 55;
-              this.vel.x = escapeDirX * 290;
+            if (distToMomCatch < 100 && this.dashCooldown <= 0) {
+              this.vel.y = -410 - Math.random() * 60;
+              this.vel.x = escapeDirX * (360 + Math.random() * 60);
               this.facing = escapeDirX;
+              this.dashTimer = 0.50;
+              this.state = "DASHING";
               this.dashCooldown = 0.85;
               part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-              audio.playDashWhoosh(420);
+              audio.playDashWhoosh(460);
               const quips = ["Too slow, Ma! 💨", "Wheee! Almost! ✨", "Hehe, can't catch me! 🥟", "Zoom! 🪔"];
               this.say(quips[Math.floor(Math.random() * quips.length)], 1.1);
             } else {
-              this.acc.x += escapeDirX * 680;
+              this.acc.x += escapeDirX * 840;
               this.facing = escapeDirX;
             }
+          } else if (this.pos.y < phys.groundY - 30 && distToMomCatch < 95 && this.dashCooldown <= 0) {
+            this.vel.y = -260;
+            this.vel.x = escapeDirX * 420;
+            this.facing = escapeDirX;
+            this.dashTimer = 0.45;
+            this.state = "DASHING";
+            this.dashCooldown = 0.9;
+            part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+            audio.playDashWhoosh(540);
+            this.say("Mid-air flip! 💨", 1.0);
           } else if (phys.isAntiGravity) {
-            this.acc.x += escapeDirX * 590;
-            this.acc.y += (this.pos.y < mom.pos.y ? -190 : 190);
+            this.acc.x += escapeDirX * 720;
+            this.acc.y += (this.pos.y < mom.pos.y ? -240 : 240);
             this.facing = escapeDirX;
           }
         }
 
-        // Reflex Escape: If points are closely matched (<= 26px), start reflex timer!
-        if (distToMomCatch <= 26) {
+        // 3. Reflex Escape: If points are closely matched (<= 14px), ultra-fast 0.12s window!
+        const distPoints = this.targetPoint.distanceTo(mom.catchPoint);
+        if (distPoints <= 14) {
           this.alignReflexTimer += dt;
-          if (this.alignReflexTimer >= 0.28) {
-            this.vel.x = escapeDirX * 360;
-            this.vel.y = -260;
+          if (this.alignReflexTimer >= 0.12) {
+            this.vel.x = escapeDirX * 460;
+            this.vel.y = -280;
             this.facing = escapeDirX;
+            this.dashTimer = 0.50;
+            this.state = "DASHING";
             this.alignReflexTimer = 0;
             this.dashCooldown = 0.9;
-            this.say("Whoa, close one! 💨", 1.2);
-            audio.playDashWhoosh(480);
-            part.addWave(this.pos.x, this.pos.y, 80, 0.7);
+            this.say("Whoa, razor close! 💨", 1.0);
+            audio.playDashWhoosh(520);
+            part.addWave(this.pos.x, this.pos.y, 110, 1.1);
           }
         } else {
           this.alignReflexTimer = 0;
@@ -720,8 +771,8 @@
         this.turnTimer -= dt;
 
         if (!phys.isAntiGravity && this.state === "RUNNING" && this.autoHopTimer <= 0) {
-          this.vel.y = -280 - Math.random() * 80;
-          this.autoHopTimer = 2.0 + Math.random() * 2.5;
+          this.vel.y = -290 - Math.random() * 80;
+          this.autoHopTimer = 1.8 + Math.random() * 2.2;
         }
 
         if (this.pos.x < 110) { this.facing = 1; this.turnTimer = 3.5; }
@@ -729,9 +780,16 @@
         else if (this.turnTimer <= 0) { this.facing *= -1; this.turnTimer = 3.5 + Math.random() * 4.0; }
 
         const desiredVx = this.facing * this.runSpeed;
-        this.acc.x += (desiredVx - this.vel.x) * 4.8;
+        this.acc.x += (desiredVx - this.vel.x) * 5.8;
 
-        if (phys.isAntiGravity || this.pos.y < phys.groundY - 25) {
+        if (this.dashTimer > 0) {
+          this.dashTimer -= dt;
+          this.state = "DASHING";
+          this.angle += this.facing * 26 * dt;
+          if (this.dashTimer <= 0) {
+            this.state = phys.isAntiGravity ? "FLOATING" : "RUNNING";
+          }
+        } else if (phys.isAntiGravity || this.pos.y < phys.groundY - 25) {
           this.state = "FLOATING";
           const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.4 * this.facing;
           this.angle += (targetAngle - this.angle) * 6 * dt;
@@ -744,13 +802,42 @@
         this.pos.add(this.vel.clone().multiplyScalar(dt));
         this.acc.set(0, 0);
 
-        // Bounds
-        if (this.pos.x < 55) { this.pos.x = 55; this.vel.x *= -0.6; this.facing = 1; }
-        else if (this.pos.x > phys.w - 55) { this.pos.x = phys.w - 55; this.vel.x *= -0.6; this.facing = -1; }
-        if (this.pos.y < 50) { this.pos.y = 50; this.vel.y = Math.max(0, this.vel.y * -0.4); }
-        else if (this.pos.y > phys.groundY) {
-          this.pos.y = phys.groundY; this.vel.y = 0;
-          if (!this.isCaught) this.state = "RUNNING";
+        // Bounds with Emergency Wall-Kick Spring
+        if (this.pos.x <= 55) {
+          this.pos.x = 55;
+          if (distToMomCatch < 280) {
+            this.vel.x = 520;
+            this.vel.y = -440;
+            this.facing = 1;
+            this.dashTimer = 0.60;
+            this.state = "DASHING";
+            audio.playDashWhoosh(620);
+          } else {
+            this.vel.x *= -0.6;
+            this.facing = 1;
+          }
+        } else if (this.pos.x >= phys.w - 55) {
+          this.pos.x = phys.w - 55;
+          if (distToMomCatch < 280) {
+            this.vel.x = -520;
+            this.vel.y = -440;
+            this.facing = -1;
+            this.dashTimer = 0.60;
+            this.state = "DASHING";
+            audio.playDashWhoosh(620);
+          } else {
+            this.vel.x *= -0.6;
+            this.facing = -1;
+          }
+        }
+
+        if (this.pos.y < 50) {
+          this.pos.y = 50;
+          this.vel.y = Math.max(0, this.vel.y * -0.4);
+        } else if (this.pos.y > phys.groundY) {
+          this.pos.y = phys.groundY;
+          this.vel.y = 0;
+          if (this.state !== "DASHING" && !this.isCaught) this.state = "RUNNING";
         }
 
         this.targetPoint.set(this.pos.x, this.pos.y - 18);
@@ -1396,7 +1483,7 @@
 
     function attemptCatch() {
       const dist = mom.catchPoint.distanceTo(boy.targetPoint);
-      if (dist <= 26 && !boy.isCaught) {
+      if (dist <= 14 && !boy.isCaught) {
         mom.triggerCatchSuccess(boy);
         boy.triggerCaught(mom);
 
@@ -1457,7 +1544,7 @@
       const cy = (e.clientY - r.top) * (H / r.height);
 
       // Check if points matched - click also catches!
-      if (mom.catchPoint.distanceTo(boy.targetPoint) <= 26) {
+      if (mom.catchPoint.distanceTo(boy.targetPoint) <= 14) {
         if (attemptCatch()) return;
       }
 
@@ -1497,14 +1584,14 @@
     function updateUI() {
       teleGravity.textContent = physics.getPhysStr();
       const distPoints = Math.round(mom.catchPoint.distanceTo(boy.targetPoint));
-      const isMatched = distPoints <= 26 && !boy.isCaught;
+      const isMatched = distPoints <= 14 && !boy.isCaught;
 
       if (isMatched) {
-        teleMom.textContent = "LOCKED! [SHIFT TO CATCH]";
+        teleMom.textContent = "14PX LOCKED! [SHIFT TO CATCH]";
         teleMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        teleMom.textContent = `ALIGNING (${distPoints}px)`;
+        teleMom.textContent = `ALIGNING (${distPoints}px / 14px)`;
         teleMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }
@@ -1777,7 +1864,7 @@
           ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.stroke();
 
           ctx.font = "bold 11px system-ui, sans-serif";
-          const promptText = "⚡ MATCHED! PRESS SHIFT TO CATCH! ⚡";
+          const promptText = "⚡ 14PX LOCK! PRESS SHIFT TO CATCH! ⚡";
           const tw = ctx.measureText(promptText).width;
           ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
           ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2; ctx.setLineDash([]);

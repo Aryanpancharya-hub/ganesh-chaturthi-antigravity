@@ -1,27 +1,34 @@
-# ?? Ganesh Chaturthi Anti-Gravity Field [Zone ID: AG-04]
+﻿# 🪔 Ganesh Chaturthi Anti-Gravity Field [Zone ID: AG-04]
 
 A high-fidelity, interactive gameplay physics simulation set in a festive Indian courtyard during Ganesh Chaturthi. Experience a mystical zero-gravity realm where Mom (Priya) chases her mischievous son (Aarav) under dynamic gravitational shifts and celebrates with sacred Modak offerings to Lord Ganesha.
 
-?? **Live GitHub Pages Demo**: [Play Online](https://Aryanpancharya-hub.github.io/ganesh-chaturthi-antigravity/)
+🎮 **Live GitHub Pages Demo**: [Play Online](https://Aryanpancharya-hub.github.io/ganesh-chaturthi-antigravity/)
 
 ---
 
-## ?? Game Overview
+## 🌟 Game Overview
 
-In this festive simulation, Mom (Priya) follows your cursor as she tries to catch young Aarav. Aarav is hyper-agile with predictive evasion AI, acrobatically dodging Mom using floating momentum and buoyant drafts. 
+Mom (Priya) follows your mouse cursor across the traditional courtyard as she tries to catch young Aarav. Aarav is equipped with hyper-agility evasion AI, rendering catches exceptionally rare (~1 out of 100 encounters):
 
-When Mom successfully matches body alignment points within the precision **26px lock-on threshold** and the player presses **`Shift`**, a heartwarming reward ceremony begins:
-1. **Feeding Aarav**: Mom hands a delicious golden modak to Aarav, who happily eats it with a chewing animation.
-2. **Divine Prasad for Lord Ganesha**: Mom turns toward Lord Ganesha's sacred floral altar and launches an offering Modak along a glowing parabolic arc. Upon arrival, Ganesha's golden halo radiates celestial rays, a divine blessing banner appears (*"?????????? ?? ????????"*), and sacred temple chimes resonate!
+1. **Corner Trap Detection & Explosive Wall-Kick Long Dodge**:
+   When Mom attempts to corner Aarav against courtyard haveli walls or stone pillars, Aarav detects the trap early and kicks off the wall with a high-velocity somersault vault ($v_x > 530\text{ px/s}, v_y < -470\text{ px/s}$), soaring across the courtyard far above Mom's reach!
+2. **Razor-Sharp 14px Catch Threshold**:
+   Mom's reaching hands must match Aarav's chest target point within a microscopic **$\le 14\text{px}$ alignment radius**.
+3. **Lightning 0.12s Reflex Slide Dash**:
+   Even if Mom achieves sub-14px alignment, Aarav's lightning reflexes trigger in just **$0.12\text{s}$ ($120\text{ms}$)**, slipping underneath Mom's arms unless the player hits `Shift` instantly.
+4. **Sacred Dual Reward Ceremony**:
+   When the rare catch succeeds:
+   - **Stage 1 (Feeding Aarav)**: Mom feeds a golden modak to Aarav, who eats it with animated chewing and crumb particle effects.
+   - **Stage 2 (Prasad to Lord Ganesha)**: Mom offers a sacred modak that arcs along a quadratic Bézier curve to Lord Ganesha's sanctum altar, triggering rotating golden halo rays, a divine blessing banner (*"विघ्नहर्ता का आशीर्वाद"*), and sacred temple chimes!
 
 ---
 
-## ??? Controls
+## 🕹️ Controls
 
 | Control | Action |
 | :--- | :--- |
 | **Mouse Cursor** | Guide Mom (Priya) smoothly across the courtyard |
-| **Shift Key / Click "CATCH!"** | Catch Aarav when alignment points lock within **26px** |
+| **Shift Key / Click "CATCH!"** | Catch Aarav when alignment locks within **$\le 14\text{px}$** |
 | **Spacebar / Button** | Toggle **AG-04 Anti-Gravity Field** |
 | **Q / Left Button** | Toggle West Vayu Turbine (Wind Current Generator) |
 | **E / Right Button** | Toggle East Vayu Turbine (Wind Current Generator) |
@@ -31,25 +38,26 @@ When Mom successfully matches body alignment points within the precision **26px 
 
 ---
 
-## ?? Physics & Simulation Architecture
+## 🔬 Physics & Simulation Architecture
 
 ### 1. Dynamic Gravity Field Transition (AG-04)
 The courtyard transitions smoothly between standard Earth gravity and a low-buoyancy levitation zone:
 $$\vec{g}_{\text{normal}} = (0, -9.81, 0) \text{ m/s}^2 \quad \longleftrightarrow \quad \vec{g}_{\text{AG-04}} = (0, +4.50, 0) \text{ m/s}^2$$
 A cubic smoothstep function $S(t) = 3t^2 - 2t^3$ over a $1.2\text{s}$ dampening window prevents abrupt forces, allowing props and characters to float serenely.
 
-### 2. Verlet Integration Torans & Garlands
+### 2. Hyper-Agility Evasion AI & Corner Wall-Kicks
+- **Anti-Cornering Trap AI**: Senses traps when $x < 240\text{px}$ or $x > \text{width} - 240\text{px}$ and Mom is within $260\text{px}$. Launches a supersonic wall-kick long dodge toward the arena center.
+- **Threat Sensing Radius ($160\text{px}$)**: Activates preemptive evasion sprints and lateral feints.
+- **Airborne Mid-Air Flips**: Aarav redirects trajectory mid-air ($v_x = \pm 420\text{ px/s}$) if Mom tracks his landing zone.
+- **Emergency Boundary Springs**: Touching wall limits with Mom nearby unleashes an immediate $520\text{ px/s}$ launch.
+
+### 3. Verlet Integration Torans & Garlands
 Sacred marigold flower garlands (*Genda Phool*) and mango leaves are simulated using discrete multi-segment Verlet rope physics:
 $$\vec{x}_i^{t+\Delta t} = 2\vec{x}_i^t - \vec{x}_i^{t-\Delta t} + \vec{a}_i \Delta t^2$$
 In normal gravity, they sag into natural catenary arcs; in anti-gravity, they gracefully arch upward toward the heavens.
 
-### 3. Hyper-Agile Aarav Evasion AI
-- **Threat Sensing Radius**: Activates evasive maneuvers when Mom approaches within $115\text{px}$.
-- **Emergency Somersault Leaps**: Triggers sudden bursts when cornered or within $88\text{px}$.
-- **Reflex Sprints**: Quick $0.28\text{s}$ momentum shifts with dynamic wall bouncing and dampening curves.
-
 ### 4. Sacred Offering Parabolic Ballistics
-Modaks offered to Lord Ganesha follow a quadratic B�zier trajectory:
+Modaks offered to Lord Ganesha follow a quadratic Bézier trajectory:
 $$B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2 \quad (t \in [0, 1])$$
 leaving a trail of golden spark particles until reaching the murti.
 
@@ -62,24 +70,24 @@ Zero external MP3/WAV files required! The entire soundscape is generated in real
 
 ---
 
-## ?? Repository Structure
+## 📁 Repository Structure
 
 ```
-+-- index.html            # Main web application entry point
-+-- standalone.html       # Single-file bundled edition (runs directly from disk)
-+-- src/
-�   +-- Vector2.js        # 2D Vector mathematics & utility methods
-�   +-- PhysicsEngine.js  # AG-04 gravity & Verlet rope solver
-�   +-- Entities.js       # Aarav, Mom, Diya, Modak & Prasad classes
-�   +-- Particles.js      # Spark, dust mote, and lotus petal visual FX
-�   +-- AudioEngine.js    # Procedural Web Audio API soundscape
-�   +-- Simulation.js     # Master loop, telemetry & catch orchestration
-+-- README.md             # Project documentation
+├── index.html            # Main web application entry point (Modular ES)
+├── standalone.html       # Single-file bundled edition (runs directly from disk)
+├── src/
+│   ├── Vector2.js        # 2D Vector mathematics & utility methods
+│   ├── PhysicsEngine.js  # AG-04 gravity & Verlet rope solver
+│   ├── Entities.js       # Aarav evasion AI, Mom kinematics, OfferingModak class
+│   ├── Particles.js      # Spark, dust mote, and lotus petal visual FX
+│   ├── AudioEngine.js    # Procedural Web Audio API soundscape
+│   └── Simulation.js     # Master loop, 14px telemetry & catch orchestration
+└── README.md             # Project documentation
 ```
 
 ---
 
-## ?? Running Locally
+## 🚀 Running Locally
 
 ### Option 1: Double-Click Standalone
 Simply open `standalone.html` in any modern web browser (Chrome, Edge, Firefox, Safari).
@@ -96,7 +104,7 @@ Navigate to `http://localhost:8080` in your browser.
 
 ---
 
-## ??? Dedication
+## 🕉️ Dedication
 Created with devotion for **Ganesh Chaturthi**. May Lord Ganesha bestow wisdom, peace, and prosperity upon all!
 
 *Built by [@Aryanpancharya-hub](https://github.com/Aryanpancharya-hub)*

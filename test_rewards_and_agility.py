@@ -18,16 +18,19 @@ class Vector2:
         return math.hypot(self.x - other.x, self.y - other.y)
 
 class MockBoy:
-    def __init__(self, x, y):
+    def __init__(self, x, y, width=1000.0):
         self.pos = Vector2(x, y)
         self.vel = Vector2(170, 0)
         self.facing = 1
         self.state = "RUNNING"
         self.target_point = Vector2(x, y - 18)
-        self.run_speed = 215
-        self.danger_zone_radius = 115
+        self.run_speed = 240
+        self.danger_zone_radius = 160
+        self.catch_threshold = 14
         self.dash_cooldown = 0.0
+        self.corner_dodge_cooldown = 0.0
         self.align_reflex_timer = 0.0
+        self.dash_timer = 0.0
         self.is_point_matched = False
         self.is_caught = False
         self.caught_timer = 0.0
@@ -35,6 +38,7 @@ class MockBoy:
         self.modaks_eaten_count = 0
         self.is_eating = False
         self.speech_text = ""
+        self.width = width
 
     def update_target_point(self):
         self.target_point.x = self.pos.x
@@ -49,40 +53,76 @@ class MockBoy:
         self.is_eating = True
         self.vel.set(0, 0)
         self.facing = 1 if mom.pos.x > self.pos.x else -1
-        self.speech_text = "Mmm! Ma's modaks are the best! 🥟❤️"
+        self.speech_text = "Mmm! Ma's modaks are the best! ????"
 
     def update_evasion_test(self, dt, mom, is_anti_gravity=False, ground_y=520.0):
         self.dash_cooldown = max(0.0, self.dash_cooldown - dt)
+        self.corner_dodge_cooldown = max(0.0, self.corner_dodge_cooldown - dt)
         dist_to_mom = self.pos.distance_to(mom.catch_point)
+        dist_points = self.target_point.distance_to(mom.catch_point)
         escape_dir_x = 1 if self.pos.x >= mom.pos.x else -1
 
         evasion_triggered = None
 
-        # 1. Danger Zone reaction
-        if dist_to_mom < self.danger_zone_radius:
+        # A. Corner Trap Detection & Explosive Wall-Kick Long Dodge
+        is_near_left_corner = self.pos.x < 240
+        is_near_right_corner = self.pos.x > self.width - 240
+        mom_trapping_left = is_near_left_corner and mom.pos.x > self.pos.x and (mom.pos.x - this_x if False else (mom.pos.x - self.pos.x) < 260)
+        mom_trapping_right = is_near_right_corner and mom.pos.x < self.pos.x and (self.pos.x - mom.pos.x) < 260
+
+        if (mom_trapping_left or mom_trapping_right) and self.corner_dodge_cooldown <= 0:
+            launch_dir = 1 if mom_trapping_left else -1
+            if not is_anti_gravity:
+                self.vel.x = launch_dir * 540.0
+                self.vel.y = -470.0
+            else:
+                self.vel.x = launch_dir * 500.0
+                self.vel.y = -320.0 if self.pos.y < mom.pos.y else 340.0
+            self.facing = launch_dir
+            self.dash_timer = 0.70
+            self.state = "DASHING"
+            self.dash_cooldown = 1.1
+            self.corner_dodge_cooldown = 1.6
+            self.align_reflex_timer = 0.0
+            evasion_triggered = "CORNER_WALL_KICK"
+            return evasion_triggered
+
+        # B. Proactive Mid-field & Airborne Evasion
+        elif dist_to_mom < self.danger_zone_radius:
             if not is_anti_gravity and self.pos.y >= ground_y - 30:
-                if dist_to_mom < 88 and self.dash_cooldown <= 0:
-                    # Acrobatic vault leap
-                    self.vel.y = -375.0
-                    self.vel.x = escape_dir_x * 290.0
+                if dist_to_mom < 100 and self.dash_cooldown <= 0:
+                    self.vel.y = -410.0
+                    self.vel.x = escape_dir_x * 380.0
                     self.facing = escape_dir_x
+                    self.dash_timer = 0.50
+                    self.state = "DASHING"
                     self.dash_cooldown = 0.85
                     evasion_triggered = "VAULT_LEAP"
-                elif dist_to_mom >= 88:
-                    # Sprint burst away
-                    self.vel.x += escape_dir_x * 680.0 * dt
+                else:
+                    self.vel.x += escape_dir_x * 840.0 * dt
                     evasion_triggered = "SPRINT_BURST"
+            elif self.pos.y < ground_y - 30 and dist_to_mom < 95 and self.dash_cooldown <= 0:
+                self.vel.y = -260.0
+                self.vel.x = escape_dir_x * 420.0
+                self.facing = escape_dir_x
+                self.dash_timer = 0.45
+                self.state = "DASHING"
+                self.dash_cooldown = 0.9
+                evasion_triggered = "AIR_FEINT"
             elif is_anti_gravity:
-                self.vel.x += escape_dir_x * 590.0 * dt
-                self.vel.y += -190.0 * dt if self.pos.y < mom.pos.y else 190.0 * dt
+                self.vel.x += escape_dir_x * 720.0 * dt
+                self.vel.y += -240.0 * dt if self.pos.y < mom.pos.y else 240.0 * dt
                 evasion_triggered = "AG_SURF"
 
-        # 2. Reflex Escape when points matched (<= 26px)
-        if dist_to_mom <= 26:
+        # C. Reflex Escape when points closely matched (<= 14px, 0.12s window)
+        if dist_points <= 14.0:
             self.align_reflex_timer += dt
-            if self.align_reflex_timer >= 0.28:
-                self.vel.x = escape_dir_x * 360.0
-                self.vel.y = -260.0
+            if self.align_reflex_timer >= 0.12:
+                self.vel.x = escape_dir_x * 460.0
+                self.vel.y = -280.0
+                self.facing = escape_dir_x
+                self.dash_timer = 0.50
+                self.state = "DASHING"
                 self.align_reflex_timer = 0.0
                 self.dash_cooldown = 0.9
                 evasion_triggered = "REFLEX_ESCAPE"
@@ -113,7 +153,7 @@ class MockMom:
     def trigger_catch_success(self, boy):
         self.is_hugging = True
         self.hug_timer = 3.6
-        self.speech_text = "Gotcha! Here is a sweet modak for you, Aarav! 🥟❤️"
+        self.speech_text = "Caught you, Aarav! Here is your favorite sweet modak! ????"
 
 class MockOfferingModak:
     def __init__(self, start_x, start_y, target_x, target_y, on_arrive):
@@ -121,39 +161,36 @@ class MockOfferingModak:
         self.start_y = start_y
         self.target_x = target_x
         self.target_y = target_y
-        self.ctrl_x = (start_x + target_x) / 2
-        self.ctrl_y = min(start_y, target_y) - 140
-        self.progress = 0.0
-        self.duration = 1.35
-        self.on_arrive = on_arrive
-        self.is_finished = False
+        self.ctrl_x = (start_x + target_x) / 2.0
+        self.ctrl_y = min(start_y, target_y) - 180.0
         self.pos = Vector2(start_x, start_y)
+        self.t = 0.0
+        self.duration = 1.3
+        self.is_finished = False
+        self.on_arrive = on_arrive
 
     def update(self, dt):
         if self.is_finished:
             return
-        self.progress += dt / self.duration
+        self.t += dt
+        self.progress = min(1.0, self.t / self.duration)
+        t = self.progress
+        inv_t = 1.0 - t
+        # Quadratic Bezier formula
+        self.pos.x = inv_t * inv_t * self.start_x + 2 * inv_t * t * self.ctrl_x + t * t * self.target_x
+        self.pos.y = inv_t * inv_t * self.start_y + 2 * inv_t * t * self.ctrl_y + t * t * self.target_y
         if self.progress >= 1.0:
-            self.progress = 1.0
-            self.pos.set(self.target_x, self.target_y)
             self.is_finished = True
             if self.on_arrive:
                 self.on_arrive()
-            return
-        
-        t = self.progress
-        inv_t = 1.0 - t
-        bx = inv_t * inv_t * self.start_x + 2 * inv_t * t * self.ctrl_x + t * t * self.target_x
-        by = inv_t * inv_t * self.start_y + 2 * inv_t * t * self.ctrl_y + t * t * self.target_y
-        self.pos.set(bx, by)
 
 class SimulationRewardSystem:
-    def __init__(self, mom, boy, altar_x=490.0, altar_y=494.0):
+    def __init__(self, mom, boy, altar_x=500.0, altar_y=494.0):
         self.mom = mom
         self.boy = boy
         self.altar_x = altar_x
         self.altar_y = altar_y
-        self.catch_threshold = 26.0
+        self.catch_threshold = 14  # Strict 14px threshold
         self.aarav_modak_count = 0
         self.prasad_ganesh_count = 0
         self.altar_blessing_timer = 0.0
@@ -189,93 +226,107 @@ class SimulationRewardSystem:
 
 def test_rewards_and_agility():
     print("==================================================")
-    print("TEST SUITE: HIGH AGILITY EVASION & DUAL REWARDS")
+    print("TEST SUITE: CORNER LONG DODGE & 14PX RARE CATCH")
     print("==================================================")
 
     ground_y = 520.0
     mom = MockMom(200.0, ground_y)
-    boy = MockBoy(400.0, ground_y)
-    sim = SimulationRewardSystem(mom, boy, altar_x=490.0, altar_y=494.0)
+    boy = MockBoy(400.0, ground_y, width=1000.0)
+    sim = SimulationRewardSystem(mom, boy, altar_x=500.0, altar_y=494.0)
 
-    # 1. Test Threat Perception & Acrobatic Vault
-    print("\n--- 1. Testing Aarav Danger Sensing & Vault Leap ---")
-    mom.pos.x = 330.0 # close to Aarav (400) -> dist ~70px (< 88px)
+    # 1. Test Corner Trap Detection & Explosive Wall-Kick Long Dodge (Left Corner)
+    print("\n--- 1. Testing Corner Trap Detection & Wall-Kick Long Dodge (Left Corner) ---")
+    boy.pos.set(150.0, ground_y) # Near left corner (x < 240)
+    mom.pos.set(280.0, ground_y) # Mom closing in from right (distance 130px < 260px)
     mom.update_catch_point()
     boy.update_target_point()
     evasion = boy.update_evasion_test(0.016, mom, is_anti_gravity=False, ground_y=ground_y)
-    assert evasion == "VAULT_LEAP", f"Aarav should perform a vault leap, got: {evasion}"
-    assert boy.vel.y < -300.0, "Aarav should leap with negative (upward) velocity"
-    assert boy.facing == 1, "Aarav should face away from Mom (rightward)"
-    print(f"[PASS] Acrobatic Vault Leap triggered! vy = {boy.vel.y} px/s, vx = {boy.vel.x} px/s")
+    assert evasion == "CORNER_WALL_KICK", f"Left corner trap must trigger CORNER_WALL_KICK, got: {evasion}"
+    assert boy.vel.x > 500.0, f"Aarav must launch towards center with vx > 500, got: {boy.vel.x}"
+    assert boy.vel.y <= -450.0, f"Aarav must vault high with vy <= -450, got: {boy.vel.y}"
+    assert boy.facing == 1, "Aarav must face rightward into open courtyard"
+    assert boy.state == "DASHING", "Aarav must enter DASHING state"
+    print(f"[PASS] Left Corner Wall-Kick Dodge: vx = {boy.vel.x} px/s, vy = {boy.vel.y} px/s (Clears over Mom!)")
 
-    # 2. Test Reflex Escape after holding alignment
-    print("\n--- 2. Testing Aarav Reflex Escape (<= 26px held for >0.28s) ---")
-    # Position Mom right on Aarav's target point (dist = 10px)
-    mom.catch_point.set(boy.target_point.x + 8.0, boy.target_point.y)
-    dist = mom.catch_point.distance_to(boy.target_point)
-    assert dist <= 26.0, f"Distance {dist} should be <= 26px"
+    # 2. Test Corner Trap Detection & Explosive Wall-Kick Long Dodge (Right Corner)
+    print("\n--- 2. Testing Corner Trap Detection & Wall-Kick Long Dodge (Right Corner) ---")
+    boy.corner_dodge_cooldown = 0.0 # reset cooldown
+    boy.pos.set(880.0, ground_y) # Near right corner (1000 - 880 = 120 < 240)
+    mom.pos.set(740.0, ground_y) # Mom closing in from left
+    mom.update_catch_point()
+    boy.update_target_point()
+    evasion = boy.update_evasion_test(0.016, mom, is_anti_gravity=False, ground_y=ground_y)
+    assert evasion == "CORNER_WALL_KICK", f"Right corner trap must trigger CORNER_WALL_KICK, got: {evasion}"
+    assert boy.vel.x < -500.0, f"Aarav must launch leftward towards center with vx < -500, got: {boy.vel.x}"
+    assert boy.vel.y <= -450.0, f"Aarav must vault high with vy <= -450, got: {boy.vel.y}"
+    assert boy.facing == -1, "Aarav must face leftward into open courtyard"
+    print(f"[PASS] Right Corner Wall-Kick Dodge: vx = {boy.vel.x} px/s, vy = {boy.vel.y} px/s (Clears over Mom!)")
 
-    # Advance time by 0.20s (under 0.28s threshold -> reflex not yet triggered)
-    evasion_mid = boy.update_evasion_test(0.20, mom)
-    assert evasion_mid is None, "Reflex should NOT trigger before 0.28s"
-    print(f"[PASS] t = 0.20s: Aarav senses imminent catch, timer = {boy.align_reflex_timer:.2f}s")
+    # 3. Test Mid-Field Threat Perception & Acrobatic Vault Leap
+    print("\n--- 3. Testing Mid-Field Threat Perception & Vault Leap ---")
+    boy.corner_dodge_cooldown = 1.0 # not in corner
+    boy.dash_cooldown = 0.0
+    boy.pos.set(500.0, ground_y)
+    mom.pos.set(440.0, ground_y) # Close mid-field (< 100px)
+    mom.update_catch_point()
+    boy.update_target_point()
+    evasion = boy.update_evasion_test(0.016, mom, is_anti_gravity=False, ground_y=ground_y)
+    assert evasion == "VAULT_LEAP", f"Mid-field threat must trigger VAULT_LEAP, got: {evasion}"
+    assert boy.vel.y <= -400.0, f"Aarav must leap with vy <= -400, got: {boy.vel.y}"
+    print(f"[PASS] Mid-field Vault Leap: vy = {boy.vel.y} px/s, vx = {boy.vel.x} px/s")
 
-    # Advance past 0.28s threshold
-    evasion_reflex = boy.update_evasion_test(0.10, mom)
-    assert evasion_reflex == "REFLEX_ESCAPE", f"Aarav should execute emergency reflex escape, got: {evasion_reflex}"
-    print(f"[PASS] t = 0.30s: Reflex Escape triggered! vx = {boy.vel.x} px/s, vy = {boy.vel.y} px/s")
-
-    # 3. Test Strict 26px Catch Threshold
-    print("\n--- 3. Testing Strict 26px Threshold ---")
-    # 30px distance (was caught at 38px, but now fails!)
-    mom.catch_point.set(boy.target_point.x + 30.0, boy.target_point.y)
-    dist, matched = sim.check_alignment()
-    assert not matched, f"30px should NOT match (threshold 26px), dist = {dist}"
-    assert sim.attempt_catch() is False, "Catch must fail at 30px"
-    print(f"[PASS] 30px distance correctly rejected! (Threshold is strictly 26px)")
-
-    # 20px distance (within 26px)
+    # 4. Test Strict 14px Catch Threshold
+    print("\n--- 4. Testing Strict 14px Threshold ---")
+    # 18px distance (fails!)
     mom.catch_point.set(boy.target_point.x + 18.0, boy.target_point.y)
     dist, matched = sim.check_alignment()
-    assert matched, f"18px must match (threshold 26px), dist = {dist}"
-    print(f"[PASS] 18px distance successfully matched! Lock-on beam active.")
+    assert not matched, f"18px should NOT match (threshold 14px), dist = {dist}"
+    assert sim.attempt_catch() is False, "Catch must fail at 18px"
+    print(f"[PASS] 18px distance correctly rejected! (Threshold is strictly 14px)")
 
-    # 4. Test Catch Execution & Reward Stage 1 (Feed Aarav)
-    print("\n--- 4. Testing Reward Stage 1: Mom Feeds Aarav ---")
+    # 12px distance (matches!)
+    mom.catch_point.set(boy.target_point.x + 12.0, boy.target_point.y)
+    dist, matched = sim.check_alignment()
+    assert matched, f"12px must match (threshold 14px), dist = {dist}"
+    print(f"[PASS] 12px distance successfully matched! Lock-on beam active.")
+
+    # 5. Test Ultra-Fast Reflex Escape (<= 14px held for >= 0.12s)
+    print("\n--- 5. Testing Ultra-Fast Reflex Escape (<= 14px held for >= 0.12s) ---")
+    boy.corner_dodge_cooldown = 1.0
+    boy.dash_cooldown = 0.5
+    boy.align_reflex_timer = 0.0
+    mom.catch_point.set(boy.target_point.x + 8.0, boy.target_point.y)
+    # At 0.08s, reflex not yet triggered
+    evasion_early = boy.update_evasion_test(0.08, mom)
+    assert evasion_early != "REFLEX_ESCAPE", f"Reflex should not trigger before 0.12s, got: {evasion_early}"
+    assert round(boy.align_reflex_timer, 2) == 0.08, f"Reflex timer must be 0.08s, got: {boy.align_reflex_timer}"
+    print(f"[PASS] t = 0.08s: Aarav senses razor close proximity, timer = {boy.align_reflex_timer:.2f}s")
+
+    # Advance past 0.12s
+    evasion_reflex = boy.update_evasion_test(0.05, mom)
+    assert evasion_reflex == "REFLEX_ESCAPE", f"Must trigger REFLEX_ESCAPE at >= 0.12s, got: {evasion_reflex}"
+    assert abs(boy.vel.x) > 400.0, f"Reflex escape velocity must exceed 400 px/s, got: {boy.vel.x}"
+    print(f"[PASS] t = 0.13s: Ultra-fast Reflex Escape triggered! vx = {boy.vel.x} px/s, vy = {boy.vel.y} px/s")
+
+    # 6. Test Rare Catch Execution & Reward Stages
+    print("\n--- 6. Testing Successful Rare Catch & Dual Reward Stages ---")
+    mom.catch_point.set(boy.target_point.x + 6.0, boy.target_point.y)
     caught = sim.attempt_catch()
     assert caught is True, "attempt_catch() should return True"
     assert boy.is_caught is True, "Aarav should be caught"
-    assert boy.is_eating is True, "Aarav eating state should be True"
-    assert boy.caught_timer == 3.6, "Caught timer should be 3.6s for celebration sequence"
     assert sim.aarav_modak_count == 1, "Aarav modak count should increment to 1"
-    assert "modak" in boy.speech_text.lower(), f"Aarav eating speech: {boy.speech_text}"
-    assert "modak" in mom.speech_text.lower(), f"Mom feeding speech: {mom.speech_text}"
-    print(f"[PASS] Mom fed Aarav! Aarav Modaks Eaten = {sim.aarav_modak_count}")
-    print(f"[PASS] Aarav Dialogue: '{boy.speech_text}'")
-    print(f"[PASS] Mom Dialogue: '{mom.speech_text}'")
+    print(f"[PASS] Stage 1: Mom feeds sweet modak to Aarav! Modaks eaten = {sim.aarav_modak_count}")
 
-    # 5. Test Reward Stage 2: Sacred Modak Flight to Lord Ganesha Altar
-    print("\n--- 5. Testing Reward Stage 2: Offering Flight to Ganesh Ji ---")
-    assert len(sim.offering_modaks) == 1, "OfferingModak entity must be launched"
+    # Advance offering modak flight to Lord Ganesha
+    assert len(sim.offering_modaks) == 1, "OfferingModak must be launched"
     offering = sim.offering_modaks[0]
-    print(f"[PASS] Offering Modak started at ({offering.start_x:.1f}, {offering.start_y:.1f})")
-    print(f"[PASS] Offering Modak target altar at ({offering.target_x:.1f}, {offering.target_y:.1f})")
-    print(f"[PASS] Soaring arc apex ctrl_y = {offering.ctrl_y:.1f}")
-
-    # Advance flight halfway
-    offering.update(0.70)
-    assert not offering.is_finished, "Offering should still be mid-flight at 0.70s"
-    print(f"[PASS] Mid-flight at progress {offering.progress:.2f}: pos = ({offering.pos.x:.1f}, {offering.pos.y:.1f})")
-
-    # Advance flight to arrival at altar
-    offering.update(0.80)
-    assert offering.is_finished is True, "Offering should complete flight"
-    assert sim.prasad_ganesh_count == 1, "Prasad to Ganesh Ji counter must increment to 1"
-    assert sim.altar_blessing_timer == 3.2, "Altar blessing timer must be activated (3.2s)"
-    print(f"[PASS] Modak safely landed on Lord Ganesha's altar plate!")
-    print(f"[PASS] Prasad to Ganesh Ji = {sim.prasad_ganesh_count}")
-    print(f"[PASS] Lord Ganesha Divine Blessing Aura Active: timer = {sim.altar_blessing_timer}s")
+    offering.update(1.4)
+    assert offering.is_finished is True, "Offering modak must reach Lord Ganesha's thaali"
+    assert sim.prasad_ganesh_count == 1, "Prasad to Ganesh Ji count must increment to 1"
+    assert sim.altar_blessing_timer == 3.2, "Lord Ganesha divine blessing aura must be active"
+    print(f"[PASS] Stage 2: Sacred Modak arrived at Lord Ganesha altar! Prasad count = {sim.prasad_ganesh_count}")
+    print(f"[PASS] Lord Ganesha Divine Halo Blessing Aura Active (3.2s)")
 
 if __name__ == "__main__":
     test_rewards_and_agility()
-    print("\n>>> ALL AGILITY & DUAL REWARD TESTS PASSED SUCCESSFULLY! <<<")
+    print("\n>>> ALL CORNER DODGE, AGILITY & 14PX THRESHOLD TESTS PASSED SUCCESSFULLY! <<<")

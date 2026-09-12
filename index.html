@@ -268,7 +268,7 @@
       <div class="hud-value" id="hud-gravity">(0.00, -9.81, 0.00)</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Point Alignment (&le;26px)</div>
+      <div class="hud-label">Point Alignment (&le;14px Rare Catch)</div>
       <div class="hud-value" id="hud-mom">TRACKING</div>
     </div>
     <div class="hud-item">
@@ -368,11 +368,11 @@
       hudGravity.textContent = telemetry.gravityVectorStr;
 
       if (telemetry.pointsMatched) {
-        hudMom.textContent = "LOCKED! [SHIFT TO CATCH]";
+        hudMom.textContent = "14PX LOCKED! [PRESS SHIFT]";
         hudMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px)`;
+        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 14px)`;
         hudMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }
