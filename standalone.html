@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ganesh Chaturthi Anti-Gravity Field [AG-04] - Mom Follows Cursor & Shift Catch</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #090614;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    canvas {
+      display: block;
+      border-radius: 12px;
+      cursor: crosshair;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+    .pulse-glow {
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.8) !important;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+  </style>
+</head>
+<body class="p-4 flex flex-col items-center min-h-screen">
+
+  <!-- Header -->
+  <div class="w-full max-w-5xl flex justify-between items-center pb-3 mb-3 border-b border-purple-900/40">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-amber-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent">
+          🪔 Ganesh Chaturthi Catch Game
+        </h1>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/40">ZONE: AG-04</span>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">High-Agility Evasion &bull; Match body points (&le;26px) &amp; press <strong>Shift</strong> &bull; 🥟 Feed Aarav &amp; 🙏 Offer Prasad to Ganesh Ji</p>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <div class="px-3 py-1 rounded-full border border-amber-500/50 bg-amber-950/40 font-mono flex items-center gap-1.5">
+        <span class="text-amber-300">AGILITY:</span>
+        <span class="text-emerald-400 font-bold">EXPERT (Rare Catch)</span>
+      </div>
+      <div id="badge-status" class="px-3 py-1 rounded-full border border-purple-800 bg-purple-950/60 flex items-center gap-2 font-mono">
+        <span id="badge-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="badge-text" class="text-amber-400">1G NORMAL (-9.81 m/s²)</span>
+      </div>
+      <div class="px-3 py-1 rounded-full border border-purple-800 bg-purple-950/60 text-cyan-400 font-mono flex items-center gap-1.5">
+        <span>AUDIO:</span>
+        <span id="audio-label" class="font-bold">LIVE SYNTH</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulation Canvas -->
+  <div class="relative bg-slate-950/80 p-2 rounded-2xl border border-purple-900/50 shadow-2xl">
+    <canvas id="sim-canvas" width="980" height="580"></canvas>
+  </div>
+
+  <!-- Live Telemetry Dashboard -->
+  <div class="w-full max-w-5xl grid grid-cols-5 gap-3 mt-3">
+    <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Global Gravity Vector</div>
+      <div id="tele-gravity" class="text-base font-mono font-bold text-amber-300 mt-0.5">(0.00, -9.81, 0.00)</div>
+    </div>
+    <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Point Alignment (&le;26px)</div>
+      <div id="tele-mom" class="text-base font-mono font-bold text-emerald-400 mt-0.5">TRACKING</div>
+    </div>
+    <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Aarav State &amp; Score</div>
+      <div id="tele-boy" class="text-base font-mono font-bold text-cyan-300 mt-0.5">RUNNING | Caught: 0</div>
+    </div>
+    <div class="bg-purple-950/30 border border-amber-500/40 rounded-xl p-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🥟 Aarav Modaks Eaten</div>
+      <div id="tele-aarav-modak" class="text-base font-mono font-bold text-yellow-300 mt-0.5">0</div>
+    </div>
+    <div class="bg-amber-950/30 border border-amber-500/60 rounded-xl p-2.5">
+      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🙏 Prasad to Ganesh Ji</div>
+      <div id="tele-ganesh-prasad" class="text-base font-mono font-bold text-amber-400 mt-0.5">0</div>
+    </div>
+  </div>
+
+  <!-- Quick Action Controls -->
+  <div class="w-full max-w-5xl flex flex-wrap justify-center gap-2 mt-3">
+    <button id="btn-catch" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white font-bold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95">
+      <span>⚡ CATCH AARAV</span>
+      <span class="bg-black/30 text-emerald-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">Shift</span>
+    </button>
+    <button id="btn-toggle-ag" class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95">
+      <span>🌌 Toggle AG-04 Field</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">Space</span>
+    </button>
+    <button id="btn-fan-left" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>💨 West Wind Turbine</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">Q</span>
+    </button>
+    <button id="btn-fan-right" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>💨 East Wind Turbine</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">E</span>
+    </button>
+    <button id="btn-spawn-modak" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>🥟 Offer Modak</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">M</span>
+    </button>
+    <button id="btn-spawn-diya" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>🪔 Light Diya</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">D</span>
+    </button>
+    <button id="btn-debug" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>🎯 Debug Vectors</span>
+      <span class="bg-black/30 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">V</span>
+    </button>
+    <button id="btn-audio" class="px-3.5 py-2 rounded-lg bg-purple-900/40 hover:bg-purple-800/50 border border-purple-700/60 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+      <span>🔔 Sound FX</span>
+    </button>
+  </div>
+
+  <!-- Interactive Mechanics Guide -->
+  <div class="w-full max-w-5xl mt-3 p-3 bg-purple-950/20 border border-purple-900/40 rounded-xl text-xs text-slate-400">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="border-l-2 border-rose-500/60 pl-3">
+        <span class="text-rose-300 font-semibold block mb-0.5">1. Mom Follows Cursor</span>
+        Move your mouse — Mom (Priya) moves and reaches towards the cursor, following your lead across the courtyard.
+      </div>
+      <div class="border-l-2 border-cyan-500/60 pl-3">
+        <span class="text-cyan-300 font-semibold block mb-0.5">2. Aarav Runs Automatically</span>
+        Aarav runs automatically, leaping, dodging, floating when AG-04 engages, and enjoying festive modaks.
+      </div>
+      <div class="border-l-2 border-emerald-500/60 pl-3">
+        <span class="text-emerald-300 font-semibold block mb-0.5">3. Align Points &amp; Press Shift</span>
+        Match the glowing small point on Mom's hands with the target point on Aarav's chest. When the green lock-on beam lights up, press <strong>SHIFT</strong> to catch him!
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. VECTOR2 MATHEMATICS
+    // ==========================================
+    class Vector2 {
+      constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+      set(x, y) { this.x = x; this.y = y; return this; }
+      copy(v) { this.x = v.x; this.y = v.y; return this; }
+      clone() { return new Vector2(this.x, this.y); }
+      add(v) { this.x += v.x; this.y += v.y; return this; }
+      sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+      multiplyScalar(s) { this.x *= s; this.y *= s; return this; }
+      length() { return Math.hypot(this.x, this.y); }
+      normalize() {
+        const len = this.length();
+        if (len > 0.00001) { this.x /= len; this.y /= len; }
+        else { this.x = 0; this.y = 0; }
+        return this;
+      }
+      distanceTo(v) { return Math.hypot(this.x - v.x, this.y - v.y); }
+    }
+
+    // ==========================================
+    // 2. PROCEDURAL WEB AUDIO API ENGINE
+    // ==========================================
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = false;
+        this.isInitialized = false;
+        this.droneMaster = null;
+        this.droneFilter = null;
+        this.chimeMaster = null;
+        this.chimeDelay = null;
+        this.windGain = null;
+        this.chimeNotes = [528, 594, 660, 792, 880, 1056, 1188];
+        this.chimeInterval = null;
+        this.agState = 0;
+      }
+
+      init() {
+        if (this.isInitialized) return;
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+          const t = this.ctx.currentTime;
+
+          // Drone Master
+          this.droneMaster = this.ctx.createGain();
+          this.droneMaster.gain.setValueAtTime(0.20, t);
+
+          this.droneFilter = this.ctx.createBiquadFilter();
+          this.droneFilter.type = "lowpass";
+          this.droneFilter.frequency.setValueAtTime(260, t);
+          this.droneFilter.Q.setValueAtTime(3.5, t);
+
+          // 108 Hz (Sacred Root), 162 Hz (Fifth), 216 Hz (Octave)
+          const osc1 = this.ctx.createOscillator(); osc1.type = "sawtooth"; osc1.frequency.setValueAtTime(108, t);
+          const osc2 = this.ctx.createOscillator(); osc2.type = "triangle"; osc2.frequency.setValueAtTime(162, t);
+          const osc3 = this.ctx.createOscillator(); osc3.type = "sine";     osc3.frequency.setValueAtTime(216, t);
+
+          const lfo = this.ctx.createOscillator(); lfo.frequency.setValueAtTime(0.18, t);
+          const lfoGain = this.ctx.createGain(); lfoGain.gain.setValueAtTime(45, t);
+          lfo.connect(lfoGain);
+          lfoGain.connect(this.droneFilter.frequency);
+
+          osc1.connect(this.droneFilter);
+          osc2.connect(this.droneFilter);
+          osc3.connect(this.droneFilter);
+          this.droneFilter.connect(this.droneMaster);
+          this.droneMaster.connect(this.ctx.destination);
+
+          osc1.start(); osc2.start(); osc3.start(); lfo.start();
+
+          // Chime System
+          this.chimeMaster = this.ctx.createGain();
+          this.chimeMaster.gain.setValueAtTime(0.0, t);
+          this.chimeDelay = this.ctx.createDelay();
+          this.chimeDelay.delayTime.setValueAtTime(0.38, t);
+          const feedback = this.ctx.createGain();
+          feedback.gain.setValueAtTime(0.40, t);
+          this.chimeDelay.connect(feedback);
+          feedback.connect(this.chimeDelay);
+          this.chimeDelay.connect(this.chimeMaster);
+          this.chimeMaster.connect(this.ctx.destination);
+
+          // Wind Sound
+          const bufferSize = this.ctx.sampleRate * 2;
+          const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const out = noiseBuffer.getChannelData(0);
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            out[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.08;
+            b6 = white * 0.115926;
+          }
+          const whiteNoise = this.ctx.createBufferSource();
+          whiteNoise.buffer = noiseBuffer;
+          whiteNoise.loop = true;
+          const windFilter = this.ctx.createBiquadFilter();
+          windFilter.type = "bandpass";
+          windFilter.frequency.setValueAtTime(420, t);
+          this.windGain = this.ctx.createGain();
+          this.windGain.gain.setValueAtTime(0.0, t);
+          whiteNoise.connect(windFilter);
+          windFilter.connect(this.windGain);
+          this.windGain.connect(this.ctx.destination);
+          whiteNoise.start();
+
+          this.isInitialized = true;
+        } catch(e) { console.warn("Audio init deferred", e); }
+      }
+
+      resume() {
+        if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+      }
+
+      setAntiGravityTransition(progress) {
+        if (!this.isInitialized || !this.ctx) return;
+        this.agState = progress;
+        const t = this.ctx.currentTime;
+        this.droneFilter.frequency.setTargetAtTime(260 + progress * 1540, t, 0.1);
+        this.chimeMaster.gain.setTargetAtTime(this.isMuted ? 0 : progress * 0.35, t, 0.1);
+
+        if (progress > 0.4 && !this.chimeInterval) {
+          this.chimeInterval = setInterval(() => {
+            if (this.agState > 0.3 && !this.isMuted) {
+              const note = this.chimeNotes[Math.floor(Math.random() * this.chimeNotes.length)];
+              this.playChime(note, 0.28);
+            }
+          }, 460);
+        } else if (progress <= 0.2 && this.chimeInterval) {
+          clearInterval(this.chimeInterval);
+          this.chimeInterval = null;
+        }
+      }
+
+      playChime(freq, gainLevel = 0.25) {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const harm = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const harmGain = this.ctx.createGain();
+
+        osc.type = "sine"; osc.frequency.setValueAtTime(freq, t);
+        harm.type = "triangle"; harm.frequency.setValueAtTime(freq * 2.76, t);
+        harmGain.gain.setValueAtTime(gainLevel * 0.2, t);
+        gain.gain.setValueAtTime(gainLevel, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+
+        osc.connect(gain);
+        harm.connect(harmGain);
+        harmGain.connect(gain);
+        gain.connect(this.chimeMaster);
+        gain.connect(this.chimeDelay);
+
+        osc.start(t); harm.start(t);
+        osc.stop(t + 2.3); harm.stop(t + 2.3);
+      }
+
+      playDashWhoosh(mag = 500) {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+        osc.type = "sawtooth"; osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.35);
+        filter.type = "bandpass"; filter.frequency.setValueAtTime(900, t);
+        filter.frequency.exponentialRampToValueAtTime(250, t + 0.35); filter.Q.setValueAtTime(3.5, t);
+        gain.gain.setValueAtTime(Math.min(0.35, mag * 0.0006), t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.36);
+        osc.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + 0.38);
+      }
+
+      playLeverClick() {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "square"; osc.frequency.setValueAtTime(440, t);
+        osc.frequency.exponentialRampToValueAtTime(110, t + 0.12);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + 0.15);
+      }
+
+      setWindVolume(count) {
+        if (!this.ctx || !this.windGain) return;
+        this.windGain.gain.setTargetAtTime(this.isMuted ? 0 : Math.min(0.25, count * 0.12), this.ctx.currentTime, 0.2);
+      }
+
+      playBounce() {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine"; osc.frequency.setValueAtTime(880 + Math.random() * 200, t);
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + 0.22);
+      }
+
+      playModakMunch() {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        for (let i = 0; i < 3; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sine";
+          const st = t + i * 0.085;
+          osc.frequency.setValueAtTime(440 + i * 80, st);
+          osc.frequency.exponentialRampToValueAtTime(180, st + 0.07);
+          gain.gain.setValueAtTime(0.22, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.075);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(st); osc.stop(st + 0.08);
+        }
+      }
+
+      playDivineBlessingChime() {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        [528, 792, 1056, 1320].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const harm = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const harmGain = this.ctx.createGain();
+          const st = t + idx * 0.08;
+          osc.type = "sine"; osc.frequency.setValueAtTime(f, st);
+          harm.type = "triangle"; harm.frequency.setValueAtTime(f * 2.76, st);
+          const lvl = 0.26 / (idx + 1);
+          harmGain.gain.setValueAtTime(lvl * 0.35, st);
+          gain.gain.setValueAtTime(lvl, st);
+          gain.gain.exponentialRampToValueAtTime(0.0001, st + 3.2);
+          osc.connect(gain); harm.connect(harmGain); harmGain.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st); harm.start(st); osc.stop(st + 3.3); harm.stop(st + 3.3);
+        });
+      }
+
+      toggleMute() {
+        this.isMuted = !this.isMuted;
+        if (this.ctx && this.droneMaster) {
+          this.droneMaster.gain.setValueAtTime(this.isMuted ? 0 : 0.20, this.ctx.currentTime);
+          this.chimeMaster.gain.setValueAtTime(this.isMuted ? 0 : this.agState * 0.35, this.ctx.currentTime);
+        }
+        return this.isMuted;
+      }
+    }
+
+    // ==========================================
+    // 3. PARTICLE FX SYSTEM
+    // ==========================================
+    class ParticleSystem {
+      constructor(w, h) {
+        this.w = w; this.h = h;
+        this.motes = [];
+        this.petals = [];
+        this.waves = [];
+        this.trails = [];
+        this.winds = [];
+        this.sparkles = [];
+        for (let i = 0; i < 80; i++) {
+          this.motes.push({
+            x: Math.random() * w, y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 15, vy: -10 - Math.random() * 20,
+            size: 1 + Math.random() * 2, phase: Math.random() * Math.PI * 2,
+            speed: 0.8 + Math.random() * 1.5, alpha: 0.3 + Math.random() * 0.6
+          });
+        }
+        for (let i = 0; i < 40; i++) {
+          this.petals.push({
+            x: Math.random() * w, y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 30,
+            size: 6 + Math.random() * 7, angle: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 1.6, phase: Math.random() * Math.PI * 2,
+            alpha: 0.4 + Math.random() * 0.5, hue: 335 + Math.random() * 25
+          });
+        }
+      }
+
+      addWave(x, y, maxR = 130, intensity = 1.0) {
+        this.waves.push({ x, y, r: 5, maxR, intensity, alpha: 0.85, speed: 180 });
+      }
+
+      addTrail(x, y, vx, vy) {
+        for (let i = 0; i < 3; i++) {
+          this.trails.push({
+            x: x + (Math.random() - 0.5) * 12, y: y + (Math.random() - 0.5) * 12,
+            vx: -vx * 0.2 + (Math.random() - 0.5) * 30, vy: -vy * 0.2 + (Math.random() - 0.5) * 30,
+            size: 3 + Math.random() * 3, life: 1.0, decay: 2.4
+          });
+        }
+      }
+
+      addWind(x, y, dirX, dirY) {
+        this.winds.push({
+          x: x + (Math.random() - 0.5) * 10, y: y + (Math.random() - 0.5) * 24,
+          vx: dirX * (360 + (Math.random() - 0.5) * 60), vy: dirY * 200,
+          len: 12 + Math.random() * 16, life: 1.0, decay: 1.4
+        });
+      }
+
+      addSparkle(x, y, color = "#fbbf24") {
+        for (let i = 0; i < 3; i++) {
+          this.sparkles.push({
+            x, y, vx: (Math.random() - 0.5) * 50, vy: (Math.random() - 0.5) * 50,
+            size: 2 + Math.random() * 2.5, color, life: 1.0, decay: 2.2
+          });
+        }
+      }
+
+      update(dt, agFactor, cx, cy, isCursorActive) {
+        for (const m of this.motes) {
+          m.phase += dt * m.speed;
+          m.x += m.vx * dt + Math.sin(m.phase) * 10 * dt;
+          m.y += (m.vy + (agFactor > 0.05 ? -40 * agFactor : -10)) * dt;
+          if (m.y < -10) m.y = this.h + 10;
+          if (m.x < -10) m.x = this.w + 10;
+          if (m.x > this.w + 10) m.x = -10;
+        }
+        for (const p of this.petals) {
+          p.phase += dt * 1.5;
+          p.angle += p.vRot * dt;
+          p.x += (p.vx + Math.sin(p.phase) * 20) * dt;
+          p.y += (p.vy + (agFactor > 0.05 ? -85 * agFactor : -15)) * dt;
+          if (p.y < -25) p.y = this.h + 25;
+          if (p.x < -25) p.x = this.w + 25;
+          if (p.x > this.w + 25) p.x = -25;
+        }
+        for (let i = this.waves.length - 1; i >= 0; i--) {
+          const w = this.waves[i];
+          w.r += w.speed * dt;
+          w.alpha -= dt * (w.speed / w.maxR);
+          if (w.r >= w.maxR || w.alpha <= 0) this.waves.splice(i, 1);
+        }
+        if (isCursorActive && Math.random() < 0.22) {
+          this.waves.push({ x: cx, y: cy, r: 8, maxR: 110, intensity: 0.6, alpha: 0.45, speed: 90 });
+        }
+        for (let i = this.trails.length - 1; i >= 0; i--) {
+          const t = this.trails[i];
+          t.x += t.vx * dt; t.y += t.vy * dt; t.life -= t.decay * dt;
+          if (t.life <= 0) this.trails.splice(i, 1);
+        }
+        for (let i = this.winds.length - 1; i >= 0; i--) {
+          const w = this.winds[i];
+          w.x += w.vx * dt; w.y += w.vy * dt; w.life -= w.decay * dt;
+          if (w.life <= 0 || w.x < 0 || w.x > this.w) this.winds.splice(i, 1);
+        }
+        for (let i = this.sparkles.length - 1; i >= 0; i--) {
+          const s = this.sparkles[i];
+          s.x += s.vx * dt; s.y += s.vy * dt; s.life -= s.decay * dt;
+          if (s.life <= 0) this.sparkles.splice(i, 1);
+        }
+      }
+
+      draw(ctx, agFactor) {
+        ctx.save();
+        for (const m of this.motes) {
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.size * (1 + agFactor * 0.4), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(251, 191, 36, ${m.alpha})`;
+          ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 5 * (1 + agFactor);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        for (const p of this.petals) {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          ctx.beginPath();
+          ctx.moveTo(0, -p.size);
+          ctx.bezierCurveTo(p.size * 0.7, -p.size * 0.2, p.size * 0.6, p.size * 0.7, 0, p.size);
+          ctx.bezierCurveTo(-p.size * 0.6, p.size * 0.7, -p.size * 0.7, -p.size * 0.2, 0, -p.size);
+          ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${p.alpha})`;
+          ctx.shadowColor = `hsl(${p.hue}, 90%, 65%)`; ctx.shadowBlur = agFactor > 0.1 ? 6 : 2;
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.shadowBlur = 0;
+
+        ctx.lineWidth = 1.8;
+        for (const w of this.winds) {
+          ctx.strokeStyle = `rgba(253, 224, 71, ${w.life * 0.55})`;
+          ctx.beginPath();
+          ctx.moveTo(w.x, w.y);
+          ctx.lineTo(w.x - Math.sign(w.vx) * w.len, w.y);
+          ctx.stroke();
+        }
+
+        for (const t of this.trails) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(251, 191, 36, ${t.life * 0.8})`;
+          ctx.fill();
+        }
+
+        for (const s of this.sparkles) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.fill();
+        }
+
+        for (const w of this.waves) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(w.x, w.y, Math.max(1, w.r - 2), 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${w.alpha * 0.35 * w.intensity})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(251, 191, 36, ${w.alpha * 0.65 * w.intensity})`;
+          ctx.shadowColor = "#38bdf8"; ctx.shadowBlur = 10 * w.intensity;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(w.x, w.y, w.r + 2.5, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(244, 63, 94, ${w.alpha * 0.35 * w.intensity})`;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    // ==========================================
+    // 4. ENTITIES (BOY - AUTOMATIC, MOM - FOLLOWS CURSOR)
+    // ==========================================
+    class Boy {
+      constructor(x, y) {
+        this.pos = new Vector2(x, y);
+        this.vel = new Vector2(170, 0);
+        this.acc = new Vector2(0, 0);
+        this.state = "RUNNING";
+        this.facing = 1;
+        this.angle = 0;
+        this.dashTimer = 0;
+        this.dashCooldown = 0;
+        this.floatingMomentum = new Vector2(0, 0);
+        this.runSpeed = 215;
+        this.dangerZoneRadius = 115;
+        this.alignReflexTimer = 0;
+        this.autoHopTimer = 1.6;
+        this.turnTimer = 3.5;
+
+        // Catch target point on Aarav's chest
+        this.targetPoint = new Vector2(x, y - 18);
+        this.isPointMatched = false;
+
+        // Caught & Modak Reward state
+        this.isCaught = false;
+        this.caughtTimer = 0;
+        this.caughtCount = 0;
+        this.modaksEatenCount = 0;
+        this.isEating = false;
+
+        this.speechText = "";
+        this.speechTimer = 0;
+      }
+
+      say(text, duration = 1.8) {
+        this.speechText = text;
+        this.speechTimer = duration;
+      }
+
+      triggerCaught(mom) {
+        this.isCaught = true;
+        this.caughtTimer = 3.6; // Extended celebration for eating & offering
+        this.state = "CAUGHT";
+        this.caughtCount++;
+        this.modaksEatenCount++;
+        this.isEating = true;
+        this.vel.set(0, 0);
+        this.facing = Math.sign(mom.pos.x - this.pos.x) || 1;
+        const caughtDialogues = [
+          "Mmm! Ma's modaks are the best! 🥟❤️",
+          "Delicious! Thank you, Ma! 🥟✨",
+          "Yummy! So sweet and warm! 🥟😋"
+        ];
+        this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.0);
+      }
+
+      update(dt, phys, part, audio, mom) {
+        this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+        if (this.speechTimer > 0) {
+          this.speechTimer -= dt;
+          if (this.speechTimer <= 0) this.speechText = "";
+        }
+
+        if (this.isCaught) {
+          this.caughtTimer -= dt;
+          this.state = "CAUGHT";
+          this.pos.y = phys.isAntiGravity ? mom.pos.y : phys.groundY;
+          this.pos.x = mom.pos.x + (this.facing === 1 ? -18 : 18);
+
+          // Transition to Stage 2: Praising Ganesh Ji
+          if (this.caughtTimer < 2.0 && this.caughtTimer > 0.4 && this.speechTimer <= 0) {
+            this.say("Ganpati Bappa Morya! 🙏✨", 1.8);
+          }
+
+          if (this.caughtTimer <= 0) {
+            this.isCaught = false;
+            this.isEating = false;
+            this.state = phys.isAntiGravity ? "FLOATING" : "RUNNING";
+            this.facing = Math.random() < 0.5 ? 1 : -1;
+            this.vel.set(this.facing * this.runSpeed * 1.45, -370);
+            this.say("Full of energy now! Catch me if you can! 🚀", 1.8);
+            audio.playDashWhoosh(520);
+            part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+          }
+          this.targetPoint.set(this.pos.x, this.pos.y - 18);
+          return;
+        }
+
+        // High-Agility Evasion AI: Sensing Mom's approach!
+        const distToMomCatch = this.pos.distanceTo(mom.catchPoint);
+        const escapeDirX = Math.sign(this.pos.x - mom.pos.x) || this.facing;
+
+        if (distToMomCatch < this.dangerZoneRadius) {
+          if (!phys.isAntiGravity && this.pos.y >= phys.groundY - 30) {
+            if (distToMomCatch < 88 && this.dashCooldown <= 0) {
+              this.vel.y = -375 - Math.random() * 55;
+              this.vel.x = escapeDirX * 290;
+              this.facing = escapeDirX;
+              this.dashCooldown = 0.85;
+              part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+              audio.playDashWhoosh(420);
+              const quips = ["Too slow, Ma! 💨", "Wheee! Almost! ✨", "Hehe, can't catch me! 🥟", "Zoom! 🪔"];
+              this.say(quips[Math.floor(Math.random() * quips.length)], 1.1);
+            } else {
+              this.acc.x += escapeDirX * 680;
+              this.facing = escapeDirX;
+            }
+          } else if (phys.isAntiGravity) {
+            this.acc.x += escapeDirX * 590;
+            this.acc.y += (this.pos.y < mom.pos.y ? -190 : 190);
+            this.facing = escapeDirX;
+          }
+        }
+
+        // Reflex Escape: If points are closely matched (<= 26px), start reflex timer!
+        if (distToMomCatch <= 26) {
+          this.alignReflexTimer += dt;
+          if (this.alignReflexTimer >= 0.28) {
+            this.vel.x = escapeDirX * 360;
+            this.vel.y = -260;
+            this.facing = escapeDirX;
+            this.alignReflexTimer = 0;
+            this.dashCooldown = 0.9;
+            this.say("Whoa, close one! 💨", 1.2);
+            audio.playDashWhoosh(480);
+            part.addWave(this.pos.x, this.pos.y, 80, 0.7);
+          }
+        } else {
+          this.alignReflexTimer = 0;
+        }
+
+        // Automatic Running AI
+        this.autoHopTimer -= dt;
+        this.turnTimer -= dt;
+
+        if (!phys.isAntiGravity && this.state === "RUNNING" && this.autoHopTimer <= 0) {
+          this.vel.y = -280 - Math.random() * 80;
+          this.autoHopTimer = 2.0 + Math.random() * 2.5;
+        }
+
+        if (this.pos.x < 110) { this.facing = 1; this.turnTimer = 3.5; }
+        else if (this.pos.x > phys.w - 110) { this.facing = -1; this.turnTimer = 3.5; }
+        else if (this.turnTimer <= 0) { this.facing *= -1; this.turnTimer = 3.5 + Math.random() * 4.0; }
+
+        const desiredVx = this.facing * this.runSpeed;
+        this.acc.x += (desiredVx - this.vel.x) * 4.8;
+
+        if (phys.isAntiGravity || this.pos.y < phys.groundY - 25) {
+          this.state = "FLOATING";
+          const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.4 * this.facing;
+          this.angle += (targetAngle - this.angle) * 6 * dt;
+        } else {
+          this.state = "RUNNING";
+          this.angle += (0 - this.angle) * 10 * dt;
+        }
+
+        this.vel.add(this.acc.clone().multiplyScalar(dt));
+        this.pos.add(this.vel.clone().multiplyScalar(dt));
+        this.acc.set(0, 0);
+
+        // Bounds
+        if (this.pos.x < 55) { this.pos.x = 55; this.vel.x *= -0.6; this.facing = 1; }
+        else if (this.pos.x > phys.w - 55) { this.pos.x = phys.w - 55; this.vel.x *= -0.6; this.facing = -1; }
+        if (this.pos.y < 50) { this.pos.y = 50; this.vel.y = Math.max(0, this.vel.y * -0.4); }
+        else if (this.pos.y > phys.groundY) {
+          this.pos.y = phys.groundY; this.vel.y = 0;
+          if (!this.isCaught) this.state = "RUNNING";
+        }
+
+        this.targetPoint.set(this.pos.x, this.pos.y - 18);
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+
+        if (this.speechText) {
+          this.drawBubble(ctx, this.speechText, "#fbbf24", "#1e1b4b", -65);
+        }
+
+        ctx.rotate(this.angle);
+        ctx.scale(this.facing, 1);
+
+        if (this.isCaught) {
+          ctx.beginPath(); ctx.arc(0, -14, 30, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(251, 191, 36, 0.35)";
+          ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 18; ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        // Floating Scarf (Angavastram)
+        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 4;
+        ctx.beginPath();
+        const wave = Math.sin(Date.now() * 0.008) * 8;
+        ctx.moveTo(-6, -18);
+        ctx.bezierCurveTo(-18, -10 + wave, -30, -16 - wave, -42, -18 + wave * 1.5);
+        ctx.stroke();
+
+        // Kurta (Saffron Orange)
+        ctx.fillStyle = "#ea580c";
+        ctx.beginPath(); ctx.roundRect(-10, -22, 20, 24, 5); ctx.fill();
+        ctx.strokeStyle = "#fef08a"; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Dhoti / Legs
+        ctx.fillStyle = "#fef3c7";
+        if (this.state === "RUNNING" && !this.isCaught) {
+          const legRun = Math.sin(Date.now() * 0.02) * 8;
+          ctx.fillRect(-8, 2, 6, 14 + legRun); ctx.fillRect(2, 2, 6, 14 - legRun);
+        } else {
+          ctx.fillRect(-8, 2, 6, 14); ctx.fillRect(2, 2, 6, 14);
+        }
+
+        // Arms
+        ctx.fillStyle = "#fbd38d";
+        if (this.isCaught) {
+          ctx.fillRect(6, -24, 14, 6);
+          ctx.beginPath(); ctx.arc(20, -22, 5, 0, Math.PI * 2);
+          ctx.fillStyle = "#fbbf24"; ctx.fill(); // holding modak
+        } else {
+          const armSwing = Math.sin(Date.now() * 0.02) * 5;
+          ctx.fillRect(8, -16 + armSwing, 6, 12); ctx.fillRect(-12, -16 - armSwing, 6, 12);
+        }
+
+        // Head & Hair
+        ctx.beginPath(); ctx.arc(0, -30, 11, 0, Math.PI * 2);
+        ctx.fillStyle = "#fbd38d"; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -34, 11, Math.PI, Math.PI * 2);
+        ctx.fillStyle = "#1e1b4b"; ctx.fill();
+
+        // Tilak
+        ctx.fillStyle = "#dc2626"; ctx.fillRect(3, -34, 2, 4);
+
+        // Eyes & Mouth / Eating Animation
+        ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.arc(4, -30, 1.8, 0, Math.PI * 2); ctx.fill();
+
+        if (this.isCaught) {
+          const chew = Math.abs(Math.sin(Date.now() * 0.022)) * 2.2;
+          ctx.beginPath(); ctx.ellipse(4, -26, 2.8, chew + 1.2, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "#991b1b"; ctx.fill();
+
+          ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.ellipse(12, -26, 4.5, 3.5, 0.2, 0, Math.PI * 2);
+          ctx.fill(); ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1; ctx.stroke();
+
+          ctx.fillStyle = "#f43f5e"; ctx.font = "bold 10px sans-serif";
+          ctx.fillText("❤️", 8, -44 + Math.sin(Date.now() * 0.008) * 3);
+        } else {
+          ctx.beginPath(); ctx.arc(4, -26, 3.5, 0.1, Math.PI - 0.2);
+          ctx.strokeStyle = "#991b1b"; ctx.lineWidth = 1.2; ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // DRAW BODY TARGET POINT (Cyan / Green glowing jewel)
+        ctx.save();
+        const tp = this.targetPoint;
+        const matched = this.isPointMatched;
+        const pulse = Math.sin(Date.now() * 0.008) * 2;
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, (matched ? 11 : 6.5) + pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = matched ? "#22c55e" : "#38bdf8";
+        ctx.lineWidth = matched ? 2.5 : 1.5;
+        if (matched) ctx.setLineDash([3, 3]);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, matched ? 4.5 : 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = matched ? "#4ade80" : "#38bdf8";
+        ctx.shadowColor = matched ? "#22c55e" : "#0284c7";
+        ctx.shadowBlur = matched ? 14 : 7;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      drawBubble(ctx, text, bg, color, yOffset) {
+        ctx.save();
+        ctx.font = "bold 11px sans-serif";
+        const w = ctx.measureText(text).width + 16;
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.roundRect(-w / 2, yOffset, w, 22, 6); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-4, yOffset + 22); ctx.lineTo(0, yOffset + 28); ctx.lineTo(4, yOffset + 22); ctx.fill();
+        ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(text, 0, yOffset + 11);
+        ctx.restore();
+      }
+    }
+
+    class Mom {
+      constructor(x, y) {
+        this.pos = new Vector2(x, y);
+        this.facing = 1;
+        this.state = "FOLLOWING_CURSOR";
+        this.reachArm = 0;
+        this.reachUp = false;
+        this.isHugging = false;
+        this.hugTimer = 0;
+
+        // Mom's Catch Hand Point
+        this.catchPoint = new Vector2(x + 22, y - 44);
+        this.isPointMatched = false;
+
+        this.speechText = "";
+        this.speechTimer = 0;
+      }
+
+      say(text, duration = 1.8) {
+        this.speechText = text;
+        this.speechTimer = duration;
+      }
+
+      triggerCatchSuccess(boy) {
+        this.isHugging = true;
+        this.hugTimer = 3.6;
+        this.state = "HUGGING";
+        this.reachArm = 1.0;
+        const dialogues = [
+          "Gotcha! Here is a sweet modak for you, Aarav! 🥟❤️",
+          "Caught you! Eat this fresh modak, beta! 🥟✨",
+          "My sweet little hero! Here is your modak treat! 🥟💖"
+        ];
+        this.say(dialogues[Math.floor(Math.random() * dialogues.length)], 2.0);
+      }
+
+      update(dt, cursorPos, isCursorActive, phys, audio, boy) {
+        if (this.speechTimer > 0) {
+          this.speechTimer -= dt;
+          if (this.speechTimer <= 0) this.speechText = "";
+        }
+
+        if (this.isHugging) {
+          this.hugTimer -= dt;
+          if (this.hugTimer < 2.0 && this.hugTimer > 0.4 && this.speechTimer <= 0) {
+            this.say("And a sacred modak for Lord Ganesha! Ganpati Bappa Morya! 🙏", 1.8);
+          }
+          if (this.hugTimer <= 0) {
+            this.isHugging = false;
+            this.state = "FOLLOWING_CURSOR";
+          }
+          this.updateCatchPoint(phys);
+          return;
+        }
+
+        // Mom follows the cursor!
+        if (isCursorActive) {
+          const dx = cursorPos.x - this.pos.x;
+          this.facing = Math.sign(dx) || 1;
+          const distToCursorX = Math.abs(dx);
+          if (distToCursorX > 6) {
+            const moveSpeed = Math.min(260, distToCursorX * 4.5);
+            this.pos.x += Math.sign(dx) * moveSpeed * dt;
+          }
+
+          if (phys.isAntiGravity) {
+            const targetY = Math.max(80, Math.min(phys.groundY, cursorPos.y));
+            this.pos.y += (targetY - this.pos.y) * 3.5 * dt;
+            this.reachUp = cursorPos.y < this.pos.y - 20;
+          } else {
+            this.pos.y += (phys.groundY - this.pos.y) * 10 * dt;
+            this.reachUp = cursorPos.y < phys.groundY - 40;
+          }
+
+          const distToBoy = this.pos.distanceTo(boy.pos);
+          if (distToBoy < 95) this.reachArm = Math.min(1.0, this.reachArm + dt * 5);
+          else this.reachArm = Math.max(0, this.reachArm - dt * 2.5);
+
+          this.state = "FOLLOWING_CURSOR";
+        }
+
+        this.pos.x = Math.max(65, Math.min(phys.w - 65, this.pos.x));
+        this.updateCatchPoint(phys);
+      }
+
+      updateCatchPoint(phys) {
+        if (this.reachUp) {
+          this.catchPoint.set(this.pos.x + this.facing * 14, this.pos.y - 68);
+        } else {
+          this.catchPoint.set(this.pos.x + this.facing * 24, this.pos.y - 44);
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+
+        if (this.speechText) {
+          this.drawBubble(ctx, this.speechText, "#e11d48", "#ffffff", -95);
+        }
+
+        ctx.scale(this.facing, 1);
+        const bob = (this.state === "FOLLOWING_CURSOR") ? Math.sin(Date.now() * 0.016) * 3 : 0;
+
+        // Saree
+        ctx.fillStyle = "#9f1239";
+        ctx.beginPath(); ctx.moveTo(-12, -45 + bob); ctx.lineTo(12, -45 + bob);
+        ctx.lineTo(18, 0); ctx.lineTo(-18, 0); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 3; ctx.stroke();
+
+        // Pallu
+        ctx.fillStyle = "#e11d48";
+        ctx.beginPath(); ctx.moveTo(-4, -48 + bob); ctx.bezierCurveTo(-18, -35, -24, -15, -16, 0);
+        ctx.lineTo(-22, 0); ctx.bezierCurveTo(-30, -20, -22, -45, -8, -50 + bob); ctx.fill();
+
+        // Arms reaching
+        ctx.fillStyle = "#fbd38d";
+        if (this.isHugging) {
+          ctx.save(); ctx.rotate(-0.35); ctx.fillRect(6, -46, 26, 7);
+          ctx.fillStyle = "#fbbf24"; ctx.fillRect(24, -47, 4, 9);
+          // Sweet Modak in feeding hand
+          ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.ellipse(32, -43, 5.5, 4, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1; ctx.stroke();
+          ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(32, -45, 1.5, 0, Math.PI * 2); ctx.fill();
+          if (this.hugTimer < 2.0) {
+            ctx.fillStyle = "#fbd38d"; ctx.fillRect(-12, -48, 8, 16);
+          }
+          ctx.restore();
+        } else if (this.reachUp) {
+          ctx.save(); ctx.rotate(-1.25); ctx.fillRect(4, -48, 26, 6);
+          ctx.fillStyle = "#fbbf24"; ctx.fillRect(22, -49, 4, 8); ctx.restore();
+        } else if (this.reachArm > 0) {
+          ctx.save(); ctx.rotate(-0.65 * this.reachArm); ctx.fillRect(8, -48, 26, 6);
+          ctx.fillStyle = "#fbbf24"; ctx.fillRect(24, -49, 4, 8); ctx.restore();
+        } else {
+          ctx.fillRect(6, -45, 6, 20);
+          ctx.fillStyle = "#fbbf24"; ctx.fillRect(6, -32, 6, 4);
+        }
+
+        // Head, Bun & Gajra
+        ctx.beginPath(); ctx.arc(0, -60 + bob, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.arc(0, -64 + bob, 12, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-11, -63 + bob, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.arc(-11, -63 + bob, 9, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(5, -62 + bob, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        // DRAW MOM'S CATCH HAND POINT (Golden / Green glowing jewel)
+        ctx.save();
+        const cp = this.catchPoint;
+        const matched = this.isPointMatched;
+        const pulse = Math.sin(Date.now() * 0.008) * 2;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, (matched ? 11 : 6.5) + pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = matched ? "#22c55e" : "#fbbf24";
+        ctx.lineWidth = matched ? 2.5 : 1.5;
+        if (matched) ctx.setLineDash([3, 3]);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, matched ? 4.5 : 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = matched ? "#4ade80" : "#fbbf24";
+        ctx.shadowColor = matched ? "#22c55e" : "#f59e0b";
+        ctx.shadowBlur = matched ? 14 : 7;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      drawBubble(ctx, text, bg, color, yOffset) {
+        ctx.save();
+        ctx.font = "bold 11px sans-serif";
+        const w = ctx.measureText(text).width + 16;
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.roundRect(-w / 2, yOffset, w, 22, 6); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-4, yOffset + 22); ctx.lineTo(0, yOffset + 28); ctx.lineTo(4, yOffset + 22); ctx.fill();
+        ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(text, 0, yOffset + 11);
+        ctx.restore();
+      }
+    }
+
+    class Toran {
+      constructor(sx, sy, ex, ey, segs = 16) {
+        this.nodes = []; this.segs = segs;
+        this.restLen = (ex - sx) / segs;
+        for (let i = 0; i <= segs; i++) {
+          const t = i / segs;
+          const x = sx + (ex - sx) * t;
+          const y = sy + (ey - sy) * t + Math.sin(t * Math.PI) * 22;
+          this.nodes.push({
+            x, y, oldX: x, oldY: y, pinned: i === 0 || i === segs,
+            isFlower: i % 2 === 1, color: i % 4 === 1 ? "#f97316" : "#eab308"
+          });
+        }
+      }
+
+      update(dt, gravY, windX = 0) {
+        for (const n of this.nodes) {
+          if (n.pinned) continue;
+          const vx = (n.x - n.oldX) * 0.96; const vy = (n.y - n.oldY) * 0.96;
+          n.oldX = n.x; n.oldY = n.y;
+          n.x += vx + windX * dt * dt;
+          n.y += vy + gravY * 0.45 * dt * dt;
+        }
+        for (let iter = 0; iter < 5; iter++) {
+          for (let i = 0; i < this.segs; i++) {
+            const n1 = this.nodes[i]; const n2 = this.nodes[i + 1];
+            const dx = n2.x - n1.x; const dy = n2.y - n1.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const diff = (dist - this.restLen) / dist;
+            const ox = dx * 0.5 * diff; const oy = dy * 0.5 * diff;
+            if (!n1.pinned) { n1.x += ox; n1.y += oy; }
+            if (!n2.pinned) { n2.x -= ox; n2.y -= oy; }
+          }
+        }
+      }
+
+      interact(pos, r = 32) {
+        for (const n of this.nodes) {
+          if (n.pinned) continue;
+          const d = Math.hypot(n.x - pos.x, n.y - pos.y);
+          if (d < r && d > 0.1) {
+            const push = (r - d) * 0.5;
+            n.x += ((n.x - pos.x) / d) * push;
+            n.y += ((n.y - pos.y) / d) * push;
+          }
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(this.nodes[0].x, this.nodes[0].y);
+        for (let i = 1; i < this.nodes.length; i++) ctx.lineTo(this.nodes[i].x, this.nodes[i].y);
+        ctx.strokeStyle = "#15803d"; ctx.lineWidth = 2.5; ctx.stroke();
+
+        for (let i = 1; i < this.nodes.length - 1; i++) {
+          const n = this.nodes[i];
+          if (n.isFlower) {
+            ctx.beginPath(); ctx.arc(n.x, n.y, 7, 0, Math.PI * 2);
+            ctx.fillStyle = n.color; ctx.shadowColor = n.color; ctx.shadowBlur = 4; ctx.fill();
+            ctx.beginPath(); ctx.arc(n.x, n.y, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#ea580c"; ctx.fill(); ctx.shadowBlur = 0;
+          } else {
+            ctx.fillStyle = "#16a34a";
+            ctx.beginPath(); ctx.moveTo(n.x, n.y);
+            ctx.bezierCurveTo(n.x + 3, n.y + 5, n.x + 3, n.y + 12, n.x, n.y + 16);
+            ctx.bezierCurveTo(n.x - 3, n.y + 12, n.x - 3, n.y + 5, n.x, n.y); ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+    }
+
+    class Modak {
+      constructor(x, y) {
+        this.pos = new Vector2(x, y);
+        this.vel = new Vector2((Math.random() - 0.5) * 30, -Math.random() * 30);
+        this.acc = new Vector2(0, 0);
+        this.r = 11;
+        this.angle = Math.random() * Math.PI * 2;
+        this.vRot = (Math.random() - 0.5) * 2;
+      }
+
+      update(dt, phys, audio) {
+        if (phys.isAntiGravity) {
+          this.angle += this.vRot * dt;
+          this.vel.multiplyScalar(0.985);
+        }
+        this.vel.add(this.acc.clone().multiplyScalar(dt));
+        this.pos.add(this.vel.clone().multiplyScalar(dt));
+        this.acc.set(0, 0);
+        if (this.pos.y > phys.groundY) {
+          this.pos.y = phys.groundY;
+          if (Math.abs(this.vel.y) > 35) audio.playBounce();
+          this.vel.y *= -0.55; this.vel.x *= 0.8;
+        }
+        if (this.pos.x < 35) { this.pos.x = 35; this.vel.x *= -0.6; }
+        else if (this.pos.x > phys.w - 35) { this.pos.x = phys.w - 35; this.vel.x *= -0.6; }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(0, -this.r);
+        ctx.bezierCurveTo(this.r * 0.9, -this.r * 0.2, this.r * 0.8, this.r * 0.8, 0, this.r * 0.9);
+        ctx.bezierCurveTo(-this.r * 0.8, this.r * 0.8, -this.r * 0.9, -this.r * 0.2, 0, -this.r);
+        const grad = ctx.createLinearGradient(0, -this.r, 0, this.r);
+        grad.addColorStop(0, "#fef08a"); grad.addColorStop(0.6, "#fde68a"); grad.addColorStop(1, "#f59e0b");
+        ctx.fillStyle = grad; ctx.fill();
+        ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.0;
+        for (let off of [-4, 0, 4]) {
+          ctx.beginPath(); ctx.moveTo(0, -this.r + 1);
+          ctx.quadraticCurveTo(off * 0.8, 0, off * 0.7, this.r * 0.8); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    class Diya {
+      constructor(x, y) {
+        this.pos = new Vector2(x, y);
+        this.vel = new Vector2(0, 0);
+        this.acc = new Vector2(0, 0);
+        this.flameTilt = 0;
+      }
+
+      update(dt, phys) {
+        if (phys.isAntiGravity) this.vel.multiplyScalar(0.98);
+        this.vel.add(this.acc.clone().multiplyScalar(dt));
+        this.pos.add(this.vel.clone().multiplyScalar(dt));
+        this.acc.set(0, 0);
+        this.flameTilt += (-this.vel.x * 0.004 - this.flameTilt) * 8 * dt;
+        if (this.pos.y > phys.groundY) { this.pos.y = phys.groundY; this.vel.y *= -0.3; }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.beginPath(); ctx.moveTo(-15, 0); ctx.quadraticCurveTo(0, 15, 15, 0); ctx.quadraticCurveTo(0, 4, -15, 0);
+        ctx.fillStyle = "#b45309"; ctx.fill();
+        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 1.2; ctx.stroke();
+
+        const fH = 13 + Math.sin(Date.now() * 0.015) * 2;
+        ctx.save(); ctx.rotate(this.flameTilt);
+        ctx.beginPath(); ctx.moveTo(-4, 0); ctx.bezierCurveTo(-5, -fH * 0.6, 0, -fH, 0, -fH);
+        ctx.bezierCurveTo(0, -fH, 5, -fH * 0.6, 4, 0);
+        const grad = ctx.createLinearGradient(0, 0, 0, -fH);
+        grad.addColorStop(0, "#38bdf8"); grad.addColorStop(0.3, "#f97316"); grad.addColorStop(0.8, "#facc15");
+        ctx.fillStyle = grad; ctx.fill(); ctx.restore();
+        ctx.restore();
+      }
+    }
+
+    class Lever {
+      constructor(x, y) {
+        this.pos = new Vector2(x, y);
+        this.angle = -0.6; this.target = -0.6;
+      }
+      update(dt) { this.angle += (this.target - this.angle) * 14 * dt; }
+      draw(ctx, active) {
+        ctx.save(); ctx.translate(this.pos.x, this.pos.y);
+        ctx.fillStyle = "#78350f"; ctx.fillRect(-16, -24, 32, 48);
+        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 2; ctx.strokeRect(-16, -24, 32, 48);
+        ctx.beginPath(); ctx.arc(0, -14, 5, 0, Math.PI * 2);
+        ctx.fillStyle = active ? "#38bdf8" : "#f59e0b"; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+        ctx.save(); ctx.rotate(this.angle);
+        ctx.strokeStyle = "#d97706"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -25); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, -25, 6, 0, Math.PI * 2); ctx.fillStyle = "#fbbf24"; ctx.fill(); ctx.restore();
+        ctx.fillStyle = "#fef08a"; ctx.font = "8px monospace"; ctx.textAlign = "center"; ctx.fillText("AG-04", 0, 18);
+        ctx.restore();
+      }
+    }
+
+    class WindGenerator {
+      constructor(x, y, dirX) {
+        this.pos = new Vector2(x, y);
+        this.dirX = dirX; this.isActive = false;
+        this.speed = 0; this.angle = 0;
+      }
+      toggle() { this.isActive = !this.isActive; }
+      update(dt, part, boy, props) {
+        if (this.isActive) {
+          this.speed = Math.min(22, this.speed + dt * 18);
+          if (Math.random() < 0.65) part.addWind(this.pos.x + this.dirX * 18, this.pos.y, this.dirX, (Math.random() - 0.5) * 0.15);
+          const dxBoy = boy.pos.x - this.pos.x;
+          if (Math.sign(dxBoy) === this.dirX && Math.abs(dxBoy) < 350 && Math.abs(boy.pos.y - this.pos.y) < 85) {
+            const falloff = 1 - Math.abs(dxBoy) / 350;
+            boy.acc.x += this.dirX * 420 * falloff;
+            boy.acc.y -= 70 * falloff;
+          }
+          for (const p of props) {
+            const dx = p.pos.x - this.pos.x;
+            if (Math.sign(dx) === this.dirX && Math.abs(dx) < 350 && Math.abs(p.pos.y - this.pos.y) < 85) {
+              const falloff = 1 - Math.abs(dx) / 350;
+              p.acc.x += this.dirX * 360 * falloff; p.acc.y -= 50 * falloff;
+            }
+          }
+        } else { this.speed = Math.max(0, this.speed - dt * 6); }
+        this.angle += this.speed * dt;
+      }
+      draw(ctx) {
+        ctx.save(); ctx.translate(this.pos.x, this.pos.y);
+        ctx.fillStyle = "#78350f"; ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = this.isActive ? "#38bdf8" : "#fbbf24"; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.save(); ctx.rotate(this.angle);
+        for (let b = 0; b < 4; b++) {
+          ctx.rotate(Math.PI / 2); ctx.fillStyle = "#d97706";
+          ctx.beginPath(); ctx.ellipse(0, 9, 4, 9, 0.3, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fillStyle = this.isActive ? "#38bdf8" : "#b45309"; ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ==========================================
+    // 5. SACRED OFFERING MODAK (PRASAD TO GANESH JI)
+    // ==========================================
+    class OfferingModak {
+      constructor(startX, startY, targetX, targetY, onArrive) {
+        this.startX = startX; this.startY = startY;
+        this.targetX = targetX; this.targetY = targetY;
+        this.ctrlX = (startX + targetX) / 2;
+        this.ctrlY = Math.min(startY, targetY) - 140;
+        this.progress = 0.0;
+        this.duration = 1.35;
+        this.onArrive = onArrive;
+        this.isFinished = false;
+        this.pos = new Vector2(startX, startY);
+        this.angle = 0;
+        this.trailTimer = 0;
+      }
+
+      update(dt, part, audio) {
+        if (this.isFinished) return;
+        this.progress += dt / this.duration;
+        this.angle += 7.5 * dt;
+
+        if (this.progress >= 1.0) {
+          this.progress = 1.0;
+          this.pos.set(this.targetX, this.targetY);
+          this.isFinished = true;
+          if (this.onArrive) this.onArrive();
+          return;
+        }
+
+        const t = this.progress;
+        const invT = 1 - t;
+        const bx = invT * invT * this.startX + 2 * invT * t * this.ctrlX + t * t * this.targetX;
+        const by = invT * invT * this.startY + 2 * invT * t * this.ctrlY + t * t * this.targetY;
+        this.pos.set(bx, by);
+
+        this.trailTimer += dt;
+        if (this.trailTimer > 0.04) {
+          this.trailTimer = 0;
+          part.addSparkle(this.pos.x, this.pos.y, "#fde047");
+        }
+      }
+
+      draw(ctx) {
+        if (this.isFinished) return;
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(this.angle);
+        ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 18;
+        ctx.fillStyle = "#fbbf24";
+        ctx.beginPath(); ctx.ellipse(0, 3, 9, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-8, 3); ctx.quadraticCurveTo(-5, -6, 0, -12); ctx.quadraticCurveTo(5, -6, 8, 3); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(0, -12, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ==========================================
+    // 6. MAIN SIMULATION ORCHESTRATOR
+    // ==========================================
+    const canvas = document.getElementById("sim-canvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width; const H = canvas.height;
+
+    const audio = new AudioEngine();
+    const particles = new ParticleSystem(W, H);
+
+    const physics = {
+      w: W, h: H, groundY: H - 65,
+      isAntiGravity: false, progress: 0,
+      sector: { x: 90, y: 35, w: W - 180, h: H - 100 },
+      gNormalY: 490.5, gAgY: -225.0,
+      toggle() { this.isAntiGravity = !this.isAntiGravity; return this.isAntiGravity; },
+      update(dt) {
+        const target = this.isAntiGravity ? 1.0 : 0.0;
+        const rate = dt / 1.2;
+        if (this.progress < target) this.progress = Math.min(target, this.progress + rate);
+        else if (this.progress > target) this.progress = Math.max(target, this.progress - rate);
+      },
+      getDampened() { const t = this.progress; return t * t * (3 - 2 * t); },
+      getGravityY() { const p = this.getDampened(); return this.gNormalY + (this.gAgY - this.gNormalY) * p; },
+      getPhysStr() {
+        const physY = -9.81 + (4.50 - (-9.81)) * this.getDampened();
+        return `(0.00, ${physY >= 0 ? "+" : ""}${physY.toFixed(2)}, 0.00)`;
+      },
+      apply(ent, dt) {
+        const p = this.getDampened();
+        const inSec = ent.pos.x >= this.sector.x && ent.pos.x <= this.sector.x + this.sector.w &&
+                      ent.pos.y >= this.sector.y && ent.pos.y <= this.sector.y + this.sector.h;
+        const factor = inSec ? p : 0;
+        ent.acc.y += this.gNormalY + (this.gAgY - this.gNormalY) * factor;
+        if (factor > 0.05) {
+          ent.acc.x -= ent.vel.x * 0.045 * 60;
+          ent.acc.y -= ent.vel.y * 0.045 * 60;
+          if (ent.pos.y < 155) ent.acc.y += (155 - ent.pos.y) * 4.0;
+          if (ent.vel.y < -240) ent.vel.y = -240;
+          ent.acc.y += Math.sin(Date.now() * 0.003 + ent.pos.x * 0.02) * 14 * factor;
+        }
+      }
+    };
+
+    const boy = new Boy(W * 0.55, physics.groundY);
+    const mom = new Mom(W * 0.25, physics.groundY);
+    const torans = [
+      new Toran(75, 105, W * 0.5 - 20, 105, 15),
+      new Toran(W * 0.5 + 20, 105, W - 75, 105, 15),
+      new Toran(150, 155, W - 150, 155, 18),
+    ];
+    const levers = [new Lever(75, physics.groundY - 50), new Lever(W - 75, physics.groundY - 50)];
+    const fans = [new WindGenerator(55, physics.groundY - 130, 1), new WindGenerator(W - 55, physics.groundY - 130, -1)];
+    const modaks = [];
+    const diyas = [];
+    const offeringModaks = [];
+    let prasadGaneshCount = 0;
+    let aaravModakCount = 0;
+    let altarBlessingTimer = 0;
+
+    for (let i = 0; i < 7; i++) modaks.push(new Modak(W * 0.45 + (i - 3) * 16, physics.groundY - 10));
+    for (let i = 0; i < 5; i++) diyas.push(new Diya(130 + i * 180, physics.groundY - 4));
+
+    let cursorPos = new Vector2(W / 2, H / 2);
+    let isCursorActive = false;
+    let debugVectors = false;
+
+    function attemptCatch() {
+      const dist = mom.catchPoint.distanceTo(boy.targetPoint);
+      if (dist <= 26 && !boy.isCaught) {
+        mom.triggerCatchSuccess(boy);
+        boy.triggerCaught(mom);
+
+        // Stage 1: Feed Aarav
+        aaravModakCount++;
+        audio.playModakMunch();
+
+        audio.playChime(528, 0.4);
+        setTimeout(() => audio.playChime(660, 0.4), 110);
+        setTimeout(() => audio.playChime(792, 0.4), 220);
+        setTimeout(() => audio.playChime(1056, 0.5), 330);
+
+        particles.addWave(boy.targetPoint.x, boy.targetPoint.y, 160, 1.6);
+        for (let i = 0; i < 20; i++) {
+          particles.addSparkle(boy.targetPoint.x, boy.targetPoint.y, "#fde047");
+        }
+
+        // Stage 2: Sacred Offering Modak ascends to Lord Ganesha's Altar!
+        setTimeout(() => {
+          const startX = mom.catchPoint.x;
+          const startY = mom.catchPoint.y;
+          const targetX = W * 0.5;
+          const targetY = physics.groundY - 26;
+
+          const offering = new OfferingModak(startX, startY, targetX, targetY, () => {
+            prasadGaneshCount++;
+            altarBlessingTimer = 3.2;
+            audio.playDivineBlessingChime();
+            particles.addWave(targetX, targetY - 20, 260, 2.4);
+            for (let s = 0; s < 36; s++) {
+              particles.addSparkle(targetX + (Math.random() - 0.5) * 70, targetY - 25 + (Math.random() - 0.5) * 50, "#fde047");
+            }
+            modaks.push(new Modak(targetX + (Math.random() - 0.5) * 28, targetY - 6));
+            updateUI();
+          });
+
+          offeringModaks.push(offering);
+        }, 750);
+
+        updateUI();
+        return true;
+      }
+      return false;
+    }
+
+    // Canvas Events
+    canvas.addEventListener("mousemove", (e) => {
+      const r = canvas.getBoundingClientRect();
+      cursorPos.set((e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height));
+      isCursorActive = true;
+      audio.init(); audio.resume();
+    });
+    canvas.addEventListener("mouseleave", () => { isCursorActive = false; });
+    canvas.addEventListener("click", (e) => {
+      audio.init(); audio.resume();
+      const r = canvas.getBoundingClientRect();
+      const cx = (e.clientX - r.left) * (W / r.width);
+      const cy = (e.clientY - r.top) * (H / r.height);
+
+      // Check if points matched - click also catches!
+      if (mom.catchPoint.distanceTo(boy.targetPoint) <= 26) {
+        if (attemptCatch()) return;
+      }
+
+      for (const lev of levers) {
+        if (Math.hypot(cx - lev.pos.x, cy - lev.pos.y) < 26) {
+          toggleAG(); return;
+        }
+      }
+      for (const fan of fans) {
+        if (Math.hypot(cx - fan.pos.x, cy - fan.pos.y) < 28) {
+          fan.toggle(); audio.playLeverClick(); audio.setWindVolume(fans.filter(f => f.isActive).length);
+          updateUI(); return;
+        }
+      }
+      particles.addWave(cx, cy, 110, 0.9);
+    });
+
+    function toggleAG() {
+      audio.init(); audio.resume();
+      physics.toggle();
+      for (const lev of levers) lev.target = physics.isAntiGravity ? 0.6 : -0.6;
+      audio.playLeverClick();
+      particles.addWave(W / 2, H / 2, 260, 1.5);
+      updateUI();
+    }
+
+    // Telemetry UI Elements
+    const teleGravity = document.getElementById("tele-gravity");
+    const teleMom = document.getElementById("tele-mom");
+    const teleBoy = document.getElementById("tele-boy");
+    const teleAaravModak = document.getElementById("tele-aarav-modak");
+    const teleGaneshPrasad = document.getElementById("tele-ganesh-prasad");
+    const badgeText = document.getElementById("badge-text");
+    const badgeDot = document.getElementById("badge-dot");
+    const btnCatch = document.getElementById("btn-catch");
+
+    function updateUI() {
+      teleGravity.textContent = physics.getPhysStr();
+      const distPoints = Math.round(mom.catchPoint.distanceTo(boy.targetPoint));
+      const isMatched = distPoints <= 26 && !boy.isCaught;
+
+      if (isMatched) {
+        teleMom.textContent = "LOCKED! [SHIFT TO CATCH]";
+        teleMom.style.color = "#4ade80";
+        btnCatch.classList.add("pulse-glow");
+      } else {
+        teleMom.textContent = `ALIGNING (${distPoints}px)`;
+        teleMom.style.color = "#fbbf24";
+        btnCatch.classList.remove("pulse-glow");
+      }
+
+      if (boy.isCaught) {
+        teleBoy.textContent = `FEEDING AARAV 🥟`;
+        teleBoy.style.color = "#f43f5e";
+      } else {
+        teleBoy.textContent = `RUNNING | Caught: ${boy.caughtCount}`;
+        teleBoy.style.color = "#38bdf8";
+      }
+
+      teleAaravModak.textContent = aaravModakCount;
+      teleGaneshPrasad.textContent = altarBlessingTimer > 0 ? `${prasadGaneshCount} ✨ (BLESSINGS!)` : prasadGaneshCount;
+
+      if (physics.isAntiGravity) {
+        badgeText.textContent = "AG-04 ENGAGED (+4.5 m/s²)";
+        badgeText.className = "text-cyan-400 font-bold";
+        badgeDot.className = "w-2.5 h-2.5 rounded-full bg-cyan-400 badge-glow";
+      } else {
+        badgeText.textContent = "1G NORMAL (-9.81 m/s²)";
+        badgeText.className = "text-amber-400";
+        badgeDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+      }
+
+      document.getElementById("btn-fan-left").classList.toggle("bg-sky-800/80", fans[0].isActive);
+      document.getElementById("btn-fan-right").classList.toggle("bg-sky-800/80", fans[1].isActive);
+    }
+
+    // Button Bindings
+    btnCatch.addEventListener("click", attemptCatch);
+    document.getElementById("btn-toggle-ag").addEventListener("click", toggleAG);
+    document.getElementById("btn-fan-left").addEventListener("click", () => {
+      fans[0].toggle(); audio.playLeverClick(); audio.setWindVolume(fans.filter(f => f.isActive).length); updateUI();
+    });
+    document.getElementById("btn-fan-right").addEventListener("click", () => {
+      fans[1].toggle(); audio.playLeverClick(); audio.setWindVolume(fans.filter(f => f.isActive).length); updateUI();
+    });
+    document.getElementById("btn-spawn-modak").addEventListener("click", () => {
+      modaks.push(new Modak(W * 0.5 + (Math.random() - 0.5) * 120, physics.groundY - 100));
+      audio.playBounce(); updateUI();
+    });
+    document.getElementById("btn-spawn-diya").addEventListener("click", () => {
+      diyas.push(new Diya(W * 0.5 + (Math.random() - 0.5) * 120, physics.groundY - 80)); updateUI();
+    });
+    document.getElementById("btn-debug").addEventListener("click", (e) => {
+      debugVectors = !debugVectors;
+      e.currentTarget.classList.toggle("bg-cyan-900/60", debugVectors);
+      e.currentTarget.classList.toggle("border-cyan-500", debugVectors);
+    });
+    document.getElementById("btn-audio").addEventListener("click", () => {
+      const isMuted = audio.toggleMute();
+      document.getElementById("audio-label").textContent = isMuted ? "MUTED" : "LIVE SYNTH";
+      document.getElementById("audio-label").style.color = isMuted ? "#ef4444" : "#38bdf8";
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Shift") { attemptCatch(); }
+      else if (e.code === "Space") { e.preventDefault(); toggleAG(); }
+      else if (e.key === "q" || e.key === "Q") { fans[0].toggle(); audio.playLeverClick(); audio.setWindVolume(fans.filter(f => f.isActive).length); updateUI(); }
+      else if (e.key === "e" || e.key === "E") { fans[1].toggle(); audio.playLeverClick(); audio.setWindVolume(fans.filter(f => f.isActive).length); updateUI(); }
+      else if (e.key === "m" || e.key === "M") { modaks.push(new Modak(W * 0.5, physics.groundY - 100)); audio.playBounce(); updateUI(); }
+      else if (e.key === "d" || e.key === "D") { diyas.push(new Diya(W * 0.5, physics.groundY - 80)); updateUI(); }
+      else if (e.key === "v" || e.key === "V") { debugVectors = !debugVectors; }
+    });
+
+    // Main Loop
+    let lastT = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.033, (now - lastT) / 1000);
+      lastT = now;
+
+      // Update
+      physics.update(dt);
+      const agFactor = physics.getDampened();
+      audio.setAntiGravityTransition(agFactor);
+
+      // Mom follows mouse cursor
+      mom.update(dt, cursorPos, isCursorActive, physics, audio, boy);
+
+      // Aarav runs automatically (High-Agility Evasion)
+      physics.apply(boy, dt);
+      boy.update(dt, physics, particles, audio, mom);
+
+      // Check points matching (Strict 26px threshold)
+      const distPoints = mom.catchPoint.distanceTo(boy.targetPoint);
+      const isMatched = distPoints <= 26 && !boy.isCaught;
+      mom.isPointMatched = isMatched;
+      boy.isPointMatched = isMatched;
+
+      // Update Sacred Offering Modaks Flight
+      for (let i = offeringModaks.length - 1; i >= 0; i--) {
+        const off = offeringModaks[i];
+        off.update(dt, particles, audio);
+        if (off.isFinished) offeringModaks.splice(i, 1);
+      }
+      altarBlessingTimer = Math.max(0, altarBlessingTimer - dt);
+
+      const allProps = [...modaks, ...diyas];
+      for (const f of fans) f.update(dt, particles, boy, allProps);
+
+      for (const m of modaks) {
+        physics.apply(m, dt); m.update(dt, physics, audio);
+        if (boy.pos.distanceTo(m.pos) < 32) {
+          m.vel.add(boy.vel.clone().multiplyScalar(0.4));
+          particles.addSparkle(m.pos.x, m.pos.y, "#fef08a");
+        }
+      }
+      for (const d of diyas) { physics.apply(d, dt); d.update(dt, physics); }
+
+      const windPushX = (fans[0].isActive ? 90 : 0) + (fans[1].isActive ? -90 : 0);
+      for (const t of torans) {
+        t.update(dt, physics.getGravityY(), windPushX);
+        t.interact(boy.pos, 35);
+      }
+      for (const lev of levers) lev.update(dt);
+      particles.update(dt, agFactor, cursorPos.x, cursorPos.y, isCursorActive);
+
+      updateUI();
+
+      // Render
+      drawScene(agFactor, isMatched, distPoints);
+
+      requestAnimationFrame(loop);
+    }
+
+    function drawScene(agFactor, isMatched, distPoints) {
+      // Sky Background
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+      if (agFactor > 0.05) {
+        skyGrad.addColorStop(0, "#0b0826"); skyGrad.addColorStop(0.5, "#22134f"); skyGrad.addColorStop(1, "#180c2e");
+      } else {
+        skyGrad.addColorStop(0, "#0f172a"); skyGrad.addColorStop(0.5, "#1e1b4b"); skyGrad.addColorStop(0.85, "#431407"); skyGrad.addColorStop(1, "#1c1917");
+      }
+      ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+
+      // Stars
+      ctx.fillStyle = "#ffffff";
+      for (let i = 0; i < 30; i++) {
+        const sx = ((i * 97) % (W - 200)) + 100;
+        const sy = (i * 47) % 140 + 20;
+        const tw = 0.5 + 0.5 * Math.sin(Date.now() * 0.003 + i);
+        ctx.beginPath(); ctx.arc(sx, sy, i % 3 === 0 ? 1.8 : 1.0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${tw * 0.8})`; ctx.fill();
+      }
+
+      // Moon
+      ctx.beginPath(); ctx.arc(W * 0.82, 65, 20, 0, Math.PI * 2); ctx.fillStyle = "#fef08a"; ctx.shadowColor = "#fde047"; ctx.shadowBlur = 15; ctx.fill();
+      ctx.beginPath(); ctx.arc(W * 0.82 + 7, 61, 18, 0, Math.PI * 2); ctx.fillStyle = agFactor > 0.05 ? "#22134f" : "#0f172a"; ctx.shadowBlur = 0; ctx.fill();
+
+      // Sandstone Pillars & Arch
+      ctx.fillStyle = "#78350f";
+      ctx.fillRect(50 - 20, 80, 40, physics.groundY - 80);
+      ctx.fillRect(W - 50 - 20, 80, 40, physics.groundY - 80);
+      ctx.strokeStyle = "#b45309"; ctx.lineWidth = 2;
+      for (let off of [-12, -4, 4, 12]) {
+        ctx.beginPath(); ctx.moveTo(50 + off, 95); ctx.lineTo(50 + off, physics.groundY - 15); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(W - 50 + off, 95); ctx.lineTo(W - 50 + off, physics.groundY - 15); ctx.stroke();
+      }
+      ctx.strokeStyle = "#78350f"; ctx.lineWidth = 12; ctx.beginPath();
+      ctx.moveTo(0, 85); ctx.quadraticCurveTo(W * 0.25, 45, W * 0.5, 45); ctx.quadraticCurveTo(W * 0.75, 45, W, 85); ctx.stroke();
+
+      // Courtyard Floor & Rangoli
+      ctx.fillStyle = "#292524"; ctx.fillRect(0, physics.groundY, W, H - physics.groundY);
+      ctx.strokeStyle = "#d97706"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, physics.groundY); ctx.lineTo(W, physics.groundY); ctx.stroke();
+
+      // Rangoli
+      ctx.save(); ctx.translate(W * 0.5, physics.groundY + 28); ctx.scale(1.0, 0.45);
+      ctx.strokeStyle = "#ea580c"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, 90, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#fbbf24";
+      for (let a = 0; a < 12; a++) {
+        ctx.rotate(Math.PI / 6); ctx.beginPath(); ctx.ellipse(0, 68, 7, 15, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = "#e11d48"; ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Ganesha Altar with Divine Blessing Halo
+      const ax = W * 0.5; const ay = physics.groundY - 45;
+      ctx.fillStyle = "#451a03"; ctx.fillRect(ax - 55, ay + 15, 110, 30);
+      ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 2; ctx.strokeRect(ax - 55, ay + 15, 110, 30);
+      ctx.strokeStyle = "#d97706"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ax, ay + 10, 44, Math.PI, 0); ctx.stroke();
+      ctx.save(); ctx.translate(ax, ay + 8);
+      ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 8 + agFactor * 14; ctx.fillStyle = "#f59e0b";
+      ctx.beginPath(); ctx.moveTo(-8, -22); ctx.lineTo(8, -22); ctx.lineTo(0, -35); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -12, 10, 0, Math.PI * 2); ctx.arc(-12, -13, 7, 0, Math.PI * 2); ctx.arc(12, -13, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 4, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Divine Blessing Aura when Sacred Modak is Offered!
+      if (altarBlessingTimer > 0) {
+        const tBless = altarBlessingTimer;
+        const pulse = Math.sin(Date.now() * 0.009) * 0.15 + 0.85;
+
+        // Rotating Rays
+        ctx.save();
+        ctx.translate(ax, ay - 10);
+        ctx.rotate(Date.now() * 0.0012);
+        for (let r = 0; r < 12; r++) {
+          ctx.rotate(Math.PI / 6);
+          ctx.fillStyle = `rgba(251, 191, 36, ${0.35 * pulse * Math.min(1, tBless / 1.5)})`;
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-14, -85); ctx.lineTo(14, -85); ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+
+        // Pulsing Ring
+        ctx.save();
+        ctx.beginPath(); ctx.arc(ax, ay - 8, 70 + (3.2 - tBless) * 12, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(251, 191, 36, ${0.6 * Math.min(1, tBless)})`;
+        ctx.lineWidth = 3; ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 20; ctx.stroke();
+        ctx.restore();
+
+        // Floating Banner
+        ctx.save();
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#fef08a"; ctx.shadowColor = "#eab308"; ctx.shadowBlur = 14;
+        ctx.fillText("✦ ॐ GANPATI BAPPA MORYA! PRASAD OFFERED! 🙏 ✦", ax, ay - 75);
+        ctx.restore();
+      }
+
+      // Anti-Gravity Field Zone Visuals
+      if (agFactor > 0.01) {
+        ctx.save();
+        const sec = physics.sector;
+        const zg = ctx.createLinearGradient(0, sec.y + sec.h, 0, sec.y);
+        zg.addColorStop(0, `rgba(56, 189, 248, ${0.08 * agFactor})`);
+        zg.addColorStop(0.5, `rgba(251, 191, 36, ${0.12 * agFactor})`);
+        zg.addColorStop(1, `rgba(168, 85, 247, ${0.15 * agFactor})`);
+        ctx.fillStyle = zg; ctx.fillRect(sec.x, sec.y, sec.w, sec.h);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${0.65 * agFactor})`; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
+        ctx.beginPath(); ctx.moveTo(sec.x, sec.y); ctx.lineTo(sec.x, sec.y + sec.h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sec.x + sec.w, sec.y); ctx.lineTo(sec.x + sec.w, sec.y + sec.h); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = `rgba(56, 189, 248, ${0.85 * agFactor})`; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("▲ ANTI-GRAVITY FIELD ZONE: AG-04 (VECTOR: (0, +4.5, 0)) ▲", W / 2, sec.y + 14);
+        ctx.restore();
+      }
+
+      // Torans, Levers, Fans
+      for (const t of torans) t.draw(ctx);
+      for (const f of fans) f.draw(ctx);
+      for (const lev of levers) lev.draw(ctx, physics.isAntiGravity);
+
+      // Props & Offering Modaks Flight
+      for (const d of diyas) d.draw(ctx);
+      for (const m of modaks) m.draw(ctx);
+      for (const off of offeringModaks) off.draw(ctx);
+
+      // Characters
+      mom.draw(ctx);
+      boy.draw(ctx);
+
+      // Point Alignment Tether & Catch Prompt
+      if (distPoints < 140) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(mom.catchPoint.x, mom.catchPoint.y);
+        ctx.lineTo(boy.targetPoint.x, boy.targetPoint.y);
+        ctx.lineWidth = isMatched ? 3.0 : 1.5;
+        ctx.strokeStyle = isMatched ? "rgba(74, 222, 128, 0.9)" : "rgba(251, 191, 36, 0.45)";
+        if (!isMatched) ctx.setLineDash([4, 4]);
+        ctx.stroke();
+
+        if (isMatched && !boy.isCaught) {
+          const midX = (mom.catchPoint.x + boy.targetPoint.x) / 2;
+          const midY = Math.min(mom.catchPoint.y, boy.targetPoint.y) - 24;
+
+          ctx.beginPath();
+          ctx.arc(boy.targetPoint.x, boy.targetPoint.y, 16 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
+          ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.stroke();
+
+          ctx.font = "bold 11px system-ui, sans-serif";
+          const promptText = "⚡ MATCHED! PRESS SHIFT TO CATCH! ⚡";
+          const tw = ctx.measureText(promptText).width;
+          ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+          ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 2; ctx.setLineDash([]);
+          ctx.beginPath(); ctx.roundRect(midX - tw / 2 - 12, midY - 14, tw + 24, 26, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#4ade80"; ctx.shadowColor = "#22c55e"; ctx.shadowBlur = 10;
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(promptText, midX, midY - 1);
+        }
+        ctx.restore();
+      }
+
+      // Particles
+      particles.draw(ctx, agFactor);
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
