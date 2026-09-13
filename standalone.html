@@ -38,11 +38,11 @@
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-xl font-bold bg-gradient-to-r from-amber-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent">
-          🪔 Ganesh Chaturthi Catch Game
+          🪔 Maa Parvati & Bal Ganesh
         </h1>
         <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/40">ZONE: AG-04</span>
       </div>
-      <p class="text-xs text-slate-400 mt-1">Playable Lord Ganesha &bull; Medium Dodge Evasion &bull; High Accuracy Alignment (&le;28px) &bull; 🥟 Blessed Modak Rewards</p>
+      <p class="text-xs text-slate-400 mt-1">Playable Parvati Mata &bull; Bal Ganesh (Lord Ganesha) Medium Dodge &bull; High Accuracy Alignment (&le;28px) &bull; 🥟 Blessed Modak Rewards</p>
     </div>
     <div class="flex items-center gap-3 text-xs">
       <div class="px-3 py-1 rounded-full border border-amber-500/50 bg-amber-950/40 font-mono flex items-center gap-1.5">
@@ -80,15 +80,15 @@
       <div id="tele-mom" class="text-base font-mono font-bold text-emerald-400 mt-0.5">TRACKING</div>
     </div>
     <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
-      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Aarav State &amp; Score</div>
+      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Bal Ganesh State &amp; Score</div>
       <div id="tele-boy" class="text-base font-mono font-bold text-cyan-300 mt-0.5">RUNNING | Caught: 0</div>
     </div>
     <div class="bg-purple-950/30 border border-amber-500/40 rounded-xl p-2.5">
-      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🥟 Aarav Modaks Eaten</div>
+      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🥟 Bal Ganesh Modaks Eaten</div>
       <div id="tele-aarav-modak" class="text-base font-mono font-bold text-yellow-300 mt-0.5">0</div>
     </div>
     <div class="bg-amber-950/30 border border-amber-500/60 rounded-xl p-2.5">
-      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🙏 Prasad to Ganesh Ji</div>
+      <div class="text-[10px] uppercase tracking-wider text-amber-300 font-medium">🙏 Prasad to Sanctum Altar</div>
       <div id="tele-ganesh-prasad" class="text-base font-mono font-bold text-amber-400 mt-0.5">0</div>
     </div>
   </div>
@@ -96,7 +96,7 @@
   <!-- Quick Action Controls -->
   <div class="w-full max-w-5xl flex flex-wrap justify-center gap-2 mt-3">
     <button id="btn-catch" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white font-bold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95">
-      <span>⚡ BLESS &amp; CATCH AARAV</span>
+      <span>⚡ EMBRACE BAL GANESHA</span>
       <span class="bg-black/30 text-emerald-200 text-[10px] px-1.5 py-0.5 rounded border border-white/20 font-mono">Shift</span>
     </button>
     <button id="btn-toggle-ag" class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95">
@@ -132,16 +132,16 @@
   <div class="w-full max-w-5xl mt-3 p-3 bg-purple-950/20 border border-purple-900/40 rounded-xl text-xs text-slate-400">
     <div class="grid grid-cols-3 gap-4">
       <div class="border-l-2 border-rose-500/60 pl-3">
-        <span class="text-rose-300 font-semibold block mb-0.5">1. Mom Follows Cursor</span>
-        Move your mouse — Mom (Priya) moves and reaches towards the cursor, following your lead across the courtyard.
+        <span class="text-rose-300 font-semibold block mb-0.5">1. Parvati Mata Follows Cursor</span>
+        Move your mouse — Maa Parvati glides with critically-damped spring stability, reaching out to embrace Bal Ganesh.
       </div>
       <div class="border-l-2 border-cyan-500/60 pl-3">
-        <span class="text-cyan-300 font-semibold block mb-0.5">2. Aarav Runs Automatically</span>
-        Aarav runs automatically, leaping, dodging, floating when AG-04 engages, and enjoying festive modaks.
+        <span class="text-cyan-300 font-semibold block mb-0.5">2. Bal Ganesh Runs Automatically</span>
+        Bal Ganesh runs automatically, leaping, dodging, floating when AG-04 engages, accompanied by faithful Mooshak Raj.
       </div>
       <div class="border-l-2 border-emerald-500/60 pl-3">
         <span class="text-emerald-300 font-semibold block mb-0.5">3. Align Points &amp; Press Shift</span>
-        Match the glowing small point on Mom's hands with the target point on Aarav's chest. When the green lock-on beam lights up, press <strong>SHIFT</strong> to catch him!
+        Match the glowing small point on Maa Parvati's modak hand with the target jewel on Bal Ganesh's chest (&le;28px) and press <strong>SHIFT</strong>!
       </div>
     </div>
   </div>
@@ -588,671 +588,1247 @@
     }
 
     // ==========================================
-    // 4. ENTITIES (BOY - AUTOMATIC, MOM - FOLLOWS CURSOR)
+    // 4. ENTITIES (BAL GANESH - RUNNER, PARVATI MATA - CHASER)
     // ==========================================
-    class Boy {
-      constructor(x, y) {
-        this.pos = new Vector2(x, y);
-        this.vel = new Vector2(170, 0);
-        this.acc = new Vector2(0, 0);
-        this.state = "RUNNING";
-        this.facing = 1;
-        this.angle = 0;
-        this.dashTimer = 0;
-        this.dashCooldown = 0;
-        this.floatingMomentum = new Vector2(0, 0);
-        this.runSpeed = 210;
-        this.dangerZoneRadius = 125;
-        this.catchThreshold = 28;
-        this.alignReflexTimer = 0;
-        this.cornerDodgeCooldown = 0;
-        this.autoHopTimer = 1.4;
-        this.turnTimer = 3.5;
+    class BalGanesh {
+  constructor(x, y) {
+    this.pos = new Vector2(x, y);
+    this.vel = new Vector2(160, 0); // Automatic initial run velocity
+    this.acc = new Vector2(0, 0);
+    this.mass = 28;
+    this.radius = 22;
 
-        // Catch target point on Aarav's chest
-        this.targetPoint = new Vector2(x, y - 18);
-        this.isPointMatched = false;
+    this.state = "RUNNING"; // "RUNNING", "FLOATING", "DASHING", "CAUGHT"
+    this.facing = 1;
+    this.angle = 0;
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.floatingMomentum = new Vector2(0, 0);
+    this.trailTimer = 0;
 
-        // Caught & Modak Reward state
+    // Body Target Point (Chest Jewel for catching)
+    this.targetPoint = new Vector2(x, y - 18);
+    this.isPointMatched = false;
+
+    // Autonomous behavior & agility variables (Medium Dodge balance)
+    this.runSpeed = 210;
+    this.dangerZoneRadius = 125;
+    this.catchThreshold = 28;
+    this.alignReflexTimer = 0;
+    this.cornerDodgeCooldown = 0;
+    this.autoHopTimer = 1.4 + Math.random() * 2.0;
+    this.turnTimer = 3.5 + Math.random() * 3.0;
+
+    // Mooshak Raj (faithful mouse companion running with Bal Ganesh)
+    this.mooshakX = x - 26;
+    this.mooshakY = y;
+    this.mooshakVel = 0;
+
+    // Caught & Modak Reward state
+    this.isCaught = false;
+    this.caughtTimer = 0;
+    this.caughtCount = 0;
+    this.modaksEatenCount = 0;
+    this.isEating = false;
+
+    // Speech bubble
+    this.speechText = "";
+    this.speechTimer = 0;
+  }
+
+  say(text, duration = 1.8) {
+    this.speechText = text;
+    this.speechTimer = duration;
+  }
+
+  triggerCaught(chaser) {
+    this.isCaught = true;
+    this.caughtTimer = 3.6; // Extended celebration for Modak eating & sacred prasad offering
+    this.state = "CAUGHT";
+    this.caughtCount++;
+    this.modaksEatenCount++;
+    this.isEating = true;
+    this.vel.set(0, 0);
+    this.acc.set(0, 0);
+
+    // Turn towards Maa Parvati
+    this.facing = Math.sign(chaser.pos.x - this.pos.x) || 1;
+
+    const caughtDialogues = [
+      "Pranam Mata Parvati! Your modaks are the sweetest! 🥟🙏✨",
+      "Delicious! Thank you, Maa! 🥟❤️",
+      "Yummy! Blessed modak from Maa Parvati! 🥟😋",
+      "Mata's love is sweeter than all the modaks in the universe! 🥟💖"
+    ];
+    this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.0);
+  }
+
+  triggerAerialDash(dir, force = 640, particleSystem, audioEngine) {
+    if (this.isCaught) return;
+    this.vel.x = dir.x * force;
+    this.vel.y = Math.min(-320, dir.y * force);
+    this.facing = Math.sign(dir.x) || this.facing;
+    this.dashTimer = 0.45;
+    this.state = "DASHING";
+    if (audioEngine) audioEngine.playDashWhoosh(560);
+    if (particleSystem) {
+      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 120, 1.2);
+      particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+    }
+    const dashQuips = ["Wheee! 💨", "Ganpati Bappa Morya! 🪔", "Bal Ganesh zooms! ✨"];
+    this.say(dashQuips[Math.floor(Math.random() * dashQuips.length)], 1.2);
+  }
+
+  update(dt, physics, particleSystem, audioEngine, chaser) {
+    this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+    this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
+
+    if (this.speechTimer > 0) {
+      this.speechTimer -= dt;
+      if (this.speechTimer <= 0) this.speechText = "";
+    }
+
+    // 1. If currently CAUGHT with Maa Parvati (Receiving Loving Modak Reward)
+    if (this.isCaught) {
+      this.caughtTimer -= dt;
+      this.vel.set(0, 0);
+      this.state = "CAUGHT";
+
+      // Gentle celebratory bounce/sway
+      this.pos.y = physics.isAntiGravityActive 
+        ? chaser.pos.y + Math.sin(Date.now() * 0.005) * 4
+        : physics.groundY;
+      this.pos.x = chaser.pos.x + (this.facing === 1 ? -20 : 20);
+
+      // Transition to Stage 2 of reward: Offering to Sanctum Altar
+      if (this.caughtTimer < 2.0 && this.caughtTimer > 0.4 && this.speechTimer <= 0) {
+        this.say("Ganpati Bappa Morya! Maa Parvati ki Jai! 🙏✨", 1.8);
+      }
+
+      if (this.caughtTimer <= 0) {
+        // Resume automatic running with energized leap!
         this.isCaught = false;
-        this.caughtTimer = 0;
-        this.caughtCount = 0;
-        this.modaksEatenCount = 0;
         this.isEating = false;
-
-        this.speechText = "";
-        this.speechTimer = 0;
+        this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
+        this.facing = Math.random() < 0.5 ? 1 : -1;
+        this.vel.set(this.facing * this.runSpeed * 1.5, -400);
+        this.say("Full of divine energy now! Catch me if you can, Mata! 🚀", 1.8);
+        audioEngine.playDashWhoosh(520);
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
       }
 
-      say(text, duration = 1.8) {
-        this.speechText = text;
-        this.speechTimer = duration;
+      this.updateTargetPoint();
+      this.updateMooshak(dt, physics);
+      return;
+    }
+
+    // 2. Medium Dodge Evasion AI: Sensing Maa Parvati's approach!
+    const distToChaserCatch = this.pos.distanceTo(chaser.catchPoint);
+    const escapeDirX = Math.sign(this.pos.x - chaser.pos.x) || this.facing;
+
+    // A. CORNER TRAP DETECTION & MEDIUM WALL-KICK DODGE
+    const isNearLeftCorner = this.pos.x < 220;
+    const isNearRightCorner = this.pos.x > physics.width - 220;
+    const chaserTrappingLeft = isNearLeftCorner && chaser.pos.x > this.pos.x && (chaser.pos.x - this.pos.x) < 220;
+    const chaserTrappingRight = isNearRightCorner && chaser.pos.x < this.pos.x && (this.pos.x - chaser.pos.x) < 220;
+
+    if ((chaserTrappingLeft || chaserTrappingRight) && this.cornerDodgeCooldown <= 0) {
+      // Launch moderately toward open center of courtyard (Medium Dodge: ~320 px/s)
+      const launchDirX = chaserTrappingLeft ? 1 : -1;
+      
+      if (!physics.isAntiGravityActive) {
+        this.vel.x = launchDirX * (320 + Math.random() * 40);
+        this.vel.y = -350 - Math.random() * 40; // Manageable arched leap
+      } else {
+        this.vel.x = launchDirX * (300 + Math.random() * 30);
+        this.vel.y = (this.pos.y < chaser.pos.y ? -220 : 240);
       }
 
-      triggerCaught(chaser) {
-        this.isCaught = true;
-        this.caughtTimer = 3.6; // Extended celebration for eating & offering
-        this.state = "CAUGHT";
-        this.caughtCount++;
-        this.modaksEatenCount++;
-        this.isEating = true;
-        this.vel.set(0, 0);
-        this.facing = Math.sign(chaser.pos.x - this.pos.x) || 1;
-        const caughtDialogues = [
-          "Pranam Ganesh Ji! Your modaks are divine! 🥟🙏✨",
-          "Delicious! Thank you, Ganpati Bappa! 🥟✨",
-          "Yummy! Blessed modak from Ganesh Ji! 🥟😋"
-        ];
-        this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.0);
+      this.facing = launchDirX;
+      this.dashTimer = 0.50; // Medium dodge duration
+      this.state = "DASHING";
+      this.dashCooldown = 1.0;
+      this.cornerDodgeCooldown = 2.4; // Fair cooldown allowing player to close in
+      this.alignReflexTimer = 0;
+
+      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 140, 1.4);
+      for (let s = 0; s < 14; s++) {
+        particleSystem.addSparkle(this.pos.x + (Math.random() - 0.5) * 30, this.pos.y + (Math.random() - 0.5) * 30, "#fde047");
       }
+      audioEngine.playDashWhoosh(560);
 
-      update(dt, phys, part, audio, chaser) {
-        this.dashCooldown = Math.max(0, this.dashCooldown - dt);
-        this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
-
-        if (this.speechTimer > 0) {
-          this.speechTimer -= dt;
-          if (this.speechTimer <= 0) this.speechText = "";
-        }
-
-        if (this.isCaught) {
-          this.caughtTimer -= dt;
-          this.state = "CAUGHT";
-          this.pos.y = phys.isAntiGravity ? chaser.pos.y : phys.groundY;
-          this.pos.x = chaser.pos.x + (this.facing === 1 ? -18 : 18);
-
-          // Transition to Stage 2: Praising Ganesh Ji
-          if (this.caughtTimer < 2.0 && this.caughtTimer > 0.4 && this.speechTimer <= 0) {
-            this.say("Ganpati Bappa Morya! 🙏✨", 1.8);
-          }
-
-          if (this.caughtTimer <= 0) {
-            this.isCaught = false;
-            this.isEating = false;
-            this.state = phys.isAntiGravity ? "FLOATING" : "RUNNING";
-            this.facing = Math.random() < 0.5 ? 1 : -1;
-            this.vel.set(this.facing * this.runSpeed * 1.5, -400);
-            this.say("Full of energy now! Catch me if you can! 🚀", 1.8);
-            audio.playDashWhoosh(520);
-            part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-          }
-          this.targetPoint.set(this.pos.x, this.pos.y - 18);
-          return;
-        }
-
-        // Medium Dodge Evasion AI: Sensing Lord Ganesha's approach!
-        const distToChaserCatch = this.pos.distanceTo(chaser.catchPoint);
-        const escapeDirX = Math.sign(this.pos.x - chaser.pos.x) || this.facing;
-
-        // A. CORNER TRAP DETECTION & MEDIUM WALL-KICK DODGE
-        const isNearLeftCorner = this.pos.x < 220;
-        const isNearRightCorner = this.pos.x > phys.w - 220;
-        const chaserTrappingLeft = isNearLeftCorner && chaser.pos.x > this.pos.x && (chaser.pos.x - this.pos.x) < 220;
-        const chaserTrappingRight = isNearRightCorner && chaser.pos.x < this.pos.x && (this.pos.x - chaser.pos.x) < 220;
-
-        if ((chaserTrappingLeft || chaserTrappingRight) && this.cornerDodgeCooldown <= 0) {
-          const launchDirX = chaserTrappingLeft ? 1 : -1;
-          if (!phys.isAntiGravity) {
-            this.vel.x = launchDirX * (320 + Math.random() * 40);
-            this.vel.y = -350 - Math.random() * 40;
-          } else {
-            this.vel.x = launchDirX * (300 + Math.random() * 30);
-            this.vel.y = (this.pos.y < chaser.pos.y ? -220 : 240);
-          }
-          this.facing = launchDirX;
-          this.dashTimer = 0.50;
+      const cornerQuips = [
+        "Bal Ganesh takes a playful leap! 💨",
+        "Can't corner little Ganesha! ⚡",
+        "Acrobatic hop, Mata! ✨",
+        "Wheee! Ganpati Bappa Morya! 🪔"
+      ];
+      this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.4);
+    }
+    // B. PROACTIVE EVASIVE ACROBATICS (Mid-field & airborne)
+    else if (distToChaserCatch < this.dangerZoneRadius) {
+      if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 30) {
+        // Floor vault leap when chaser gets within 80px
+        if (distToChaserCatch < 80 && this.dashCooldown <= 0) {
+          this.vel.y = -330 - Math.random() * 40;
+          this.vel.x = escapeDirX * (280 + Math.random() * 40);
+          this.facing = escapeDirX;
+          this.dashTimer = 0.40;
           this.state = "DASHING";
-          this.dashCooldown = 1.0;
-          this.cornerDodgeCooldown = 2.4;
-          this.alignReflexTimer = 0;
-
-          part.addWave(this.pos.x, this.pos.y, 140, 1.4);
-          for (let s = 0; s < 14; s++) {
-            part.addSparkle(this.pos.x + (Math.random() - 0.5) * 30, this.pos.y + (Math.random() - 0.5) * 30, "#fde047");
-          }
-          audio.playDashWhoosh(560);
-
-          const cornerQuips = ["Medium leap dodge! 💨", "Can't corner me! ⚡", "Acrobatic hop! ✨", "Agile corner dodge! 🪔"];
-          this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.4);
-        }
-        // B. PROACTIVE EVASION (Mid-field & airborne)
-        else if (distToChaserCatch < this.dangerZoneRadius) {
-          if (!phys.isAntiGravity && this.pos.y >= phys.groundY - 30) {
-            if (distToChaserCatch < 80 && this.dashCooldown <= 0) {
-              this.vel.y = -330 - Math.random() * 40;
-              this.vel.x = escapeDirX * (280 + Math.random() * 40);
-              this.facing = escapeDirX;
-              this.dashTimer = 0.40;
-              this.state = "DASHING";
-              this.dashCooldown = 0.95;
-              part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-              audio.playDashWhoosh(440);
-              const quips = ["Hop away! 💨", "Almost got me! ✨", "Hehe, keep trying! 🥟", "Zoom! 🪔"];
-              this.say(quips[Math.floor(Math.random() * quips.length)], 1.1);
-            } else {
-              this.acc.x += escapeDirX * 520;
-              this.facing = escapeDirX;
-            }
-          } else if (this.pos.y < phys.groundY - 30 && distToChaserCatch < 75 && this.dashCooldown <= 0) {
-            this.vel.y = -220;
-            this.vel.x = escapeDirX * 300;
-            this.facing = escapeDirX;
-            this.dashTimer = 0.38;
-            this.state = "DASHING";
-            this.dashCooldown = 1.0;
-            part.addTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-            audio.playDashWhoosh(480);
-            this.say("Mid-air leap! 💨", 1.0);
-          } else if (phys.isAntiGravity) {
-            this.acc.x += escapeDirX * 450;
-            this.acc.y += (this.pos.y < chaser.pos.y ? -180 : 180);
-            this.facing = escapeDirX;
-          }
-        }
-
-        // 3. Balanced Reflex Escape: If points are closely matched (<= 28px), 0.36s window!
-        const distPoints = this.targetPoint.distanceTo(chaser.catchPoint);
-        if (distPoints <= this.catchThreshold) {
-          this.alignReflexTimer += dt;
-          if (this.alignReflexTimer >= 0.36) {
-            this.vel.x = escapeDirX * 350;
-            this.vel.y = -220;
-            this.facing = escapeDirX;
-            this.dashTimer = 0.40;
-            this.state = "DASHING";
-            this.alignReflexTimer = 0;
-            this.dashCooldown = 1.0;
-            this.say("Quick hop away! 💨", 1.0);
-            audio.playDashWhoosh(480);
-            part.addWave(this.pos.x, this.pos.y, 90, 0.9);
-          }
+          this.dashCooldown = 0.95;
+          particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+          audioEngine.playDashWhoosh(440);
+          const evasionQuips = ["Hop away! 💨", "Almost got me, Maa! ✨", "Hehe, try again, Mata! 🥟", "Zoom! 🪔"];
+          this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
         } else {
-          this.alignReflexTimer = 0;
+          // Sprint burst away from chaser
+          this.acc.x += escapeDirX * 520;
+          this.facing = escapeDirX;
         }
-
-        // Automatic Running AI
-        this.autoHopTimer -= dt;
-        this.turnTimer -= dt;
-
-        if (!phys.isAntiGravity && this.state === "RUNNING" && this.autoHopTimer <= 0) {
-          this.vel.y = -290 - Math.random() * 80;
-          this.autoHopTimer = 1.8 + Math.random() * 2.2;
-        }
-
-        if (this.pos.x < 110) { this.facing = 1; this.turnTimer = 3.5; }
-        else if (this.pos.x > phys.w - 110) { this.facing = -1; this.turnTimer = 3.5; }
-        else if (this.turnTimer <= 0) { this.facing *= -1; this.turnTimer = 3.5 + Math.random() * 4.0; }
-
-        const desiredVx = this.facing * this.runSpeed;
-        this.acc.x += (desiredVx - this.vel.x) * 5.8;
-
-        if (this.dashTimer > 0) {
-          this.dashTimer -= dt;
-          this.state = "DASHING";
-          this.angle += this.facing * 26 * dt;
-          if (this.dashTimer <= 0) {
-            this.state = phys.isAntiGravity ? "FLOATING" : "RUNNING";
-          }
-        } else if (phys.isAntiGravity || this.pos.y < phys.groundY - 25) {
-          this.state = "FLOATING";
-          const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.4 * this.facing;
-          this.angle += (targetAngle - this.angle) * 6 * dt;
-        } else {
-          this.state = "RUNNING";
-          this.angle += (0 - this.angle) * 10 * dt;
-        }
-
-        this.vel.add(this.acc.clone().multiplyScalar(dt));
-        this.pos.add(this.vel.clone().multiplyScalar(dt));
-        this.acc.set(0, 0);
-
-        // Bounds with Emergency Wall-Kick Spring (Medium bounce)
-        if (this.pos.x <= 55) {
-          this.pos.x = 55;
-          if (distToChaserCatch < 200) {
-            this.vel.x = 320;
-            this.vel.y = -350;
-            this.facing = 1;
-            this.dashTimer = 0.45;
-            this.state = "DASHING";
-            audio.playDashWhoosh(520);
-          } else {
-            this.vel.x *= -0.6;
-            this.facing = 1;
-          }
-        } else if (this.pos.x >= phys.w - 55) {
-          this.pos.x = phys.w - 55;
-          if (distToChaserCatch < 200) {
-            this.vel.x = -320;
-            this.vel.y = -350;
-            this.facing = -1;
-            this.dashTimer = 0.45;
-            this.state = "DASHING";
-            audio.playDashWhoosh(520);
-          } else {
-            this.vel.x *= -0.6;
-            this.facing = -1;
-          }
-        }
-
-        if (this.pos.y < 50) {
-          this.pos.y = 50;
-          this.vel.y = Math.max(0, this.vel.y * -0.4);
-        } else if (this.pos.y > phys.groundY) {
-          this.pos.y = phys.groundY;
-          this.vel.y = 0;
-          if (this.state !== "DASHING" && !this.isCaught) this.state = "RUNNING";
-        }
-
-        this.targetPoint.set(this.pos.x, this.pos.y - 18);
-      }
-
-      draw(ctx) {
-        ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
-
-        if (this.speechText) {
-          this.drawBubble(ctx, this.speechText, "#fbbf24", "#1e1b4b", -65);
-        }
-
-        ctx.rotate(this.angle);
-        ctx.scale(this.facing, 1);
-
-        if (this.isCaught) {
-          ctx.beginPath(); ctx.arc(0, -14, 30, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(251, 191, 36, 0.35)";
-          ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 18; ctx.fill(); ctx.shadowBlur = 0;
-        }
-
-        // Floating Scarf (Angavastram)
-        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 4;
-        ctx.beginPath();
-        const wave = Math.sin(Date.now() * 0.008) * 8;
-        ctx.moveTo(-6, -18);
-        ctx.bezierCurveTo(-18, -10 + wave, -30, -16 - wave, -42, -18 + wave * 1.5);
-        ctx.stroke();
-
-        // Kurta (Saffron Orange)
-        ctx.fillStyle = "#ea580c";
-        ctx.beginPath(); ctx.roundRect(-10, -22, 20, 24, 5); ctx.fill();
-        ctx.strokeStyle = "#fef08a"; ctx.lineWidth = 1.5; ctx.stroke();
-
-        // Dhoti / Legs
-        ctx.fillStyle = "#fef3c7";
-        if (this.state === "RUNNING" && !this.isCaught) {
-          const legRun = Math.sin(Date.now() * 0.02) * 8;
-          ctx.fillRect(-8, 2, 6, 14 + legRun); ctx.fillRect(2, 2, 6, 14 - legRun);
-        } else {
-          ctx.fillRect(-8, 2, 6, 14); ctx.fillRect(2, 2, 6, 14);
-        }
-
-        // Arms
-        ctx.fillStyle = "#fbd38d";
-        if (this.isCaught) {
-          ctx.fillRect(6, -24, 14, 6);
-          ctx.beginPath(); ctx.arc(20, -22, 5, 0, Math.PI * 2);
-          ctx.fillStyle = "#fbbf24"; ctx.fill(); // holding modak
-        } else {
-          const armSwing = Math.sin(Date.now() * 0.02) * 5;
-          ctx.fillRect(8, -16 + armSwing, 6, 12); ctx.fillRect(-12, -16 - armSwing, 6, 12);
-        }
-
-        // Head & Hair
-        ctx.beginPath(); ctx.arc(0, -30, 11, 0, Math.PI * 2);
-        ctx.fillStyle = "#fbd38d"; ctx.fill();
-        ctx.beginPath(); ctx.arc(0, -34, 11, Math.PI, Math.PI * 2);
-        ctx.fillStyle = "#1e1b4b"; ctx.fill();
-
-        // Tilak
-        ctx.fillStyle = "#dc2626"; ctx.fillRect(3, -34, 2, 4);
-
-        // Eyes & Mouth / Eating Animation
-        ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.arc(4, -30, 1.8, 0, Math.PI * 2); ctx.fill();
-
-        if (this.isCaught) {
-          const chew = Math.abs(Math.sin(Date.now() * 0.022)) * 2.2;
-          ctx.beginPath(); ctx.ellipse(4, -26, 2.8, chew + 1.2, 0, 0, Math.PI * 2);
-          ctx.fillStyle = "#991b1b"; ctx.fill();
-
-          ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.ellipse(12, -26, 4.5, 3.5, 0.2, 0, Math.PI * 2);
-          ctx.fill(); ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1; ctx.stroke();
-
-          ctx.fillStyle = "#f43f5e"; ctx.font = "bold 10px sans-serif";
-          ctx.fillText("❤️", 8, -44 + Math.sin(Date.now() * 0.008) * 3);
-        } else {
-          ctx.beginPath(); ctx.arc(4, -26, 3.5, 0.1, Math.PI - 0.2);
-          ctx.strokeStyle = "#991b1b"; ctx.lineWidth = 1.2; ctx.stroke();
-        }
-
-        ctx.restore();
-
-        // DRAW BODY TARGET POINT (Cyan / Green glowing jewel)
-        ctx.save();
-        const tp = this.targetPoint;
-        const matched = this.isPointMatched;
-        const pulse = Math.sin(Date.now() * 0.008) * 2;
-        ctx.beginPath();
-        ctx.arc(tp.x, tp.y, (matched ? 11 : 6.5) + pulse, 0, Math.PI * 2);
-        ctx.strokeStyle = matched ? "#22c55e" : "#38bdf8";
-        ctx.lineWidth = matched ? 2.5 : 1.5;
-        if (matched) ctx.setLineDash([3, 3]);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(tp.x, tp.y, matched ? 4.5 : 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = matched ? "#4ade80" : "#38bdf8";
-        ctx.shadowColor = matched ? "#22c55e" : "#0284c7";
-        ctx.shadowBlur = matched ? 14 : 7;
-        ctx.fill();
-        ctx.restore();
-      }
-
-      drawBubble(ctx, text, bg, color, yOffset) {
-        ctx.save();
-        ctx.font = "bold 11px sans-serif";
-        const w = ctx.measureText(text).width + 16;
-        ctx.fillStyle = bg;
-        ctx.beginPath(); ctx.roundRect(-w / 2, yOffset, w, 22, 6); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-4, yOffset + 22); ctx.lineTo(0, yOffset + 28); ctx.lineTo(4, yOffset + 22); ctx.fill();
-        ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(text, 0, yOffset + 11);
-        ctx.restore();
+      } else if (this.pos.y < physics.groundY - 30 && distToChaserCatch < 75 && this.dashCooldown <= 0) {
+        // Airborne feint / mid-air flip
+        this.vel.y = -220;
+        this.vel.x = escapeDirX * 300;
+        this.facing = escapeDirX;
+        this.dashTimer = 0.38;
+        this.state = "DASHING";
+        this.dashCooldown = 1.0;
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+        audioEngine.playDashWhoosh(480);
+        this.say("Mid-air leap! 💨", 1.0);
+      } else if (physics.isAntiGravityActive) {
+        // In AG-04 low-buoyancy: glide away using atmospheric currents
+        this.acc.x += escapeDirX * 450;
+        this.acc.y += (this.pos.y < chaser.pos.y ? -180 : 180);
+        this.facing = escapeDirX;
       }
     }
 
-    class GaneshJi {
-      constructor(x, y) {
-        this.pos = new Vector2(x, y);
-        this.vel = new Vector2(0, 0);
+    // 3. Balanced Reflex Escape: If points are closely matched (<= 28px), 0.36s reflex window!
+    const distPoints = this.targetPoint.distanceTo(chaser.catchPoint);
+    if (distPoints <= this.catchThreshold) {
+      this.alignReflexTimer += dt;
+      if (this.alignReflexTimer >= 0.36) {
+        // Emergency escape slide dash after fair 0.36s window
+        this.vel.x = escapeDirX * 350;
+        this.vel.y = -220;
+        this.facing = escapeDirX;
+        this.dashTimer = 0.40;
+        this.state = "DASHING";
+        this.alignReflexTimer = 0;
+        this.dashCooldown = 1.0;
+        this.say("Quick hop away! 💨", 1.0);
+        audioEngine.playDashWhoosh(480);
+        particleSystem.addDistortionWave(this.pos.x, this.pos.y, 90, 0.9);
+      }
+    } else {
+      this.alignReflexTimer = 0;
+    }
+
+    // 4. Automatic Running Drive
+    this.autoHopTimer -= dt;
+    this.turnTimer -= dt;
+
+    // Periodic spontaneous leaps in 1G
+    if (!physics.isAntiGravityActive && this.state === "RUNNING" && this.autoHopTimer <= 0) {
+      this.vel.y = -290 - Math.random() * 80;
+      this.autoHopTimer = 1.8 + Math.random() * 2.2;
+      if (Math.random() < 0.3) this.say("Wheee! ✨", 1.2);
+    }
+
+    // Turn around when hitting wall or randomly
+    if (this.pos.x < 110) {
+      this.facing = 1;
+      this.turnTimer = 3.0 + Math.random() * 3.0;
+    } else if (this.pos.x > physics.width - 110) {
+      this.facing = -1;
+      this.turnTimer = 3.0 + Math.random() * 3.0;
+    } else if (this.turnTimer <= 0) {
+      this.facing *= -1;
+      this.turnTimer = 3.5 + Math.random() * 4.0;
+    }
+
+    // Maintain running horizontal drive
+    const desiredVx = this.facing * this.runSpeed;
+    this.acc.x += (desiredVx - this.vel.x) * 5.8;
+
+    // Handle dash state
+    if (this.dashTimer > 0) {
+      this.dashTimer -= dt;
+      this.state = "DASHING";
+      this.angle += this.facing * 26 * dt;
+      this.trailTimer += dt;
+      if (this.trailTimer > 0.03) {
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+        this.trailTimer = 0;
+      }
+      if (this.dashTimer <= 0) {
+        this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
+      }
+    } else {
+      if (physics.isAntiGravityActive || this.pos.y < physics.groundY - 25) {
+        this.state = "FLOATING";
+        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.4 * this.facing;
+        this.angle += (targetAngle - this.angle) * 6 * dt;
+      } else {
+        this.state = "RUNNING";
+        this.angle += (0 - this.angle) * 10 * dt;
+      }
+    }
+
+    // Integrate physics
+    this.vel.add(this.acc.clone().multiplyScalar(dt));
+    this.pos.add(this.vel.clone().multiplyScalar(dt));
+    this.acc.set(0, 0);
+
+    this.floatingMomentum.copy(this.vel);
+
+    // Boundaries with Emergency Wall-Kick Spring
+    const minX = 60, maxX = physics.width - 60;
+    const minY = 50, maxY = physics.groundY;
+
+    if (this.pos.x <= minX) {
+      this.pos.x = minX;
+      if (distToChaserCatch < 200) {
+        // Medium wall-kick spring out of corner
+        this.vel.x = 320;
+        this.vel.y = -350;
         this.facing = 1;
-        this.state = "FOLLOWING_CURSOR";
-        this.reachArm = 0;
-        this.reachUp = false;
-        this.isBlessing = false;
-        this.blessTimer = 0;
-        this.isHugging = false;
-        this.hugTimer = 0;
-
-        // Catch Point on Ganesh Ji's hand
-        this.catchPoint = new Vector2(x + 24, y - 44);
-        this.isPointMatched = false;
-
-        this.mooshakX = x - 34;
-        this.mooshakY = y;
-        this.mooshakVel = 0;
-
-        this.speechText = "";
-        this.speechTimer = 0;
+        this.dashTimer = 0.45;
+        this.state = "DASHING";
+        audioEngine.playDashWhoosh(520);
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+      } else {
+        this.vel.x *= -0.7;
+        this.facing = 1;
       }
-
-      say(text, duration = 2.0) {
-        this.speechText = text;
-        this.speechTimer = duration;
-      }
-
-      triggerCatchSuccess(boy) {
-        this.isBlessing = true;
-        this.blessTimer = 3.6;
-        this.isHugging = true;
-        this.hugTimer = 3.6;
-        this.state = "BLESSING";
-        this.reachArm = 1.0;
-        const dialogues = [
-          "Blessings upon you, Aarav! Have this divine modak! 🥟✨",
-          "Ganpati Bappa Morya! Well caught, little hero! 🥟🙏",
-          "Sweet prasad for you, beta! Joy, peace & wisdom! 🥟💖"
-        ];
-        this.say(dialogues[Math.floor(Math.random() * dialogues.length)], 2.2);
-      }
-
-      update(dt, cursorPos, isCursorActive, phys, audio, boy) {
-        if (this.speechTimer > 0) {
-          this.speechTimer -= dt;
-          if (this.speechTimer <= 0) this.speechText = "";
-        }
-
-        if (this.isBlessing) {
-          this.blessTimer -= dt;
-          this.hugTimer = this.blessTimer;
-          this.state = "BLESSING";
-          this.isHugging = true;
-          if (this.blessTimer < 2.0 && this.blessTimer > 0.4 && this.speechTimer <= 0) {
-            this.say("And divine prasad offered to the sanctum! Mangal Murti Morya! 🪔✨", 1.8);
-          }
-          if (this.blessTimer <= 0) {
-            this.isBlessing = false;
-            this.isHugging = false;
-            this.state = "FOLLOWING_CURSOR";
-          }
-          this.updateCatchPoint(phys);
-          this.updateMooshak(dt, phys);
-          return;
-        }
-
-        // Stable Kinematic Cursor Following with Spring-Damper & Anti-Jitter Deadzone
-        if (isCursorActive) {
-          const dx = cursorPos.x - this.pos.x;
-          const distToCursorX = Math.abs(dx);
-
-          if (distToCursorX > 10) {
-            this.facing = Math.sign(dx) || 1;
-          }
-
-          let desiredVx = 0;
-          if (distToCursorX > 6) {
-            desiredVx = Math.sign(dx) * Math.min(270, (distToCursorX - 6) * 4.4);
-          }
-
-          this.vel.x += (desiredVx - this.vel.x) * 9.5 * dt;
-          this.pos.x += this.vel.x * dt;
-
-          if (phys.isAntiGravity) {
-            const targetY = Math.max(90, Math.min(phys.groundY - 15, cursorPos.y));
-            const desiredVy = (targetY - this.pos.y) * 3.8;
-            this.vel.y += (desiredVy - this.vel.y) * 6.0 * dt;
-            this.pos.y += this.vel.y * dt;
-            this.reachUp = cursorPos.y < this.pos.y - 25;
-          } else {
-            this.pos.y += (phys.groundY - this.pos.y) * 12.0 * dt;
-            this.vel.y = 0;
-            this.reachUp = cursorPos.y < phys.groundY - 45;
-          }
-
-          const distToBoy = this.pos.distanceTo(boy.pos);
-          if (distToBoy < 110 || Math.hypot(cursorPos.x - this.pos.x, cursorPos.y - this.pos.y) < 85) {
-            this.reachArm = Math.min(1.0, this.reachArm + dt * 4.5);
-          } else {
-            this.reachArm = Math.max(0, this.reachArm - dt * 3.0);
-          }
-
-          this.state = "FOLLOWING_CURSOR";
-        } else {
-          this.vel.x *= Math.max(0, 1 - 8 * dt);
-          this.pos.x += this.vel.x * dt;
-        }
-
-        this.pos.x = Math.max(70, Math.min(phys.w - 70, this.pos.x));
-        this.updateCatchPoint(phys);
-        this.updateMooshak(dt, phys);
-      }
-
-      updateMooshak(dt, phys) {
-        const targetMooshakX = this.pos.x - this.facing * 34;
-        const dmx = targetMooshakX - this.mooshakX;
-        this.mooshakVel += (dmx * 6.0 - this.mooshakVel) * 8.0 * dt;
-        this.mooshakX += this.mooshakVel * dt;
-        this.mooshakY = phys.isAntiGravity ? this.pos.y + 14 : phys.groundY;
-      }
-
-      updateCatchPoint(phys) {
-        if (this.reachUp) {
-          this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 72);
-        } else {
-          this.catchPoint.set(this.pos.x + this.facing * 26, this.pos.y - 44);
-        }
-      }
-
-      draw(ctx) {
-        ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
-
-        if (this.speechText) {
-          this.drawBubble(ctx, this.speechText, "#ea580c", "#ffffff", -105);
-        }
-
-        ctx.scale(this.facing, 1);
-        const hoverBob = Math.sin(Date.now() * 0.004) * 2.5;
-
-        // A. Celestial Halo (Prabhavali)
-        ctx.save();
-        ctx.translate(0, -62 + hoverBob);
-        const haloGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 38);
-        haloGrad.addColorStop(0, "rgba(251, 191, 36, 0.45)");
-        haloGrad.addColorStop(0.7, "rgba(245, 158, 11, 0.2)");
-        haloGrad.addColorStop(1, "rgba(245, 158, 11, 0)");
-        ctx.fillStyle = haloGrad;
-        ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "rgba(251, 191, 36, 0.5)"; ctx.lineWidth = 1.6;
-        for (let i = 0; i < 12; i++) {
-          const rayAngle = (i * Math.PI) / 6 + Date.now() * 0.0008;
-          ctx.beginPath();
-          ctx.moveTo(Math.cos(rayAngle) * 16, Math.sin(rayAngle) * 16);
-          ctx.lineTo(Math.cos(rayAngle) * 26, Math.sin(rayAngle) * 26);
-          ctx.stroke();
-        }
-        ctx.restore();
-
-        // B. Dhoti & Lotus Feet (Pitambar silk)
-        ctx.fillStyle = "#eab308";
-        ctx.beginPath(); ctx.moveTo(-16, -26 + hoverBob); ctx.lineTo(16, -26 + hoverBob); ctx.lineTo(18, 0); ctx.lineTo(-18, 0); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 2.5; ctx.stroke();
-        ctx.strokeStyle = "#ca8a04"; ctx.lineWidth = 1.5;
-        for (let i = -8; i <= 8; i += 4) {
-          ctx.beginPath(); ctx.moveTo(i, -20 + hoverBob); ctx.lineTo(i * 1.2, 0); ctx.stroke();
-        }
-        ctx.fillStyle = "#f59e0b";
-        ctx.beginPath(); ctx.ellipse(-8, 2, 7, 3, 0, 0, Math.PI * 2); ctx.ellipse(8, 2, 7, 3, 0, 0, Math.PI * 2); ctx.fill();
-
-        // C. Benevolent Belly (Lambodara) & Yajnopavita
-        ctx.fillStyle = "#f59e0b";
-        ctx.beginPath(); ctx.ellipse(0, -22 + hoverBob, 18, 17, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#fef08a"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(-10, -42 + hoverBob); ctx.quadraticCurveTo(-2, -26 + hoverBob, 12, -14 + hoverBob); ctx.stroke();
-
-        // D. Four Divine Arms (Chaturbhuja)
-        ctx.fillStyle = "#f59e0b";
-        // Upper Left (Lotus / Ankusha)
-        ctx.fillRect(-22, -44 + hoverBob, 8, 16);
-        ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.arc(-22, -48 + hoverBob, 4.5, 0, Math.PI * 2); ctx.fill();
-        // Upper Right (Blessing lotus)
-        ctx.fillStyle = "#f59e0b"; ctx.fillRect(14, -44 + hoverBob, 8, 16);
-        ctx.fillStyle = "#f43f5e"; ctx.beginPath(); ctx.arc(18, -48 + hoverBob, 4, 0, Math.PI * 2); ctx.fill();
-        // Lower Left (Modak-hasta)
-        ctx.fillStyle = "#f59e0b"; ctx.fillRect(-16, -34 + hoverBob, 12, 6);
-        ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.ellipse(-18, -35 + hoverBob, 5.5, 4.2, 0, 0, Math.PI * 2); ctx.fill();
-
-        // Lower Right (Abhaya Mudra / Reaching Hand)
-        ctx.fillStyle = "#f59e0b";
-        if (this.isBlessing) {
-          ctx.save(); ctx.rotate(-0.35); ctx.fillRect(8, -46 + hoverBob, 28, 8);
-          ctx.fillStyle = "#fbbf24"; ctx.fillRect(28, -47 + hoverBob, 4, 10);
-          ctx.beginPath(); ctx.ellipse(36, -43 + hoverBob, 6.5, 5, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.2; ctx.stroke();
-          ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(36, -45 + hoverBob, 2, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-        } else if (this.reachUp) {
-          ctx.save(); ctx.rotate(-1.25); ctx.fillRect(6, -48 + hoverBob, 26, 7);
-          ctx.fillStyle = "#fbbf24"; ctx.fillRect(24, -49 + hoverBob, 4, 9); ctx.restore();
-        } else if (this.reachArm > 0) {
-          ctx.save(); ctx.rotate(-0.65 * this.reachArm); ctx.fillRect(8, -46 + hoverBob, 28, 7);
-          ctx.fillStyle = "#fbbf24"; ctx.fillRect(26, -47 + hoverBob, 4, 9); ctx.restore();
-        } else {
-          ctx.save(); ctx.rotate(-0.2); ctx.fillRect(10, -42 + hoverBob, 14, 7);
-          ctx.beginPath(); ctx.arc(22, -40 + hoverBob, 5, 0, Math.PI * 2); ctx.fillStyle = "#f59e0b"; ctx.fill();
-          ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(22, -40 + hoverBob, 1.8, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-        }
-
-        // E. Elephant Head, Ears, Tusk & Trunk
-        const earFlutter = Math.sin(Date.now() * 0.006) * 1.5;
-        // Ears
-        ctx.fillStyle = "#f59e0b";
-        ctx.beginPath(); ctx.ellipse(-16 + earFlutter, -56 + hoverBob, 11, 14, -0.2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#fda4af"; ctx.beginPath(); ctx.ellipse(-16 + earFlutter, -56 + hoverBob, 7, 9, -0.2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#f59e0b";
-        ctx.beginPath(); ctx.ellipse(16 - earFlutter, -56 + hoverBob, 11, 14, 0.2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#fda4af"; ctx.beginPath(); ctx.ellipse(16 - earFlutter, -56 + hoverBob, 7, 9, 0.2, 0, Math.PI * 2); ctx.fill();
-
-        // Head
-        ctx.fillStyle = "#f59e0b"; ctx.beginPath(); ctx.arc(0, -56 + hoverBob, 14, 0, Math.PI * 2); ctx.fill();
-        // Ekadanta Tusk
-        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.moveTo(8, -48 + hoverBob); ctx.quadraticCurveTo(12, -46 + hoverBob, 15, -42 + hoverBob); ctx.quadraticCurveTo(10, -44 + hoverBob, 8, -48 + hoverBob); ctx.fill();
-        // Trunk (Vakratunda)
-        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 5.5; ctx.lineCap = "round";
-        ctx.beginPath(); ctx.moveTo(0, -52 + hoverBob); ctx.quadraticCurveTo(-4, -40 + hoverBob, -7, -35 + hoverBob);
-        ctx.quadraticCurveTo(-10, -32 + hoverBob, -7, -28 + hoverBob); ctx.quadraticCurveTo(-3, -27 + hoverBob, 2, -31 + hoverBob); ctx.stroke();
-        ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.arc(2, -31 + hoverBob, 2.8, 0, Math.PI * 2); ctx.fill();
-
-        // Tilak
-        ctx.fillStyle = "#fef08a"; ctx.fillRect(-4, -62 + hoverBob, 8, 2); ctx.fillRect(-3, -65 + hoverBob, 6, 1.5);
-        ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.ellipse(0, -62 + hoverBob, 1.2, 3, 0, 0, Math.PI * 2); ctx.fill();
-        // Eyes
-        ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.ellipse(4, -58 + hoverBob, 1.8, 1.2, 0.2, 0, Math.PI * 2); ctx.fill();
-
-        // F. Royal Mukut
-        ctx.fillStyle = "#fbbf24"; ctx.beginPath();
-        ctx.moveTo(-11, -66 + hoverBob); ctx.lineTo(11, -66 + hoverBob); ctx.lineTo(7, -84 + hoverBob); ctx.lineTo(0, -92 + hoverBob); ctx.lineTo(-7, -84 + hoverBob); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(0, -74 + hoverBob, 2.8, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(0, -92 + hoverBob, 2.5, 0, Math.PI * 2); ctx.fill();
-
-        ctx.restore();
-
-        // G. Mooshak Raj
-        this.drawMooshak(ctx);
-
-        // Catch Hand Point (Glowing jewel)
-        ctx.save();
-        const cp = this.catchPoint;
-        const matched = this.isPointMatched;
-        const pulse = Math.sin(Date.now() * 0.008) * 2;
-        ctx.beginPath(); ctx.arc(cp.x, cp.y, (matched ? 14 : 8) + pulse, 0, Math.PI * 2);
-        ctx.strokeStyle = matched ? "#22c55e" : "#fbbf24"; ctx.lineWidth = matched ? 2.5 : 1.5;
-        if (matched) ctx.setLineDash([3, 3]); ctx.stroke();
-        ctx.beginPath(); ctx.arc(cp.x, cp.y, matched ? 5.5 : 4, 0, Math.PI * 2);
-        ctx.fillStyle = matched ? "#4ade80" : "#fbbf24"; ctx.shadowColor = matched ? "#22c55e" : "#f59e0b";
-        ctx.shadowBlur = matched ? 16 : 8; ctx.fill();
-        ctx.restore();
-      }
-
-      drawMooshak(ctx) {
-        ctx.save();
-        ctx.translate(this.mooshakX, this.mooshakY);
-        ctx.scale(this.facing, 1);
-        ctx.fillStyle = "#64748b"; ctx.beginPath(); ctx.ellipse(0, -6, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(7, -8, 6, 4.5, 0.2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#475569"; ctx.beginPath(); ctx.arc(5, -13, 3.5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#fda4af"; ctx.beginPath(); ctx.arc(5, -13, 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(9, -9, 1.2, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-8, -6); ctx.quadraticCurveTo(-14, -12, -12, -18); ctx.stroke();
-        ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.arc(10, -4, 2.5, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-      }
-
-      drawBubble(ctx, text, bg, color, yOffset) {
-        ctx.save();
-        ctx.font = "bold 11px sans-serif";
-        const w = ctx.measureText(text).width + 16;
-        ctx.fillStyle = bg;
-        ctx.beginPath(); ctx.roundRect(-w / 2, yOffset, w, 22, 6); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-4, yOffset + 22); ctx.lineTo(0, yOffset + 28); ctx.lineTo(4, yOffset + 22); ctx.fill();
-        ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(text, 0, yOffset + 11);
-        ctx.restore();
+    } else if (this.pos.x >= maxX) {
+      this.pos.x = maxX;
+      if (distToChaserCatch < 200) {
+        // Medium wall-kick spring out of corner
+        this.vel.x = -320;
+        this.vel.y = -350;
+        this.facing = -1;
+        this.dashTimer = 0.45;
+        this.state = "DASHING";
+        audioEngine.playDashWhoosh(520);
+        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+      } else {
+        this.vel.x *= -0.7;
+        this.facing = -1;
       }
     }
 
-    const Mom = GaneshJi;
+    if (this.pos.y < minY) {
+      this.pos.y = minY;
+      this.vel.y = Math.max(0, this.vel.y * -0.4);
+    } else if (this.pos.y > maxY) {
+      this.pos.y = maxY;
+      this.vel.y = 0;
+      if (this.state !== "DASHING" && !this.isCaught) this.state = "RUNNING";
+    }
+
+    this.updateTargetPoint();
+    this.updateMooshak(dt, physics);
+  }
+
+  updateMooshak(dt, physics) {
+    const targetMooshakX = this.pos.x - this.facing * 24;
+    const dmx = targetMooshakX - this.mooshakX;
+    this.mooshakVel += (dmx * 7.0 - this.mooshakVel) * 9.0 * dt;
+    this.mooshakX += this.mooshakVel * dt;
+    this.mooshakY = physics.isAntiGravityActive ? this.pos.y + 10 : physics.groundY;
+  }
+
+  updateTargetPoint() {
+    // Target catch point is on Bal Ganesh's chest jewel
+    this.targetPoint.set(this.pos.x, this.pos.y - 18);
+  }
+
+  draw(ctx, debugVectors = false) {
+    ctx.save();
+    ctx.translate(this.pos.x, this.pos.y);
+
+    // Draw Speech Bubble if active
+    if (this.speechText) {
+      this.drawSpeechBubble(ctx, this.speechText, "#ea580c", "#ffffff");
+    }
+
+    ctx.rotate(this.angle);
+    ctx.scale(this.facing, 1);
+
+    // Caught celebration glow or running glow
+    if (this.isCaught) {
+      ctx.beginPath();
+      ctx.arc(0, -18, this.radius + 14, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(251, 191, 36, 0.45)";
+      ctx.shadowColor = "#f59e0b";
+      ctx.shadowBlur = 22;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 1. Floating Celestial Scarf / Angavastram (Golden Yellow with crimson trim)
+    ctx.save();
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 4.0;
+    ctx.beginPath();
+    const trailOffset = (this.state === "DASHING" || this.state === "RUNNING") ? -22 : -12;
+    const wave = Math.sin(Date.now() * 0.008) * 7;
+    ctx.moveTo(-6, -16);
+    ctx.bezierCurveTo(-16, -10 + wave, -28, trailOffset - wave, -40, trailOffset + wave * 1.4);
+    ctx.stroke();
+    // Crimson edge on scarf
+    ctx.strokeStyle = "#dc2626";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+
+    // 2. Divine Child Dhoti & Running Cadence (Pitambar Gold & Silk Red Trim)
+    ctx.fillStyle = "#eab308";
+    if (this.state === "RUNNING" && !this.isCaught) {
+      const legRun = Math.sin(Date.now() * 0.02) * 9;
+      // Dhoti wrap
+      ctx.fillRect(-8, 0, 16, 12);
+      // Legs
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(-7, 4, 5, 12 + legRun);
+      ctx.fillRect(2, 4, 5, 12 - legRun);
+    } else if (this.isCaught) {
+      // Standing happily with Maa Parvati
+      ctx.fillRect(-8, 0, 16, 12);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(-7, 4, 5, 12);
+      ctx.fillRect(2, 4, 5, 12);
+    } else {
+      ctx.fillRect(-8, 0, 16, 12);
+      ctx.fillStyle = "#f59e0b";
+      ctx.save(); ctx.rotate(-0.2); ctx.fillRect(-8, 4, 5, 14); ctx.restore();
+      ctx.save(); ctx.rotate(0.3); ctx.fillRect(2, 4, 5, 12); ctx.restore();
+    }
+
+    // Dhoti golden pleats & border
+    ctx.strokeStyle = "#b45309";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 12);
+    ctx.stroke();
+
+    // 3. Cute Pot Belly (Lambodara)
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.ellipse(0, -14, 13, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sacred Yajnopavita (Janeu thread crossing chest)
+    ctx.strokeStyle = "#fef08a";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-8, -22);
+    ctx.quadraticCurveTo(-2, -14, 8, -6);
+    ctx.stroke();
+
+    // Golden necklace / Haar
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.arc(0, -22, 7, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // 4. Four Divine Arms
+    ctx.fillStyle = "#f59e0b";
+    if (this.isCaught) {
+      // Reaching up happily holding sweet modak to mouth
+      ctx.fillRect(4, -20, 13, 5);
+      // Modak in hand
+      ctx.beginPath();
+      ctx.arc(17, -19, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fill();
+    } else if (this.state === "DASHING" || this.state === "FLOATING") {
+      ctx.fillRect(6, -18, 14, 4.5);
+      ctx.fillRect(-16, -14, 11, 4.5);
+    } else {
+      const armSwing = Math.sin(Date.now() * 0.02) * 5;
+      ctx.fillRect(7, -16 + armSwing, 5, 11);
+      ctx.fillRect(-11, -16 - armSwing, 5, 11);
+      // Extra upper arms with lotus & modak
+      ctx.fillRect(-10, -23, 4, 7);
+      ctx.fillRect(6, -23, 4, 7);
+      ctx.fillStyle = "#fbbf24"; // tiny modak in upper hand
+      ctx.beginPath(); ctx.arc(-10, -24, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f59e0b";
+    }
+
+    // 5. Cute Elephant Head, Flapping Ears & Tusk
+    const earWag = Math.sin(Date.now() * 0.008) * 1.5;
+    // Left Ear
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.ellipse(-11 + earWag, -28, 8, 10, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fda4af"; // Pink inner lobe
+    ctx.beginPath();
+    ctx.ellipse(-11 + earWag, -28, 5, 6.5, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right Ear
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.ellipse(11 - earWag, -28, 8, 10, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fda4af";
+    ctx.beginPath();
+    ctx.ellipse(11 - earWag, -28, 5, 6.5, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Head Base
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.arc(0, -28, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ekadanta (Single Cute White Tusk)
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(5, -23);
+    ctx.lineTo(9, -21);
+    ctx.lineTo(5, -20);
+    ctx.closePath();
+    ctx.fill();
+
+    // Curved Trunk (Vakratunda)
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, -25);
+    ctx.quadraticCurveTo(-3, -17, -5, -14);
+    ctx.quadraticCurveTo(-7, -11, -4, -9);
+    ctx.quadraticCurveTo(-1, -9, 3, -12);
+    ctx.stroke();
+
+    // Sweet Modak on Trunk Tip
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(3, -12, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Red & Sandalwood Tilak
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(-3, -34, 6, 1.5);
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.ellipse(0, -33, 1.0, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kind, Playful Eyes
+    ctx.fillStyle = "#1e1b4b";
+    if (this.isCaught) {
+      // Happy smiling closed crescent eyes (^ _ ^)
+      ctx.strokeStyle = "#1e1b4b";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(4, -30, 2.2, Math.PI, 0);
+      ctx.stroke();
+
+      // Chewing mouth animation with sweet modak
+      const chew = Math.abs(Math.sin(Date.now() * 0.022)) * 2.0;
+      ctx.beginPath();
+      ctx.ellipse(4, -25, 2.5, chew + 1.0, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#991b1b";
+      ctx.fill();
+
+      // Modak piece in mouth
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(11, -25, 4.0, 3.2, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Floating heart emote
+      ctx.fillStyle = "#f43f5e";
+      ctx.font = "bold 10px sans-serif";
+      ctx.fillText("❤️", 7, -40 + Math.sin(Date.now() * 0.008) * 3);
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(4, -29, 1.5, 1.1, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(4.4, -29.3, 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 6. Cute Golden Mukut (Crown with Ruby Kalash)
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.moveTo(-8, -35);
+    ctx.lineTo(8, -35);
+    ctx.lineTo(5, -48);
+    ctx.lineTo(0, -54); // Kalash apex
+    ctx.lineTo(-5, -48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Ruby on Mukut
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -42, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // 7. Mooshak Raj Companion
+    this.drawMooshak(ctx);
+
+    // 8. Body Target Point (Chest Jewel)
+    this.drawBodyTargetPoint(ctx);
+  }
+
+  drawMooshak(ctx) {
+    ctx.save();
+    ctx.translate(this.mooshakX, this.mooshakY);
+    ctx.scale(this.facing, 1);
+
+    // Mouse Body
+    ctx.fillStyle = "#64748b";
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mouse Head
+    ctx.beginPath();
+    ctx.ellipse(6, -6, 5, 3.8, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ears
+    ctx.fillStyle = "#fda4af";
+    ctx.beginPath();
+    ctx.arc(4, -10, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(7, -7, 1.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tail
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-6, -5);
+    ctx.quadraticCurveTo(-10, -10, -8, -14);
+    ctx.stroke();
+
+    // Tiny Modak in Mooshak's paws
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(9, -3, 2.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawBodyTargetPoint(ctx) {
+    ctx.save();
+    const tp = this.targetPoint;
+    const pulse = Math.sin(Date.now() * 0.008) * 2;
+    const matched = this.isPointMatched;
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, (matched ? 13 : 8) + pulse, 0, Math.PI * 2);
+    ctx.strokeStyle = matched ? "#22c55e" : "#38bdf8";
+    ctx.lineWidth = matched ? 2.5 : 1.5;
+    if (matched) ctx.setLineDash([3, 3]);
+    ctx.stroke();
+
+    // Core jewel
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, matched ? 5.5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = matched ? "#4ade80" : "#38bdf8";
+    ctx.shadowColor = matched ? "#22c55e" : "#0284c7";
+    ctx.shadowBlur = matched ? 16 : 8;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawSpeechBubble(ctx, text, bgColor, textColor) {
+    ctx.save();
+    ctx.font = "bold 11px system-ui, sans-serif";
+    const textWidth = ctx.measureText(text).width;
+    const padX = 8, padY = 5;
+    const bw = textWidth + padX * 2;
+    const bh = 22;
+    const bx = -bw / 2;
+    const by = -68;
+
+    ctx.fillStyle = bgColor;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 6);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Tail
+    ctx.beginPath();
+    ctx.moveTo(-4, by + bh);
+    ctx.lineTo(0, by + bh + 6);
+    ctx.lineTo(4, by + bh);
+    ctx.fill();
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 0, by + bh / 2);
+    ctx.restore();
+  }
+}
+
+// Backwards compatibility aliases
+const Boy = BalGanesh;
+const Aarav = BalGanesh;
+
+
+// ==========================================
+// 2. PARVATI MATA (MAA PARVATI) - DIVINE MOTHER & PROTECTOR
+// ==========================================
+class ParvatiMata {
+  constructor(x, y) {
+    this.pos = new Vector2(x, y);
+    this.targetPos = new Vector2(x, y);
+    this.vel = new Vector2(0, 0);
+    this.facing = 1;
+    this.state = "FOLLOWING_CURSOR"; // "FOLLOWING_CURSOR", "BLESSING", "IDLE"
+    this.reachArm = 0;
+    this.reachUp = false;
+
+    // Catch Point on Maa Parvati's modak-feeding hand
+    this.catchPoint = new Vector2(x + 24, y - 44);
+    this.isPointMatched = false;
+
+    // Blessing & Reward celebration
+    this.isBlessing = false;
+    this.blessTimer = 0;
+    // Compatibility aliases for simulation loops
+    this.isHugging = false;
+    this.hugTimer = 0;
+
+    // Speech bubble
+    this.speechText = "";
+    this.speechTimer = 0;
+  }
+
+  say(text, duration = 2.0) {
+    this.speechText = text;
+    this.speechTimer = duration;
+  }
+
+  triggerCatchSuccess(boy) {
+    this.isBlessing = true;
+    this.blessTimer = 3.6;
+    this.isHugging = true;
+    this.hugTimer = 3.6;
+    this.state = "BLESSING";
+    this.reachArm = 1.0;
+
+    const parvatiDialogues = [
+      "Ganesha, my sweet child! Have this delicious warm modak! 🥟❤️",
+      "Caught you, Bal Ganesha! Maa has fresh sweet prasad for you! 🥟✨",
+      "Sweet prasad for you, my little Vighnaharta! Peace, joy & wisdom! 🥟💖",
+      "Eat heartily, my dear Ganesha! Maa's love is with you always! 🪔🙏"
+    ];
+    this.say(parvatiDialogues[Math.floor(Math.random() * parvatiDialogues.length)], 2.2);
+  }
+
+  update(dt, cursorPos, isCursorActive, physics, audioEngine, boy) {
+    if (this.speechTimer > 0) {
+      this.speechTimer -= dt;
+      if (this.speechTimer <= 0) this.speechText = "";
+    }
+
+    // 1. If currently BLESSING & LOVINGLY EMBRACING Bal Ganesh
+    if (this.isBlessing) {
+      this.blessTimer -= dt;
+      this.hugTimer = this.blessTimer;
+      this.state = "BLESSING";
+      this.isHugging = true;
+
+      // Phase 2 of Reward: Divine sanctum altar consecration
+      if (this.blessTimer < 2.0 && this.blessTimer > 0.4 && this.speechTimer <= 0) {
+        this.say("And divine prasad offered to the sacred altar! Om Namah Shivaya! 🪔✨", 1.8);
+      }
+
+      if (this.blessTimer <= 0) {
+        this.isBlessing = false;
+        this.isHugging = false;
+        this.state = "FOLLOWING_CURSOR";
+      }
+      this.updateCatchPoint(physics);
+      return;
+    }
+
+    // 2. Stable Kinematic Following: Spring-damper smoothing & anti-jitter deadzone
+    if (isCursorActive) {
+      const dx = cursorPos.x - this.pos.x;
+      const distToCursorX = Math.abs(dx);
+
+      // Facing hysteresis: only flip facing when mouse clearly moves across body (> 10px)
+      if (distToCursorX > 10) {
+        this.facing = Math.sign(dx) || 1;
+      }
+
+      // Anti-jitter deadzone (< 6px dampens velocity smoothly to 0)
+      let desiredVx = 0;
+      if (distToCursorX > 6) {
+        const maxSpeed = 270;
+        desiredVx = Math.sign(dx) * Math.min(maxSpeed, (distToCursorX - 6) * 4.4);
+      }
+
+      // Critically damped spring-damper interpolation for horizontal glide
+      this.vel.x += (desiredVx - this.vel.x) * 9.5 * dt;
+      this.pos.x += this.vel.x * dt;
+
+      // Vertical Kinematics & Stability
+      if (physics.isAntiGravityActive) {
+        // Celestial hover in AG-04 sector
+        const targetY = Math.max(90, Math.min(physics.groundY - 15, cursorPos.y));
+        const desiredVy = (targetY - this.pos.y) * 3.8;
+        this.vel.y += (desiredVy - this.vel.y) * 6.0 * dt;
+        this.pos.y += this.vel.y * dt;
+        this.reachUp = cursorPos.y < this.pos.y - 25;
+      } else {
+        // Grounded stability in 1G: locked smoothly to ground without vertical jitter
+        this.pos.y += (physics.groundY - this.pos.y) * 12.0 * dt;
+        this.vel.y = 0;
+        this.reachUp = cursorPos.y < physics.groundY - 45;
+      }
+
+      // Reaching arm animation responds to cursor and Bal Ganesh proximity
+      const distToBoy = this.pos.distanceTo(boy.pos);
+      if (distToBoy < 110 || Math.hypot(cursorPos.x - this.pos.x, cursorPos.y - this.pos.y) < 85) {
+        this.reachArm = Math.min(1.0, this.reachArm + dt * 4.5);
+      } else {
+        this.reachArm = Math.max(0, this.reachArm - dt * 3.0);
+      }
+
+      this.state = "FOLLOWING_CURSOR";
+    } else {
+      // Gentle damping when cursor leaves canvas
+      this.vel.x *= Math.max(0, 1 - 8 * dt);
+      this.pos.x += this.vel.x * dt;
+    }
+
+    // Boundary containment
+    this.pos.x = Math.max(70, Math.min(physics.width - 70, this.pos.x));
+
+    this.updateCatchPoint(physics);
+  }
+
+  updateCatchPoint(physics) {
+    // Catch point is located on Maa Parvati's modak / feeding hand
+    if (this.reachUp) {
+      this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 68);
+    } else {
+      this.catchPoint.set(this.pos.x + this.facing * 26, this.pos.y - 42);
+    }
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.translate(this.pos.x, this.pos.y);
+
+    // Draw Speech Bubble if active
+    if (this.speechText) {
+      this.drawSpeechBubble(ctx, this.speechText, "#dc2626", "#ffffff");
+    }
+
+    ctx.scale(this.facing, 1);
+
+    // Subtle divine hover / breathing bob
+    const hoverBob = Math.sin(Date.now() * 0.004) * 2.5;
+
+    // ==========================================
+    // A. RADIANT DIVINE PRABHAVALI HALO
+    // ==========================================
+    ctx.save();
+    ctx.translate(0, -64 + hoverBob);
+    const haloPulse = 0.88 + Math.sin(Date.now() * 0.005) * 0.12;
+
+    // Outer warm crimson-gold gradient halo
+    const haloGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 36);
+    haloGrad.addColorStop(0, "rgba(253, 224, 71, 0.5)");
+    haloGrad.addColorStop(0.6, "rgba(239, 68, 68, 0.25)");
+    haloGrad.addColorStop(1, "rgba(239, 68, 68, 0)");
+    ctx.fillStyle = haloGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 36 * haloPulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Golden divine rays radiating from halo
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.55)";
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < 12; i++) {
+      const rayAngle = (i * Math.PI) / 6 + Date.now() * 0.0007;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(rayAngle) * 15, Math.sin(rayAngle) * 15);
+      ctx.lineTo(Math.cos(rayAngle) * 25, Math.sin(rayAngle) * 25);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // ==========================================
+    // B. FLOWING SARI PALLU (TRANSLUCENT SILK DUPATTA)
+    // ==========================================
+    ctx.save();
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.85)";
+    ctx.fillStyle = "rgba(245, 158, 11, 0.35)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    const palluWave = Math.sin(Date.now() * 0.007) * 8;
+    ctx.moveTo(-6, -42 + hoverBob);
+    ctx.bezierCurveTo(-22, -34 + palluWave, -36, -18 - palluWave, -48, palluWave * 1.5);
+    ctx.lineTo(-44, 10 + palluWave * 1.2);
+    ctx.bezierCurveTo(-32, -6 - palluWave, -20, -18 + palluWave, -4, -30 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // ==========================================
+    // C. ROYAL KANJEEVARAM SARI (CRIMSON RED & GOLDEN ZARI)
+    // ==========================================
+    // Rich Crimson Silk Sari Body
+    ctx.fillStyle = "#b91c1c";
+    ctx.beginPath();
+    ctx.moveTo(-13, -28 + hoverBob);
+    ctx.lineTo(13, -28 + hoverBob);
+    ctx.lineTo(16, 2);
+    ctx.lineTo(-16, 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Golden Zari Hem Border
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(-16, 0, 32, 4);
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(-16, 0, 32, 4);
+
+    // Sari Pleats (Patli)
+    ctx.strokeStyle = "#eab308";
+    ctx.lineWidth = 1.4;
+    for (let i = -6; i <= 6; i += 3) {
+      ctx.beginPath();
+      ctx.moveTo(i, -24 + hoverBob);
+      ctx.lineTo(i * 1.15, 0);
+      ctx.stroke();
+    }
+
+    // Golden Kamarbandh (Ornate Waist Belt)
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-13, -28 + hoverBob);
+    ctx.quadraticCurveTo(0, -25 + hoverBob, 13, -28 + hoverBob);
+    ctx.stroke();
+    // Central Emerald gem on Kamarbandh
+    ctx.fillStyle = "#10b981";
+    ctx.beginPath();
+    ctx.arc(0, -26.5 + hoverBob, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Choli / Blouse (Royal Gold & Crimson Silk)
+    ctx.fillStyle = "#991b1b";
+    ctx.beginPath();
+    ctx.roundRect(-9, -46 + hoverBob, 18, 19, 5);
+    ctx.fill();
+
+    // Diagonal Golden Sari Pallu wrap across chest
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 4.0;
+    ctx.beginPath();
+    ctx.moveTo(-9, -44 + hoverBob);
+    ctx.quadraticCurveTo(-1, -36 + hoverBob, 10, -27 + hoverBob);
+    ctx.stroke();
+
+    // Sacred Golden Haar / Necklaces
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.arc(0, -42 + hoverBob, 7.5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, -38 + hoverBob, 9.5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+    // Ruby pendant
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -35 + hoverBob, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ==========================================
+    // D. LONG HAIR & JASMINE GAJRA
+    // ==========================================
+    // Cascading dark hair behind
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.moveTo(-7, -54 + hoverBob);
+    ctx.quadraticCurveTo(-14, -40 + hoverBob, -12, -22 + hoverBob);
+    ctx.lineTo(-4, -22 + hoverBob);
+    ctx.quadraticCurveTo(-6, -40 + hoverBob, -4, -54 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // Jasmine flower garland (Gajra - white fragrant buds) in hair
+    ctx.fillStyle = "#ffffff";
+    for (let g = 0; g < 6; g++) {
+      ctx.beginPath();
+      ctx.arc(-8 - g * 1.0, -48 + g * 5 + hoverBob, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ==========================================
+    // E. MOTHERLY ARMS & SWEET MODAK FEEDING
+    // ==========================================
+    ctx.fillStyle = "#fbd38d"; // Graceful glowing complexion
+
+    // Left Arm (Embracing / resting gracefully)
+    ctx.fillRect(-14, -44 + hoverBob, 6, 16);
+    // Golden bangles (Kangan)
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(-15, -34 + hoverBob, 8, 3.5);
+    ctx.fillStyle = "#dc2626";
+    ctx.fillRect(-15, -36 + hoverBob, 8, 1.5);
+    ctx.fillStyle = "#fbd38d";
+
+    // Right Arm (Reaching out with fresh sweet modak)
+    if (this.isBlessing) {
+      // Loving feeding pose offering modak directly to Bal Ganesh
+      ctx.save();
+      ctx.rotate(-0.35);
+      ctx.fillRect(6, -46 + hoverBob, 28, 7);
+      // Golden bangles
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(24, -47 + hoverBob, 4, 9);
+      // Golden Modak in hand
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(34, -43 + hoverBob, 6.0, 4.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#d97706";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      // Sparkle on modak
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(34, -45 + hoverBob, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else if (this.reachUp) {
+      // Reaching upward
+      ctx.save();
+      ctx.rotate(-1.15);
+      ctx.fillRect(6, -48 + hoverBob, 26, 6.5);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(24, -49 + hoverBob, 4, 8);
+      // Modak on fingertips
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(32, -46 + hoverBob, 5.0, 4.0, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else if (this.reachArm > 0) {
+      // Reaching smoothly forward
+      ctx.save();
+      ctx.rotate(-0.65 * this.reachArm);
+      ctx.fillRect(6, -46 + hoverBob, 27, 6.5);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(25, -47 + hoverBob, 4, 8);
+      // Modak on hand
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(33, -44 + hoverBob, 5.5, 4.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // Gentle motherly greeting / blessing pose
+      ctx.save();
+      ctx.rotate(-0.2);
+      ctx.fillRect(8, -42 + hoverBob, 14, 6.5);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(16, -43 + hoverBob, 4, 8);
+      // Modak resting on hand
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.arc(22, -40 + hoverBob, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // ==========================================
+    // F. DIVINE MOTHER'S FACE & SHRINGAAR
+    // ==========================================
+    // Head / Face
+    ctx.fillStyle = "#fbd38d";
+    ctx.beginPath();
+    ctx.arc(0, -56 + hoverBob, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Long dark hair framing face
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(0, -59 + hoverBob, 11.2, Math.PI * 0.9, Math.PI * 2.1);
+    ctx.fill();
+
+    // Auspicious Red Kumkum Bindi & Sandalwood Crescent
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(3, -59 + hoverBob, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#fef08a";
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.arc(3, -57.5 + hoverBob, 2.6, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Serene Lotus Kohl Eyes
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.ellipse(4, -55 + hoverBob, 2.2, 1.4, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(4.6, -55.4 + hoverBob, 0.7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sweet Loving Smile
+    ctx.strokeStyle = "#b91c1c";
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.arc(3.5, -51.5 + hoverBob, 2.4, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Golden Jhumka (Earring)
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(-8, -53 + hoverBob, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-9.5, -51 + hoverBob);
+    ctx.lineTo(-6.5, -51 + hoverBob);
+    ctx.lineTo(-8, -47 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // ==========================================
+    // G. ORNATE GOLDEN MUKUT CROWN
+    // ==========================================
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.moveTo(-10, -64 + hoverBob);
+    ctx.lineTo(10, -64 + hoverBob);
+    ctx.lineTo(6, -80 + hoverBob);
+    ctx.lineTo(0, -87 + hoverBob); // Crown apex
+    ctx.lineTo(-6, -80 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Crown Ruby Gem
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -72 + hoverBob, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kalash Spire
+    ctx.fillStyle = "#fde047";
+    ctx.beginPath();
+    ctx.arc(0, -87 + hoverBob, 2.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // DRAW MAA PARVATI'S MODAK HAND POINT (Glowing Golden Jewel)
+    this.drawCatchHandPoint(ctx);
+  }
+
+  drawCatchHandPoint(ctx) {
+    ctx.save();
+    const cp = this.catchPoint;
+    const pulse = Math.sin(Date.now() * 0.008) * 2;
+    const matched = this.isPointMatched;
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(cp.x, cp.y, (matched ? 14 : 8) + pulse, 0, Math.PI * 2);
+    ctx.strokeStyle = matched ? "#22c55e" : "#fbbf24";
+    ctx.lineWidth = matched ? 2.5 : 1.5;
+    if (matched) ctx.setLineDash([3, 3]);
+    ctx.stroke();
+
+    // Core jewel
+    ctx.beginPath();
+    ctx.arc(cp.x, cp.y, matched ? 5.5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = matched ? "#4ade80" : "#fbbf24";
+    ctx.shadowColor = matched ? "#22c55e" : "#f59e0b";
+    ctx.shadowBlur = matched ? 16 : 9;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawSpeechBubble(ctx, text, bgColor, textColor) {
+    ctx.save();
+    ctx.font = "bold 11px system-ui, sans-serif";
+    const textWidth = ctx.measureText(text).width;
+    const padX = 8, padY = 5;
+    const bw = textWidth + padX * 2;
+    const bh = 22;
+    const bx = -bw / 2;
+    const by = -105;
+
+    ctx.fillStyle = bgColor;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 6);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.moveTo(-4, by + bh);
+    ctx.lineTo(0, by + bh + 6);
+    ctx.lineTo(4, by + bh);
+    ctx.fill();
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 0, by + bh / 2);
+    ctx.restore();
+  }
+}
+
+// Backwards compatibility aliases
+const GaneshJi = ParvatiMata;
+const Mom = ParvatiMata;
+const Priya = ParvatiMata;
+
+// ==========================================
+// 3. FESTIVE TORANS (VERLET ROPE)
+// ==========================================
+
 
     class Toran {
       constructor(sx, sy, ex, ey, segs = 16) {
@@ -1574,8 +2150,8 @@
       }
     };
 
-    const boy = new Boy(W * 0.55, physics.groundY);
-    const chaser = new GaneshJi(W * 0.25, physics.groundY);
+    const boy = new BalGanesh(W * 0.55, physics.groundY);
+    const chaser = new ParvatiMata(W * 0.25, physics.groundY);
     const mom = chaser;
     const torans = [
       new Toran(75, 105, W * 0.5 - 20, 105, 15),
@@ -1715,7 +2291,7 @@
       }
 
       if (boy.isCaught) {
-        teleBoy.textContent = `BLESSING AARAV 🥟`;
+        teleBoy.textContent = `LOVING EMBRACE WITH BAL GANESH 🥟`;
         teleBoy.style.color = "#f43f5e";
       } else {
         teleBoy.textContent = `RUNNING | Caught: ${boy.caughtCount}`;
@@ -1935,7 +2511,7 @@
         ctx.font = "bold 12px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.fillStyle = "#fef08a"; ctx.shadowColor = "#eab308"; ctx.shadowBlur = 14;
-        ctx.fillText("✦ ॐ GANPATI BAPPA MORYA! PRASAD OFFERED! 🙏 ✦", ax, ay - 75);
+        ctx.fillText("✦ ॐ नमः शिवाय & गणेशाय नमः! MAA PARVATI'S BLESSINGS BESTOWED! 🙏 ✦", ax, ay - 75);
         ctx.restore();
       }
 

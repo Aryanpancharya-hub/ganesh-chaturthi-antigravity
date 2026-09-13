@@ -240,8 +240,8 @@
 
   <header>
     <div class="title-group">
-      <h1>🪔 Ganesh Chaturthi Anti-Gravity Field <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
-      <p>Playable Lord Ganesha &bull; Medium Dodge Evasion &bull; High Accuracy Alignment (&le;28px) &amp; press Shift &bull; 🥟 Blessed Modak Rewards</p>
+      <h1>🪔 Maa Parvati &amp; Bal Ganesh <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
+      <p>Playable Parvati Mata &bull; Bal Ganesh (Lord Ganesha) Medium Dodge &bull; High Accuracy Alignment (&le;28px) &amp; press Shift &bull; 🥟 Blessed Modak Rewards</p>
     </div>
     <div class="header-badges">
       <div class="badge" style="border-color:#f59e0b;">
@@ -275,15 +275,15 @@
       <div class="hud-value" id="hud-mom">TRACKING</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Aarav State &amp; Catches</div>
+      <div class="hud-label">Bal Ganesh State &amp; Catches</div>
       <div class="hud-value" id="hud-boy-state">RUNNING | Caught: 0</div>
     </div>
     <div class="hud-item" style="border-color: rgba(251, 191, 36, 0.4);">
-      <div class="hud-label">🥟 Aarav Modaks Eaten</div>
+      <div class="hud-label">🥟 Bal Ganesh Modaks Eaten</div>
       <div class="hud-value" id="hud-aarav-modak" style="color:#fde047;">0</div>
     </div>
     <div class="hud-item" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(30, 20, 10, 0.8);">
-      <div class="hud-label">🙏 Prasad to Ganesh Ji</div>
+      <div class="hud-label">🙏 Prasad to Sanctum Altar</div>
       <div class="hud-value" id="hud-ganesh-prasad" style="color:#fbbf24;">0</div>
     </div>
   </div>
@@ -291,7 +291,7 @@
   <!-- Controls Bar -->
   <div class="controls-bar">
     <button class="btn btn-primary" id="btn-catch" style="background: linear-gradient(135deg, #16a34a 0%, #059669 100%); border-color: #4ade80;">
-      <span>⚡ BLESS &amp; CATCH AARAV</span>
+      <span>⚡ EMBRACE BAL GANESHA</span>
       <kbd>Shift</kbd>
     </button>
     <button class="btn btn-primary" id="btn-toggle-ag">
@@ -327,16 +327,16 @@
   <div class="instructions">
     <div class="instruction-grid">
       <div class="inst-col">
-        <strong>1. Lord Ganesha Follows Cursor:</strong><br>
-        Lord Ganesha glides with critically-damped spring stability and anti-jitter smoothing, accompanied by faithful Mooshak Raj, reaching out with divine blessings and fresh modaks.
+        <strong>1. Parvati Mata Follows Cursor:</strong><br>
+        Guide Maa Parvati with smooth critically-damped spring stability and anti-jitter smoothing, reaching out to lovingly embrace her playful son Bal Ganesh with sweet modaks.
       </div>
       <div class="inst-col">
-        <strong>2. Aarav Executes Medium Dodges:</strong><br>
-        Aarav runs automatically with balanced agility ($210 px/s$), performing moderate corner wall-kicks ($320 px/s$) and acrobatic vaults across the courtyard.
+        <strong>2. Bal Ganesh Executes Medium Dodges:</strong><br>
+        Bal Ganesh runs automatically with balanced agility ($210 px/s$), performing moderate corner wall-kicks ($320 px/s$) and acrobatic vaults across the courtyard with Mooshak Raj.
       </div>
       <div class="inst-col">
         <strong>3. Accurate Catch Lock (&le;28px) &amp; Shift:</strong><br>
-        Align Ganesh Ji's blessing hand with Aarav's chest jewel. When locked within 28px, press <strong>SHIFT</strong> (with buffered reflex window) to bestow sweet modak prasad!
+        Align Maa Parvati's modak hand with Bal Ganesh's chest jewel. When locked within 28px, press <strong>SHIFT</strong> (with buffered reflex window) to embrace him and offer sacred prasad!
       </div>
     </div>
   </div>
@@ -381,7 +381,7 @@
       }
 
       if (telemetry.isCaught) {
-        hudBoyState.textContent = `BLESSING AARAV 🥟`;
+        hudBoyState.textContent = `LOVING EMBRACE WITH BAL GANESH 🥟`;
         hudBoyState.style.color = "#f43f5e";
       } else {
         hudBoyState.textContent = `RUNNING | Caught: ${telemetry.caughtCount}`;

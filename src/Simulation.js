@@ -5,7 +5,7 @@
 import { PhysicsEngine } from "./PhysicsEngine.js";
 import { ParticleSystem } from "./Particles.js";
 import { AudioEngine } from "./AudioEngine.js";
-import { Boy, GaneshJi, Mom, Toran, Modak, Diya, Lever, WindGenerator, OfferingModak } from "./Entities.js";
+import { BalGanesh, ParvatiMata, Boy, GaneshJi, Mom, Toran, Modak, Diya, Lever, WindGenerator, OfferingModak } from "./Entities.js";
 import { Vector2 } from "./Vector2.js";
 
 export class CourtyardSimulation {
@@ -38,10 +38,12 @@ export class CourtyardSimulation {
   }
 
   initEntities() {
-    // 1. Characters: Lord Ganesha is the chaser, Aarav is the runner
-    this.boy = new Boy(this.width * 0.48, this.physics.groundY);
-    this.chaser = new GaneshJi(this.width * 0.28, this.physics.groundY);
-    this.mom = this.chaser; // Backwards compatibility alias
+    // 1. Characters: Parvati Mata is the chaser, Bal Ganesh (Lord Ganesha) is the runner
+    this.balGanesh = new BalGanesh(this.width * 0.48, this.physics.groundY);
+    this.parvatiMata = new ParvatiMata(this.width * 0.28, this.physics.groundY);
+    this.boy = this.balGanesh;
+    this.chaser = this.parvatiMata;
+    this.mom = this.parvatiMata; // Backwards compatibility alias
 
     // 2. Torans (Festive marigold garlands strung between courtyard pillars)
     this.torans = [
@@ -354,7 +356,9 @@ export class CourtyardSimulation {
         pointsMatched: isMatched,
         isCaught: this.boy.isCaught,
         caughtCount: this.boy.caughtCount,
+        balGaneshModakCount: this.aaravModakCount,
         aaravModakCount: this.aaravModakCount,
+        prasadAltarCount: this.prasadGaneshCount,
         prasadGaneshCount: this.prasadGaneshCount,
         altarBlessing: this.altarBlessingTimer > 0,
         chaserState: chaser.state,
@@ -689,7 +693,7 @@ export class CourtyardSimulation {
       ctx.fillStyle = "#fef08a";
       ctx.shadowColor = "#eab308";
       ctx.shadowBlur = 14;
-      ctx.fillText("✦ ॐ GANPATI BAPPA MORYA! PRASAD OFFERED! 🙏 ✦", ax, ay - 75);
+      ctx.fillText("✦ ॐ नमः शिवाय & गणेशाय नमः! MAA PARVATI'S BLESSINGS BESTOWED! 🙏 ✦", ax, ay - 75);
       ctx.restore();
     }
 

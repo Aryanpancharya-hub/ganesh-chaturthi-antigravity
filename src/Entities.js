@@ -1,13 +1,13 @@
 /**
  * Entities.js - Characters and dynamic props for Ganesh Chaturthi Courtyard
- * Mom (follows cursor, catch point), Aarav (runs automatically, target point, caught state)
+ * Parvati Mata (follows cursor, catch point), Bal Ganesh (Lord Ganesha - runs automatically, target point, caught state)
  */
 import { Vector2 } from "./Vector2.js";
 
 // ==========================================
-// 1. THE BOY (AARAV) - AUTOMATIC RUNNER
+// 1. BAL GANESH (LORD GANESHA) - MISCHIEVOUS RUNNER
 // ==========================================
-export class Boy {
+export class BalGanesh {
   constructor(x, y) {
     this.pos = new Vector2(x, y);
     this.vel = new Vector2(160, 0); // Automatic initial run velocity
@@ -23,7 +23,7 @@ export class Boy {
     this.floatingMomentum = new Vector2(0, 0);
     this.trailTimer = 0;
 
-    // Body Target Point (for catching)
+    // Body Target Point (Chest Jewel for catching)
     this.targetPoint = new Vector2(x, y - 18);
     this.isPointMatched = false;
 
@@ -35,6 +35,11 @@ export class Boy {
     this.cornerDodgeCooldown = 0;
     this.autoHopTimer = 1.4 + Math.random() * 2.0;
     this.turnTimer = 3.5 + Math.random() * 3.0;
+
+    // Mooshak Raj (faithful mouse companion running with Bal Ganesh)
+    this.mooshakX = x - 26;
+    this.mooshakY = y;
+    this.mooshakVel = 0;
 
     // Caught & Modak Reward state
     this.isCaught = false;
@@ -55,7 +60,7 @@ export class Boy {
 
   triggerCaught(chaser) {
     this.isCaught = true;
-    this.caughtTimer = 3.6; // Extended celebration for Modak eating & Ganesh Ji offering
+    this.caughtTimer = 3.6; // Extended celebration for Modak eating & sacred prasad offering
     this.state = "CAUGHT";
     this.caughtCount++;
     this.modaksEatenCount++;
@@ -63,15 +68,32 @@ export class Boy {
     this.vel.set(0, 0);
     this.acc.set(0, 0);
 
-    // Turn towards Lord Ganesha
+    // Turn towards Maa Parvati
     this.facing = Math.sign(chaser.pos.x - this.pos.x) || 1;
 
     const caughtDialogues = [
-      "Pranam Ganesh Ji! Your modaks are divine! 🥟🙏✨",
-      "Delicious! Thank you, Ganpati Bappa! 🥟✨",
-      "Yummy! Blessed modak from Ganesh Ji! 🥟😋"
+      "Pranam Mata Parvati! Your modaks are the sweetest! 🥟🙏✨",
+      "Delicious! Thank you, Maa! 🥟❤️",
+      "Yummy! Blessed modak from Maa Parvati! 🥟😋",
+      "Mata's love is sweeter than all the modaks in the universe! 🥟💖"
     ];
     this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.0);
+  }
+
+  triggerAerialDash(dir, force = 640, particleSystem, audioEngine) {
+    if (this.isCaught) return;
+    this.vel.x = dir.x * force;
+    this.vel.y = Math.min(-320, dir.y * force);
+    this.facing = Math.sign(dir.x) || this.facing;
+    this.dashTimer = 0.45;
+    this.state = "DASHING";
+    if (audioEngine) audioEngine.playDashWhoosh(560);
+    if (particleSystem) {
+      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 120, 1.2);
+      particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
+    }
+    const dashQuips = ["Wheee! 💨", "Ganpati Bappa Morya! 🪔", "Bal Ganesh zooms! ✨"];
+    this.say(dashQuips[Math.floor(Math.random() * dashQuips.length)], 1.2);
   }
 
   update(dt, physics, particleSystem, audioEngine, chaser) {
@@ -83,7 +105,7 @@ export class Boy {
       if (this.speechTimer <= 0) this.speechText = "";
     }
 
-    // 1. If currently CAUGHT with Lord Ganesha (Receiving Modak Reward)
+    // 1. If currently CAUGHT with Maa Parvati (Receiving Loving Modak Reward)
     if (this.isCaught) {
       this.caughtTimer -= dt;
       this.vel.set(0, 0);
@@ -93,11 +115,11 @@ export class Boy {
       this.pos.y = physics.isAntiGravityActive 
         ? chaser.pos.y + Math.sin(Date.now() * 0.005) * 4
         : physics.groundY;
-      this.pos.x = chaser.pos.x + (this.facing === 1 ? -18 : 18);
+      this.pos.x = chaser.pos.x + (this.facing === 1 ? -20 : 20);
 
-      // Transition to Stage 2 of reward: Offering to Ganesh Ji
+      // Transition to Stage 2 of reward: Offering to Sanctum Altar
       if (this.caughtTimer < 2.0 && this.caughtTimer > 0.4 && this.speechTimer <= 0) {
-        this.say("Ganpati Bappa Morya! 🙏✨", 1.8);
+        this.say("Ganpati Bappa Morya! Maa Parvati ki Jai! 🙏✨", 1.8);
       }
 
       if (this.caughtTimer <= 0) {
@@ -107,28 +129,28 @@ export class Boy {
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
         this.facing = Math.random() < 0.5 ? 1 : -1;
         this.vel.set(this.facing * this.runSpeed * 1.5, -400);
-        this.say("Full of energy now! Catch me if you can! 🚀", 1.8);
+        this.say("Full of divine energy now! Catch me if you can, Mata! 🚀", 1.8);
         audioEngine.playDashWhoosh(520);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
       }
 
       this.updateTargetPoint();
+      this.updateMooshak(dt, physics);
       return;
     }
 
-    // 2. Medium Dodge Evasion AI: Sensing Lord Ganesha's approach!
+    // 2. Medium Dodge Evasion AI: Sensing Maa Parvati's approach!
     const distToChaserCatch = this.pos.distanceTo(chaser.catchPoint);
     const escapeDirX = Math.sign(this.pos.x - chaser.pos.x) || this.facing;
 
     // A. CORNER TRAP DETECTION & MEDIUM WALL-KICK DODGE
-    // Corners are near left wall (x < 220) or right wall (x > width - 220).
     const isNearLeftCorner = this.pos.x < 220;
     const isNearRightCorner = this.pos.x > physics.width - 220;
     const chaserTrappingLeft = isNearLeftCorner && chaser.pos.x > this.pos.x && (chaser.pos.x - this.pos.x) < 220;
     const chaserTrappingRight = isNearRightCorner && chaser.pos.x < this.pos.x && (this.pos.x - chaser.pos.x) < 220;
 
     if ((chaserTrappingLeft || chaserTrappingRight) && this.cornerDodgeCooldown <= 0) {
-      // Launch moderately toward open center of the courtyard (Medium Dodge: ~320 px/s)
+      // Launch moderately toward open center of courtyard (Medium Dodge: ~320 px/s)
       const launchDirX = chaserTrappingLeft ? 1 : -1;
       
       if (!physics.isAntiGravityActive) {
@@ -153,10 +175,10 @@ export class Boy {
       audioEngine.playDashWhoosh(560);
 
       const cornerQuips = [
-        "Medium leap dodge! 💨",
-        "Can't corner me! ⚡",
-        "Acrobatic hop! ✨",
-        "Agile corner dodge! 🪔"
+        "Bal Ganesh takes a playful leap! 💨",
+        "Can't corner little Ganesha! ⚡",
+        "Acrobatic hop, Mata! ✨",
+        "Wheee! Ganpati Bappa Morya! 🪔"
       ];
       this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.4);
     }
@@ -173,7 +195,7 @@ export class Boy {
           this.dashCooldown = 0.95;
           particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
           audioEngine.playDashWhoosh(440);
-          const evasionQuips = ["Hop away! 💨", "Almost got me! ✨", "Hehe, keep trying! 🥟", "Zoom! 🪔"];
+          const evasionQuips = ["Hop away! 💨", "Almost got me, Maa! ✨", "Hehe, try again, Mata! 🥟", "Zoom! 🪔"];
           this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
         } else {
           // Sprint burst away from chaser
@@ -324,10 +346,19 @@ export class Boy {
     }
 
     this.updateTargetPoint();
+    this.updateMooshak(dt, physics);
+  }
+
+  updateMooshak(dt, physics) {
+    const targetMooshakX = this.pos.x - this.facing * 24;
+    const dmx = targetMooshakX - this.mooshakX;
+    this.mooshakVel += (dmx * 7.0 - this.mooshakVel) * 9.0 * dt;
+    this.mooshakX += this.mooshakVel * dt;
+    this.mooshakY = physics.isAntiGravityActive ? this.pos.y + 10 : physics.groundY;
   }
 
   updateTargetPoint() {
-    // Target catch point is on Aarav's chest/heart
+    // Target catch point is on Bal Ganesh's chest jewel
     this.targetPoint.set(this.pos.x, this.pos.y - 18);
   }
 
@@ -337,7 +368,7 @@ export class Boy {
 
     // Draw Speech Bubble if active
     if (this.speechText) {
-      this.drawSpeechBubble(ctx, this.speechText, "#fbbf24", "#1e1b4b");
+      this.drawSpeechBubble(ctx, this.speechText, "#ea580c", "#ffffff");
     }
 
     ctx.rotate(this.angle);
@@ -346,128 +377,278 @@ export class Boy {
     // Caught celebration glow or running glow
     if (this.isCaught) {
       ctx.beginPath();
-      ctx.arc(0, -14, this.radius + 12, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(251, 191, 36, 0.4)";
+      ctx.arc(0, -18, this.radius + 14, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(251, 191, 36, 0.45)";
       ctx.shadowColor = "#f59e0b";
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 22;
       ctx.fill();
       ctx.shadowBlur = 0;
     }
 
-    // 1. Floating Scarf / Angavastram (Golden Yellow with red border)
+    // 1. Floating Celestial Scarf / Angavastram (Golden Yellow with crimson trim)
     ctx.save();
     ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 4.5;
+    ctx.lineWidth = 4.0;
     ctx.beginPath();
-    const trailOffset = (this.state === "DASHING" || this.state === "RUNNING") ? -24 : -14;
-    const wave = Math.sin(Date.now() * 0.008) * 8;
-    ctx.moveTo(-6, -18);
-    ctx.bezierCurveTo(-18, -10 + wave, -30, trailOffset - wave, -44, trailOffset + wave * 1.5);
+    const trailOffset = (this.state === "DASHING" || this.state === "RUNNING") ? -22 : -12;
+    const wave = Math.sin(Date.now() * 0.008) * 7;
+    ctx.moveTo(-6, -16);
+    ctx.bezierCurveTo(-16, -10 + wave, -28, trailOffset - wave, -40, trailOffset + wave * 1.4);
+    ctx.stroke();
+    // Crimson edge on scarf
+    ctx.strokeStyle = "#dc2626";
+    ctx.lineWidth = 1.2;
     ctx.stroke();
     ctx.restore();
 
-    // 2. Body / Kurta (Traditional saffron/marigold orange)
-    ctx.fillStyle = "#ea580c";
-    ctx.beginPath();
-    ctx.roundRect(-10, -22, 20, 24, 6);
-    ctx.fill();
+    // 2. Divine Child Dhoti & Running Cadence (Pitambar Gold & Silk Red Trim)
+    ctx.fillStyle = "#eab308";
+    if (this.state === "RUNNING" && !this.isCaught) {
+      const legRun = Math.sin(Date.now() * 0.02) * 9;
+      // Dhoti wrap
+      ctx.fillRect(-8, 0, 16, 12);
+      // Legs
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(-7, 4, 5, 12 + legRun);
+      ctx.fillRect(2, 4, 5, 12 - legRun);
+    } else if (this.isCaught) {
+      // Standing happily with Maa Parvati
+      ctx.fillRect(-8, 0, 16, 12);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(-7, 4, 5, 12);
+      ctx.fillRect(2, 4, 5, 12);
+    } else {
+      ctx.fillRect(-8, 0, 16, 12);
+      ctx.fillStyle = "#f59e0b";
+      ctx.save(); ctx.rotate(-0.2); ctx.fillRect(-8, 4, 5, 14); ctx.restore();
+      ctx.save(); ctx.rotate(0.3); ctx.fillRect(2, 4, 5, 12); ctx.restore();
+    }
 
-    // Kurta golden border trim
-    ctx.strokeStyle = "#fef08a";
-    ctx.lineWidth = 1.8;
+    // Dhoti golden pleats & border
+    ctx.strokeStyle = "#b45309";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 12);
     ctx.stroke();
 
-    // 3. Legs / Dhoti (Ivory cream with running cadence)
-    ctx.fillStyle = "#fef3c7";
-    if (this.state === "RUNNING" && !this.isCaught) {
-      const legRun = Math.sin(Date.now() * 0.02) * 10;
-      ctx.fillRect(-8, 2, 6, 14 + legRun);
-      ctx.fillRect(2, 2, 6, 14 - legRun);
-    } else if (this.isCaught) {
-      // Standing happily together
-      ctx.fillRect(-8, 2, 6, 14);
-      ctx.fillRect(2, 2, 6, 14);
-    } else {
-      ctx.save(); ctx.rotate(-0.25); ctx.fillRect(-9, 2, 6, 16); ctx.restore();
-      ctx.save(); ctx.rotate(0.35); ctx.fillRect(3, 2, 6, 14); ctx.restore();
-    }
+    // 3. Cute Pot Belly (Lambodara)
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.ellipse(0, -14, 13, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // 4. Arms
-    ctx.fillStyle = "#fbd38d";
+    // Sacred Yajnopavita (Janeu thread crossing chest)
+    ctx.strokeStyle = "#fef08a";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-8, -22);
+    ctx.quadraticCurveTo(-2, -14, 8, -6);
+    ctx.stroke();
+
+    // Golden necklace / Haar
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.arc(0, -22, 7, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // 4. Four Divine Arms
+    ctx.fillStyle = "#f59e0b";
     if (this.isCaught) {
-      // Hugging Mom and holding a Modak up
-      ctx.fillRect(6, -24, 14, 6);
+      // Reaching up happily holding sweet modak to mouth
+      ctx.fillRect(4, -20, 13, 5);
+      // Modak in hand
       ctx.beginPath();
-      ctx.arc(20, -22, 5, 0, Math.PI * 2);
-      ctx.fillStyle = "#fbbf24"; // holding modak
+      ctx.arc(17, -19, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#fbbf24";
       ctx.fill();
     } else if (this.state === "DASHING" || this.state === "FLOATING") {
-      ctx.fillRect(8, -18, 14, 5);
-      ctx.fillRect(-18, -14, 12, 5);
+      ctx.fillRect(6, -18, 14, 4.5);
+      ctx.fillRect(-16, -14, 11, 4.5);
     } else {
-      const armSwing = Math.sin(Date.now() * 0.02) * 6;
-      ctx.fillRect(8, -16 + armSwing, 6, 12);
-      ctx.fillRect(-12, -16 - armSwing, 6, 12);
+      const armSwing = Math.sin(Date.now() * 0.02) * 5;
+      ctx.fillRect(7, -16 + armSwing, 5, 11);
+      ctx.fillRect(-11, -16 - armSwing, 5, 11);
+      // Extra upper arms with lotus & modak
+      ctx.fillRect(-10, -23, 4, 7);
+      ctx.fillRect(6, -23, 4, 7);
+      ctx.fillStyle = "#fbbf24"; // tiny modak in upper hand
+      ctx.beginPath(); ctx.arc(-10, -24, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f59e0b";
     }
 
-    // 5. Head & Curly Hair
+    // 5. Cute Elephant Head, Flapping Ears & Tusk
+    const earWag = Math.sin(Date.now() * 0.008) * 1.5;
+    // Left Ear
+    ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
-    ctx.arc(0, -30, 11, 0, Math.PI * 2);
-    ctx.fillStyle = "#fbd38d";
+    ctx.ellipse(-11 + earWag, -28, 8, 10, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fda4af"; // Pink inner lobe
+    ctx.beginPath();
+    ctx.ellipse(-11 + earWag, -28, 5, 6.5, -0.2, 0, Math.PI * 2);
     ctx.fill();
 
+    // Right Ear
+    ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
-    ctx.arc(0, -34, 11, Math.PI, Math.PI * 2);
-    ctx.arc(-8, -32, 4.5, 0, Math.PI * 2);
-    ctx.arc(8, -32, 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = "#1e1b4b";
+    ctx.ellipse(11 - earWag, -28, 8, 10, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fda4af";
+    ctx.beginPath();
+    ctx.ellipse(11 - earWag, -28, 5, 6.5, 0.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Tilak
+    // Head Base
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.arc(0, -28, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ekadanta (Single Cute White Tusk)
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(5, -23);
+    ctx.lineTo(9, -21);
+    ctx.lineTo(5, -20);
+    ctx.closePath();
+    ctx.fill();
+
+    // Curved Trunk (Vakratunda)
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, -25);
+    ctx.quadraticCurveTo(-3, -17, -5, -14);
+    ctx.quadraticCurveTo(-7, -11, -4, -9);
+    ctx.quadraticCurveTo(-1, -9, 3, -12);
+    ctx.stroke();
+
+    // Sweet Modak on Trunk Tip
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(3, -12, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Red & Sandalwood Tilak
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(-3, -34, 6, 1.5);
     ctx.fillStyle = "#dc2626";
     ctx.beginPath();
-    ctx.ellipse(3, -33, 1.2, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -33, 1.0, 2.4, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eyes & Smile / Eating Animation
+    // Kind, Playful Eyes
     ctx.fillStyle = "#1e1b4b";
-    ctx.beginPath();
-    ctx.arc(4, -30, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-
     if (this.isCaught) {
-      // Chewing mouth animation with sweet treat
-      const chew = Math.abs(Math.sin(Date.now() * 0.022)) * 2.2;
+      // Happy smiling closed crescent eyes (^ _ ^)
+      ctx.strokeStyle = "#1e1b4b";
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.ellipse(4, -26, 2.8, chew + 1.2, 0, 0, Math.PI * 2);
+      ctx.arc(4, -30, 2.2, Math.PI, 0);
+      ctx.stroke();
+
+      // Chewing mouth animation with sweet modak
+      const chew = Math.abs(Math.sin(Date.now() * 0.022)) * 2.0;
+      ctx.beginPath();
+      ctx.ellipse(4, -25, 2.5, chew + 1.0, 0, 0, Math.PI * 2);
       ctx.fillStyle = "#991b1b";
       ctx.fill();
 
-      // Holding delicious bite of modak near mouth
+      // Modak piece in mouth
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath();
-      ctx.ellipse(12, -26, 4.5, 3.5, 0.2, 0, Math.PI * 2);
+      ctx.ellipse(11, -25, 4.0, 3.2, 0.2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#d97706";
-      ctx.lineWidth = 1;
-      ctx.stroke();
 
-      // Floating little heart / sparkle above head
+      // Floating heart emote
       ctx.fillStyle = "#f43f5e";
       ctx.font = "bold 10px sans-serif";
-      ctx.fillText("❤️", 8, -44 + Math.sin(Date.now() * 0.008) * 3);
+      ctx.fillText("❤️", 7, -40 + Math.sin(Date.now() * 0.008) * 3);
     } else {
       ctx.beginPath();
-      ctx.arc(4, -26, 3.5, 0.1, Math.PI - 0.2);
-      ctx.strokeStyle = "#991b1b";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
+      ctx.ellipse(4, -29, 1.5, 1.1, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(4.4, -29.3, 0.5, 0, Math.PI * 2);
+      ctx.fill();
     }
+
+    // 6. Cute Golden Mukut (Crown with Ruby Kalash)
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.moveTo(-8, -35);
+    ctx.lineTo(8, -35);
+    ctx.lineTo(5, -48);
+    ctx.lineTo(0, -54); // Kalash apex
+    ctx.lineTo(-5, -48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Ruby on Mukut
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -42, 2.2, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 
-    // DRAW AARAV'S TARGET BODY POINT (Cyan / Golden glowing jewel)
+    // 7. Mooshak Raj Companion
+    this.drawMooshak(ctx);
+
+    // 8. Body Target Point (Chest Jewel)
     this.drawBodyTargetPoint(ctx);
+  }
+
+  drawMooshak(ctx) {
+    ctx.save();
+    ctx.translate(this.mooshakX, this.mooshakY);
+    ctx.scale(this.facing, 1);
+
+    // Mouse Body
+    ctx.fillStyle = "#64748b";
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mouse Head
+    ctx.beginPath();
+    ctx.ellipse(6, -6, 5, 3.8, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ears
+    ctx.fillStyle = "#fda4af";
+    ctx.beginPath();
+    ctx.arc(4, -10, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(7, -7, 1.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tail
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-6, -5);
+    ctx.quadraticCurveTo(-10, -10, -8, -14);
+    ctx.stroke();
+
+    // Tiny Modak in Mooshak's paws
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(9, -3, 2.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   }
 
   drawBodyTargetPoint(ctx) {
@@ -478,18 +659,18 @@ export class Boy {
 
     // Outer ring
     ctx.beginPath();
-    ctx.arc(tp.x, tp.y, (matched ? 12 : 7) + pulse, 0, Math.PI * 2);
+    ctx.arc(tp.x, tp.y, (matched ? 13 : 8) + pulse, 0, Math.PI * 2);
     ctx.strokeStyle = matched ? "#22c55e" : "#38bdf8";
     ctx.lineWidth = matched ? 2.5 : 1.5;
     if (matched) ctx.setLineDash([3, 3]);
     ctx.stroke();
 
-    // Core point
+    // Core jewel
     ctx.beginPath();
-    ctx.arc(tp.x, tp.y, matched ? 5 : 3.5, 0, Math.PI * 2);
+    ctx.arc(tp.x, tp.y, matched ? 5.5 : 4, 0, Math.PI * 2);
     ctx.fillStyle = matched ? "#4ade80" : "#38bdf8";
     ctx.shadowColor = matched ? "#22c55e" : "#0284c7";
-    ctx.shadowBlur = matched ? 14 : 8;
+    ctx.shadowBlur = matched ? 16 : 8;
     ctx.fill();
 
     ctx.restore();
@@ -503,7 +684,7 @@ export class Boy {
     const bw = textWidth + padX * 2;
     const bh = 22;
     const bx = -bw / 2;
-    const by = -65;
+    const by = -68;
 
     ctx.fillStyle = bgColor;
     ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -528,10 +709,15 @@ export class Boy {
   }
 }
 
+// Backwards compatibility aliases
+export const Boy = BalGanesh;
+export const Aarav = BalGanesh;
+
+
 // ==========================================
-// 2. LORD GANESHA (GANESH JI) - DIVINE CHASER & PROTECTOR
+// 2. PARVATI MATA (MAA PARVATI) - DIVINE MOTHER & PROTECTOR
 // ==========================================
-export class GaneshJi {
+export class ParvatiMata {
   constructor(x, y) {
     this.pos = new Vector2(x, y);
     this.targetPos = new Vector2(x, y);
@@ -541,7 +727,7 @@ export class GaneshJi {
     this.reachArm = 0;
     this.reachUp = false;
 
-    // Catch Point on Ganesh Ji's blessing hand
+    // Catch Point on Maa Parvati's modak-feeding hand
     this.catchPoint = new Vector2(x + 24, y - 44);
     this.isPointMatched = false;
 
@@ -551,11 +737,6 @@ export class GaneshJi {
     // Compatibility aliases for simulation loops
     this.isHugging = false;
     this.hugTimer = 0;
-
-    // Mooshak Raj (faithful mouse mount companion)
-    this.mooshakX = x - 34;
-    this.mooshakY = y;
-    this.mooshakVel = 0;
 
     // Speech bubble
     this.speechText = "";
@@ -575,12 +756,13 @@ export class GaneshJi {
     this.state = "BLESSING";
     this.reachArm = 1.0;
 
-    const ganeshDialogues = [
-      "Blessings upon you, Aarav! Have this divine modak! 🥟✨",
-      "Ganpati Bappa Morya! Well caught, little hero! 🥟🙏",
-      "Sweet prasad for you, beta! Joy, peace & wisdom! 🥟💖"
+    const parvatiDialogues = [
+      "Ganesha, my sweet child! Have this delicious warm modak! 🥟❤️",
+      "Caught you, Bal Ganesha! Maa has fresh sweet prasad for you! 🥟✨",
+      "Sweet prasad for you, my little Vighnaharta! Peace, joy & wisdom! 🥟💖",
+      "Eat heartily, my dear Ganesha! Maa's love is with you always! 🪔🙏"
     ];
-    this.say(ganeshDialogues[Math.floor(Math.random() * ganeshDialogues.length)], 2.2);
+    this.say(parvatiDialogues[Math.floor(Math.random() * parvatiDialogues.length)], 2.2);
   }
 
   update(dt, cursorPos, isCursorActive, physics, audioEngine, boy) {
@@ -589,16 +771,16 @@ export class GaneshJi {
       if (this.speechTimer <= 0) this.speechText = "";
     }
 
-    // 1. If currently BLESSING & FEEDING Aarav
+    // 1. If currently BLESSING & LOVINGLY EMBRACING Bal Ganesh
     if (this.isBlessing) {
       this.blessTimer -= dt;
       this.hugTimer = this.blessTimer;
       this.state = "BLESSING";
       this.isHugging = true;
 
-      // Phase 2 of Reward: Divine altar consecration
+      // Phase 2 of Reward: Divine sanctum altar consecration
       if (this.blessTimer < 2.0 && this.blessTimer > 0.4 && this.speechTimer <= 0) {
-        this.say("And divine prasad offered to the sanctum! Mangal Murti Morya! 🪔✨", 1.8);
+        this.say("And divine prasad offered to the sacred altar! Om Namah Shivaya! 🪔✨", 1.8);
       }
 
       if (this.blessTimer <= 0) {
@@ -607,7 +789,6 @@ export class GaneshJi {
         this.state = "FOLLOWING_CURSOR";
       }
       this.updateCatchPoint(physics);
-      this.updateMooshak(dt, physics);
       return;
     }
 
@@ -616,7 +797,7 @@ export class GaneshJi {
       const dx = cursorPos.x - this.pos.x;
       const distToCursorX = Math.abs(dx);
 
-      // Facing hysteresis: only flip facing when mouse clearly moves across body
+      // Facing hysteresis: only flip facing when mouse clearly moves across body (> 10px)
       if (distToCursorX > 10) {
         this.facing = Math.sign(dx) || 1;
       }
@@ -647,7 +828,7 @@ export class GaneshJi {
         this.reachUp = cursorPos.y < physics.groundY - 45;
       }
 
-      // Reaching arm animation responds to cursor and Aarav proximity
+      // Reaching arm animation responds to cursor and Bal Ganesh proximity
       const distToBoy = this.pos.distanceTo(boy.pos);
       if (distToBoy < 110 || Math.hypot(cursorPos.x - this.pos.x, cursorPos.y - this.pos.y) < 85) {
         this.reachArm = Math.min(1.0, this.reachArm + dt * 4.5);
@@ -666,24 +847,14 @@ export class GaneshJi {
     this.pos.x = Math.max(70, Math.min(physics.width - 70, this.pos.x));
 
     this.updateCatchPoint(physics);
-    this.updateMooshak(dt, physics);
-  }
-
-  updateMooshak(dt, physics) {
-    // Mooshak Raj runs smoothly beside Ganesh Ji
-    const targetMooshakX = this.pos.x - this.facing * 34;
-    const dmx = targetMooshakX - this.mooshakX;
-    this.mooshakVel += (dmx * 6.0 - this.mooshakVel) * 8.0 * dt;
-    this.mooshakX += this.mooshakVel * dt;
-    this.mooshakY = physics.isAntiGravityActive ? this.pos.y + 14 : physics.groundY;
   }
 
   updateCatchPoint(physics) {
-    // Catch point is located on Ganesh Ji's blessing / modak hand
+    // Catch point is located on Maa Parvati's modak / feeding hand
     if (this.reachUp) {
-      this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 72);
+      this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 68);
     } else {
-      this.catchPoint.set(this.pos.x + this.facing * 26, this.pos.y - 44);
+      this.catchPoint.set(this.pos.x + this.facing * 26, this.pos.y - 42);
     }
   }
 
@@ -693,378 +864,320 @@ export class GaneshJi {
 
     // Draw Speech Bubble if active
     if (this.speechText) {
-      this.drawSpeechBubble(ctx, this.speechText, "#ea580c", "#ffffff");
+      this.drawSpeechBubble(ctx, this.speechText, "#dc2626", "#ffffff");
     }
 
     ctx.scale(this.facing, 1);
 
-    // Subtle breathing / hover float
+    // Subtle divine hover / breathing bob
     const hoverBob = Math.sin(Date.now() * 0.004) * 2.5;
 
     // ==========================================
-    // A. CELESTIAL HALO (PRABHAVALI)
+    // A. RADIANT DIVINE PRABHAVALI HALO
     // ==========================================
     ctx.save();
-    ctx.translate(0, -62 + hoverBob);
-    const haloPulse = 0.85 + Math.sin(Date.now() * 0.005) * 0.15;
+    ctx.translate(0, -64 + hoverBob);
+    const haloPulse = 0.88 + Math.sin(Date.now() * 0.005) * 0.12;
 
-    // Glowing outer halo
-    const haloGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 38);
-    haloGrad.addColorStop(0, "rgba(251, 191, 36, 0.45)");
-    haloGrad.addColorStop(0.7, "rgba(245, 158, 11, 0.2)");
-    haloGrad.addColorStop(1, "rgba(245, 158, 11, 0)");
+    // Outer warm crimson-gold gradient halo
+    const haloGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 36);
+    haloGrad.addColorStop(0, "rgba(253, 224, 71, 0.5)");
+    haloGrad.addColorStop(0.6, "rgba(239, 68, 68, 0.25)");
+    haloGrad.addColorStop(1, "rgba(239, 68, 68, 0)");
     ctx.fillStyle = haloGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, 38 * haloPulse, 0, Math.PI * 2);
+    ctx.arc(0, 0, 36 * haloPulse, 0, Math.PI * 2);
     ctx.fill();
 
-    // Golden halo rays
-    ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
-    ctx.lineWidth = 1.8;
+    // Golden divine rays radiating from halo
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.55)";
+    ctx.lineWidth = 1.6;
     for (let i = 0; i < 12; i++) {
-      const rayAngle = (i * Math.PI) / 6 + Date.now() * 0.0008;
+      const rayAngle = (i * Math.PI) / 6 + Date.now() * 0.0007;
       ctx.beginPath();
-      ctx.moveTo(Math.cos(rayAngle) * 16, Math.sin(rayAngle) * 16);
-      ctx.lineTo(Math.cos(rayAngle) * 26, Math.sin(rayAngle) * 26);
+      ctx.moveTo(Math.cos(rayAngle) * 15, Math.sin(rayAngle) * 15);
+      ctx.lineTo(Math.cos(rayAngle) * 25, Math.sin(rayAngle) * 25);
       ctx.stroke();
     }
     ctx.restore();
 
     // ==========================================
-    // B. DHOTI & FEET (PITAMBAR SILK & GOLDEN ZARI)
+    // B. FLOWING SARI PALLU (TRANSLUCENT SILK DUPATTA)
     // ==========================================
-    // Radiant saffron/yellow dhoti
-    ctx.fillStyle = "#eab308";
+    ctx.save();
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.85)";
+    ctx.fillStyle = "rgba(245, 158, 11, 0.35)";
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(-16, -26 + hoverBob);
-    ctx.lineTo(16, -26 + hoverBob);
-    ctx.lineTo(18, 0);
-    ctx.lineTo(-18, 0);
+    const palluWave = Math.sin(Date.now() * 0.007) * 8;
+    ctx.moveTo(-6, -42 + hoverBob);
+    ctx.bezierCurveTo(-22, -34 + palluWave, -36, -18 - palluWave, -48, palluWave * 1.5);
+    ctx.lineTo(-44, 10 + palluWave * 1.2);
+    ctx.bezierCurveTo(-32, -6 - palluWave, -20, -18 + palluWave, -4, -30 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // ==========================================
+    // C. ROYAL KANJEEVARAM SARI (CRIMSON RED & GOLDEN ZARI)
+    // ==========================================
+    // Rich Crimson Silk Sari Body
+    ctx.fillStyle = "#b91c1c";
+    ctx.beginPath();
+    ctx.moveTo(-13, -28 + hoverBob);
+    ctx.lineTo(13, -28 + hoverBob);
+    ctx.lineTo(16, 2);
+    ctx.lineTo(-16, 2);
     ctx.closePath();
     ctx.fill();
 
-    // Golden zari border
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
+    // Golden Zari Hem Border
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(-16, 0, 32, 4);
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(-16, 0, 32, 4);
 
-    // Dhoti pleats
-    ctx.strokeStyle = "#ca8a04";
-    ctx.lineWidth = 1.5;
-    for (let i = -8; i <= 8; i += 4) {
+    // Sari Pleats (Patli)
+    ctx.strokeStyle = "#eab308";
+    ctx.lineWidth = 1.4;
+    for (let i = -6; i <= 6; i += 3) {
       ctx.beginPath();
-      ctx.moveTo(i, -20 + hoverBob);
-      ctx.lineTo(i * 1.2, 0);
+      ctx.moveTo(i, -24 + hoverBob);
+      ctx.lineTo(i * 1.15, 0);
       ctx.stroke();
     }
 
-    // Divine Lotus Feet (Charan Paduka)
-    ctx.fillStyle = "#f59e0b";
+    // Golden Kamarbandh (Ornate Waist Belt)
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 2.4;
     ctx.beginPath();
-    ctx.ellipse(-8, 2, 7, 3, 0, 0, Math.PI * 2);
-    ctx.ellipse(8, 2, 7, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ==========================================
-    // C. BENEVOLENT BELLY (LAMBODARA) & SASH
-    // ==========================================
-    ctx.fillStyle = "#f59e0b";
-    ctx.beginPath();
-    ctx.ellipse(0, -22 + hoverBob, 18, 17, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Sacred Yajnopavita (Janeu thread crossing chest)
-    ctx.strokeStyle = "#fef08a";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-10, -42 + hoverBob);
-    ctx.quadraticCurveTo(-2, -26 + hoverBob, 12, -14 + hoverBob);
+    ctx.moveTo(-13, -28 + hoverBob);
+    ctx.quadraticCurveTo(0, -25 + hoverBob, 13, -28 + hoverBob);
     ctx.stroke();
+    // Central Emerald gem on Kamarbandh
+    ctx.fillStyle = "#10b981";
+    ctx.beginPath();
+    ctx.arc(0, -26.5 + hoverBob, 2.2, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Golden jewel necklace / Haar
+    // Choli / Blouse (Royal Gold & Crimson Silk)
+    ctx.fillStyle = "#991b1b";
+    ctx.beginPath();
+    ctx.roundRect(-9, -46 + hoverBob, 18, 19, 5);
+    ctx.fill();
+
+    // Diagonal Golden Sari Pallu wrap across chest
     ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 4.0;
     ctx.beginPath();
-    ctx.arc(0, -36 + hoverBob, 10, 0.2, Math.PI - 0.2);
+    ctx.moveTo(-9, -44 + hoverBob);
+    ctx.quadraticCurveTo(-1, -36 + hoverBob, 10, -27 + hoverBob);
     ctx.stroke();
-    ctx.fillStyle = "#dc2626"; // Ruby pendant
+
+    // Sacred Golden Haar / Necklaces
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 2.0;
     ctx.beginPath();
-    ctx.arc(0, -26 + hoverBob, 2.5, 0, Math.PI * 2);
+    ctx.arc(0, -42 + hoverBob, 7.5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, -38 + hoverBob, 9.5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+    // Ruby pendant
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -35 + hoverBob, 2.4, 0, Math.PI * 2);
     ctx.fill();
 
     // ==========================================
-    // D. FOUR DIVINE ARMS (CHATURBHUJA)
+    // D. LONG HAIR & JASMINE GAJRA
     // ==========================================
-    ctx.fillStyle = "#f59e0b";
-
-    // 1. Upper Left Arm (Holding Golden Lotus / Ankusha)
-    ctx.fillRect(-22, -44 + hoverBob, 8, 16);
-    ctx.fillStyle = "#fbbf24"; // Ankusha
+    // Cascading dark hair behind
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.arc(-22, -48 + hoverBob, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#d97706";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-22, -48 + hoverBob);
-    ctx.lineTo(-24, -58 + hoverBob);
-    ctx.stroke();
-
-    // 2. Upper Right Arm (Holding Divine Pasha / Blessing)
-    ctx.fillStyle = "#f59e0b";
-    ctx.fillRect(14, -44 + hoverBob, 8, 16);
-    ctx.fillStyle = "#f43f5e"; // Pink lotus bud
-    ctx.beginPath();
-    ctx.arc(18, -48 + hoverBob, 4, 0, Math.PI * 2);
+    ctx.moveTo(-7, -54 + hoverBob);
+    ctx.quadraticCurveTo(-14, -40 + hoverBob, -12, -22 + hoverBob);
+    ctx.lineTo(-4, -22 + hoverBob);
+    ctx.quadraticCurveTo(-6, -40 + hoverBob, -4, -54 + hoverBob);
+    ctx.closePath();
     ctx.fill();
 
-    // 3. Lower Left Hand (Holding Fresh Golden Modak - Modak-hasta)
-    ctx.fillStyle = "#f59e0b";
-    ctx.fillRect(-16, -34 + hoverBob, 12, 6);
-    // Golden Modak on palm
+    // Jasmine flower garland (Gajra - white fragrant buds) in hair
+    ctx.fillStyle = "#ffffff";
+    for (let g = 0; g < 6; g++) {
+      ctx.beginPath();
+      ctx.arc(-8 - g * 1.0, -48 + g * 5 + hoverBob, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ==========================================
+    // E. MOTHERLY ARMS & SWEET MODAK FEEDING
+    // ==========================================
+    ctx.fillStyle = "#fbd38d"; // Graceful glowing complexion
+
+    // Left Arm (Embracing / resting gracefully)
+    ctx.fillRect(-14, -44 + hoverBob, 6, 16);
+    // Golden bangles (Kangan)
     ctx.fillStyle = "#fbbf24";
-    ctx.beginPath();
-    ctx.ellipse(-18, -35 + hoverBob, 5.5, 4.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#d97706";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.fillRect(-15, -34 + hoverBob, 8, 3.5);
+    ctx.fillStyle = "#dc2626";
+    ctx.fillRect(-15, -36 + hoverBob, 8, 1.5);
+    ctx.fillStyle = "#fbd38d";
 
-    // 4. Lower Right Hand (Abhaya Mudra - Blessing & Reaching Hand)
-    ctx.fillStyle = "#f59e0b";
+    // Right Arm (Reaching out with fresh sweet modak)
     if (this.isBlessing) {
-      // Blessing pose with sweet modak offered to Aarav
+      // Loving feeding pose offering modak directly to Bal Ganesh
       ctx.save();
       ctx.rotate(-0.35);
-      ctx.fillRect(8, -46 + hoverBob, 28, 8);
+      ctx.fillRect(6, -46 + hoverBob, 28, 7);
+      // Golden bangles
       ctx.fillStyle = "#fbbf24";
-      ctx.fillRect(28, -47 + hoverBob, 4, 10);
-
-      // Sweet Modak in outstretched hand
+      ctx.fillRect(24, -47 + hoverBob, 4, 9);
+      // Golden Modak in hand
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath();
-      ctx.ellipse(36, -43 + hoverBob, 6.5, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(34, -43 + hoverBob, 6.0, 4.8, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#d97706";
       ctx.lineWidth = 1.2;
       ctx.stroke();
-
       // Sparkle on modak
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.arc(36, -45 + hoverBob, 2, 0, Math.PI * 2);
+      ctx.arc(34, -45 + hoverBob, 1.8, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     } else if (this.reachUp) {
-      // Reaching up
+      // Reaching upward
       ctx.save();
-      ctx.rotate(-1.25);
-      ctx.fillRect(6, -48 + hoverBob, 26, 7);
+      ctx.rotate(-1.15);
+      ctx.fillRect(6, -48 + hoverBob, 26, 6.5);
       ctx.fillStyle = "#fbbf24";
-      ctx.fillRect(24, -49 + hoverBob, 4, 9);
+      ctx.fillRect(24, -49 + hoverBob, 4, 8);
+      // Modak on fingertips
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(32, -46 + hoverBob, 5.0, 4.0, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     } else if (this.reachArm > 0) {
-      // Reaching forward smoothly
+      // Reaching smoothly forward
       ctx.save();
       ctx.rotate(-0.65 * this.reachArm);
-      ctx.fillRect(8, -46 + hoverBob, 28, 7);
+      ctx.fillRect(6, -46 + hoverBob, 27, 6.5);
       ctx.fillStyle = "#fbbf24";
-      ctx.fillRect(26, -47 + hoverBob, 4, 9);
+      ctx.fillRect(25, -47 + hoverBob, 4, 8);
+      // Modak on hand
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.ellipse(33, -44 + hoverBob, 5.5, 4.2, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     } else {
-      // Abhaya Mudra (blessing palm raised)
+      // Gentle motherly greeting / blessing pose
       ctx.save();
       ctx.rotate(-0.2);
-      ctx.fillRect(10, -42 + hoverBob, 14, 7);
-      // Open palm
+      ctx.fillRect(8, -42 + hoverBob, 14, 6.5);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(16, -43 + hoverBob, 4, 8);
+      // Modak resting on hand
+      ctx.fillStyle = "#fbbf24";
       ctx.beginPath();
-      ctx.arc(22, -40 + hoverBob, 5, 0, Math.PI * 2);
-      ctx.fillStyle = "#f59e0b";
-      ctx.fill();
-      // Red auspicious lotus mark on palm
-      ctx.fillStyle = "#dc2626";
-      ctx.beginPath();
-      ctx.arc(22, -40 + hoverBob, 1.8, 0, Math.PI * 2);
+      ctx.arc(22, -40 + hoverBob, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
     // ==========================================
-    // E. ELEPHANT HEAD, EARS, TUSK & TRUNK
+    // F. DIVINE MOTHER'S FACE & SHRINGAAR
     // ==========================================
-    // Large Elephant Ears with gentle flutter
-    const earFlutter = Math.sin(Date.now() * 0.006) * 1.5;
-
-    // Left Ear
-    ctx.fillStyle = "#f59e0b";
+    // Head / Face
+    ctx.fillStyle = "#fbd38d";
     ctx.beginPath();
-    ctx.ellipse(-16 + earFlutter, -56 + hoverBob, 11, 14, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fda4af"; // Pink inner lobe
-    ctx.beginPath();
-    ctx.ellipse(-16 + earFlutter, -56 + hoverBob, 7, 9, -0.2, 0, Math.PI * 2);
+    ctx.arc(0, -56 + hoverBob, 11, 0, Math.PI * 2);
     ctx.fill();
 
-    // Right Ear
-    ctx.fillStyle = "#f59e0b";
+    // Long dark hair framing face
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.ellipse(16 - earFlutter, -56 + hoverBob, 11, 14, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fda4af"; // Pink inner lobe
-    ctx.beginPath();
-    ctx.ellipse(16 - earFlutter, -56 + hoverBob, 7, 9, 0.2, 0, Math.PI * 2);
+    ctx.arc(0, -59 + hoverBob, 11.2, Math.PI * 0.9, Math.PI * 2.1);
     ctx.fill();
 
-    // Head
-    ctx.fillStyle = "#f59e0b";
+    // Auspicious Red Kumkum Bindi & Sandalwood Crescent
+    ctx.fillStyle = "#dc2626";
     ctx.beginPath();
-    ctx.arc(0, -56 + hoverBob, 14, 0, Math.PI * 2);
+    ctx.arc(3, -59 + hoverBob, 2.2, 0, Math.PI * 2);
     ctx.fill();
-
-    // Ekadanta (Single Sacred White Tusk)
-    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#fef08a";
+    ctx.lineWidth = 0.9;
     ctx.beginPath();
-    ctx.moveTo(8, -48 + hoverBob);
-    ctx.quadraticCurveTo(12, -46 + hoverBob, 15, -42 + hoverBob);
-    ctx.quadraticCurveTo(10, -44 + hoverBob, 8, -48 + hoverBob);
-    ctx.fill();
-    ctx.fillStyle = "#fbbf24"; // Golden band at tusk base
-    ctx.fillRect(8, -49 + hoverBob, 2.5, 2.5);
-
-    // Curved Trunk (Vakratunda)
-    ctx.strokeStyle = "#f59e0b";
-    ctx.lineWidth = 5.5;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(0, -52 + hoverBob);
-    ctx.quadraticCurveTo(-4, -40 + hoverBob, -7, -35 + hoverBob);
-    ctx.quadraticCurveTo(-10, -32 + hoverBob, -7, -28 + hoverBob);
-    ctx.quadraticCurveTo(-3, -27 + hoverBob, 2, -31 + hoverBob);
+    ctx.arc(3, -57.5 + hoverBob, 2.6, 0.2, Math.PI - 0.2);
     ctx.stroke();
 
-    // Little modak at trunk tip
-    ctx.fillStyle = "#fbbf24";
+    // Serene Lotus Kohl Eyes
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.arc(2, -31 + hoverBob, 2.8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Sacred Chandan & Kumkum Tilak on Forehead
-    ctx.fillStyle = "#fef08a"; // Yellow sandalwood bands
-    ctx.fillRect(-4, -62 + hoverBob, 8, 2);
-    ctx.fillRect(-3, -65 + hoverBob, 6, 1.5);
-    ctx.fillStyle = "#dc2626"; // Red vermillion tilak
-    ctx.beginPath();
-    ctx.ellipse(0, -62 + hoverBob, 1.2, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Kind, Wise Eyes
-    ctx.fillStyle = "#1e1b4b";
-    ctx.beginPath();
-    ctx.ellipse(4, -58 + hoverBob, 1.8, 1.2, 0.2, 0, Math.PI * 2);
+    ctx.ellipse(4, -55 + hoverBob, 2.2, 1.4, 0.15, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#ffffff";
     ctx.beginPath();
-    ctx.arc(4.5, -58.5 + hoverBob, 0.6, 0, Math.PI * 2);
+    ctx.arc(4.6, -55.4 + hoverBob, 0.7, 0, Math.PI * 2);
     ctx.fill();
 
-    // ==========================================
-    // F. ROYAL MUKUT (GOLDEN CROWN WITH KALASH)
-    // ==========================================
+    // Sweet Loving Smile
+    ctx.strokeStyle = "#b91c1c";
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.arc(3.5, -51.5 + hoverBob, 2.4, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Golden Jhumka (Earring)
     ctx.fillStyle = "#fbbf24";
     ctx.beginPath();
-    ctx.moveTo(-11, -66 + hoverBob);
-    ctx.lineTo(11, -66 + hoverBob);
-    ctx.lineTo(7, -84 + hoverBob);
-    ctx.lineTo(0, -92 + hoverBob); // Kalash apex
-    ctx.lineTo(-7, -84 + hoverBob);
+    ctx.arc(-8, -53 + hoverBob, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-9.5, -51 + hoverBob);
+    ctx.lineTo(-6.5, -51 + hoverBob);
+    ctx.lineTo(-8, -47 + hoverBob);
     ctx.closePath();
     ctx.fill();
 
-    // Mukut golden borders & jewel
-    ctx.strokeStyle = "#d97706";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Ruby jewel in center of crown
-    ctx.fillStyle = "#dc2626";
-    ctx.beginPath();
-    ctx.arc(0, -74 + hoverBob, 2.8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Golden Kalash spire
-    ctx.fillStyle = "#fde047";
-    ctx.beginPath();
-    ctx.arc(0, -92 + hoverBob, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-
     // ==========================================
-    // G. MOOSHAK RAJ (FAITHFUL COMPANION MOUSE)
+    // G. ORNATE GOLDEN MUKUT CROWN
     // ==========================================
-    this.drawMooshak(ctx);
-
-    // DRAW GANESH JI'S BLESSING HAND POINT (Glowing Golden Jewel)
-    this.drawCatchHandPoint(ctx);
-  }
-
-  drawMooshak(ctx) {
-    ctx.save();
-    ctx.translate(this.mooshakX, this.mooshakY);
-    ctx.scale(this.facing, 1);
-
-    // Cute Mouse Body
-    ctx.fillStyle = "#64748b";
-    ctx.beginPath();
-    ctx.ellipse(0, -6, 9, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Mouse Head
-    ctx.beginPath();
-    ctx.ellipse(7, -8, 6, 4.5, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Ears (Grey with pink interior)
-    ctx.fillStyle = "#475569";
-    ctx.beginPath();
-    ctx.arc(5, -13, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fda4af";
-    ctx.beginPath();
-    ctx.arc(5, -13, 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Eye
-    ctx.fillStyle = "#0f172a";
-    ctx.beginPath();
-    ctx.arc(9, -9, 1.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Snout & Whiskers
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(12, -8);
-    ctx.lineTo(16, -10);
-    ctx.moveTo(12, -7);
-    ctx.lineTo(16, -6);
-    ctx.stroke();
-
-    // Curved Tail
-    ctx.strokeStyle = "#94a3b8";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(-8, -6);
-    ctx.quadraticCurveTo(-14, -12, -12, -18);
-    ctx.stroke();
-
-    // Tiny Modak in Mooshak's hands
     ctx.fillStyle = "#fbbf24";
     ctx.beginPath();
-    ctx.arc(10, -4, 2.5, 0, Math.PI * 2);
+    ctx.moveTo(-10, -64 + hoverBob);
+    ctx.lineTo(10, -64 + hoverBob);
+    ctx.lineTo(6, -80 + hoverBob);
+    ctx.lineTo(0, -87 + hoverBob); // Crown apex
+    ctx.lineTo(-6, -80 + hoverBob);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Crown Ruby Gem
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.arc(0, -72 + hoverBob, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kalash Spire
+    ctx.fillStyle = "#fde047";
+    ctx.beginPath();
+    ctx.arc(0, -87 + hoverBob, 2.0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
+
+    // DRAW MAA PARVATI'S MODAK HAND POINT (Glowing Golden Jewel)
+    this.drawCatchHandPoint(ctx);
   }
 
   drawCatchHandPoint(ctx) {
@@ -1124,8 +1237,10 @@ export class GaneshJi {
   }
 }
 
-// Backwards compatibility alias
-export const Mom = GaneshJi;
+// Backwards compatibility aliases
+export const GaneshJi = ParvatiMata;
+export const Mom = ParvatiMata;
+export const Priya = ParvatiMata;
 
 // ==========================================
 // 3. FESTIVE TORANS (VERLET ROPE)
