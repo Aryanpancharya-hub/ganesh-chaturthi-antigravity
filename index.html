@@ -241,11 +241,14 @@
   <header>
     <div class="title-group">
       <h1>🪔 Ganesh Chaturthi Anti-Gravity Field <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
-      <p>High-Agility Evasion &bull; Match points (&le;26px) &amp; press Shift &bull; 🥟 Feed Aarav &amp; 🙏 Offer Prasad to Ganesh Ji</p>
+      <p>Playable Lord Ganesha &bull; Medium Dodge Evasion &bull; High Accuracy Alignment (&le;28px) &amp; press Shift &bull; 🥟 Blessed Modak Rewards</p>
     </div>
     <div class="header-badges">
       <div class="badge" style="border-color:#f59e0b;">
-        <span style="color:#fde047;">AGILITY:</span> <strong style="color:#22c55e">EXPERT (Rare Catch)</strong>
+        <span style="color:#fde047;">KINEMATICS:</span> <strong style="color:#22c55e">STABLE HOVER</strong>
+      </div>
+      <div class="badge" style="border-color:#38bdf8;">
+        <span style="color:#38bdf8;">DODGE:</span> <strong style="color:#fde047">MEDIUM</strong>
       </div>
       <div class="badge">
         <div class="badge-dot" id="ag-dot"></div>
@@ -268,7 +271,7 @@
       <div class="hud-value" id="hud-gravity">(0.00, -9.81, 0.00)</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Point Alignment (&le;14px Rare Catch)</div>
+      <div class="hud-label">Point Alignment (&le;28px Accuracy Lock)</div>
       <div class="hud-value" id="hud-mom">TRACKING</div>
     </div>
     <div class="hud-item">
@@ -288,7 +291,7 @@
   <!-- Controls Bar -->
   <div class="controls-bar">
     <button class="btn btn-primary" id="btn-catch" style="background: linear-gradient(135deg, #16a34a 0%, #059669 100%); border-color: #4ade80;">
-      <span>⚡ CATCH AARAV</span>
+      <span>⚡ BLESS &amp; CATCH AARAV</span>
       <kbd>Shift</kbd>
     </button>
     <button class="btn btn-primary" id="btn-toggle-ag">
@@ -324,16 +327,16 @@
   <div class="instructions">
     <div class="instruction-grid">
       <div class="inst-col">
-        <strong>1. Mom Follows Cursor:</strong><br>
-        Mom directly follows your mouse cursor, moving horizontally and reaching toward Aarav with the glowing golden point on her hands.
+        <strong>1. Lord Ganesha Follows Cursor:</strong><br>
+        Lord Ganesha glides with critically-damped spring stability and anti-jitter smoothing, accompanied by faithful Mooshak Raj, reaching out with divine blessings and fresh modaks.
       </div>
       <div class="inst-col">
-        <strong>2. Aarav Runs Automatically:</strong><br>
-        Aarav runs automatically across the courtyard, leaping over obstacles, riding wind currents, and floating in anti-gravity.
+        <strong>2. Aarav Executes Medium Dodges:</strong><br>
+        Aarav runs automatically with balanced agility ($210 px/s$), performing moderate corner wall-kicks ($320 px/s$) and acrobatic vaults across the courtyard.
       </div>
       <div class="inst-col">
-        <strong>3. Match Points &amp; Press Shift:</strong><br>
-        Align Mom's hand point with Aarav's chest target point. When the green lock-on beam connects, press <strong>SHIFT</strong> (or click Catch) to celebrate a catch!
+        <strong>3. Accurate Catch Lock (&le;28px) &amp; Shift:</strong><br>
+        Align Ganesh Ji's blessing hand with Aarav's chest jewel. When locked within 28px, press <strong>SHIFT</strong> (with buffered reflex window) to bestow sweet modak prasad!
       </div>
     </div>
   </div>
@@ -368,17 +371,17 @@
       hudGravity.textContent = telemetry.gravityVectorStr;
 
       if (telemetry.pointsMatched) {
-        hudMom.textContent = "14PX LOCKED! [PRESS SHIFT]";
+        hudMom.textContent = `28PX LOCKED! [PRESS SHIFT]`;
         hudMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 14px)`;
+        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 28px)`;
         hudMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }
 
       if (telemetry.isCaught) {
-        hudBoyState.textContent = `FEEDING AARAV 🥟`;
+        hudBoyState.textContent = `BLESSING AARAV 🥟`;
         hudBoyState.style.color = "#f43f5e";
       } else {
         hudBoyState.textContent = `RUNNING | Caught: ${telemetry.caughtCount}`;
