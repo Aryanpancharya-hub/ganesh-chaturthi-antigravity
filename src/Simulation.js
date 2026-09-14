@@ -80,13 +80,14 @@ export class CourtyardSimulation {
       this.diyas.push(new Diya(140 + i * 180, this.physics.groundY - 4));
     }
 
-    // 6. Sacred Offerings & Reward Tracking (14px Strict Precision - High Difficulty)
+    // 6. Sacred Offerings & Reward Tracking (20px Calibrated Precision)
     this.offeringModaks = [];
     this.prasadGaneshCount = 0;
     this.aaravModakCount = 0;
     this.altarBlessingTimer = 0;
-    this.catchThreshold = 16; // Strict 14px accuracy threshold for High Difficulty
+    this.catchThreshold = 20; // Calibrated 20px accuracy threshold
     this.shiftBufferTimer = 0; // Input buffer for Shift key
+    this.sweptMinDist = 999;   // Anti-tunneling swept distance tracker
   }
 
   bindEvents() {
@@ -155,7 +156,7 @@ export class CourtyardSimulation {
     // Press Shift key to catch when points match (with precision buffer)
     window.addEventListener("keydown", (e) => {
       if (e.key === "Shift") {
-        this.shiftBufferTimer = 0.07; // Buffer Shift for 70ms in High Difficulty
+        this.shiftBufferTimer = 0.11; // Buffer Shift for 110ms for responsive registration
         this.attemptCatch();
       }
     });
@@ -166,7 +167,8 @@ export class CourtyardSimulation {
     const runner = this.runner || this.parvatiMata;
     if (!chaser || !runner) return false;
     const dist = chaser.catchPoint.distanceTo(runner.targetPoint);
-    if (dist <= this.catchThreshold && !runner.isCaught) {
+    const effectiveDist = Math.min(dist, this.sweptMinDist);
+    if (effectiveDist <= this.catchThreshold && !runner.isCaught) {
       chaser.triggerCatchSuccess(runner);
       runner.triggerCaught(chaser);
 
@@ -276,6 +278,12 @@ export class CourtyardSimulation {
     const chaser = this.chaser || this.balGanesh;
     const runner = this.runner || this.parvatiMata;
 
+    // Record start-of-frame positions for anti-tunneling swept alignment
+    const p0CatchX = chaser.catchPoint.x;
+    const p0CatchY = chaser.catchPoint.y;
+    const p0TargetX = runner.targetPoint.x;
+    const p0TargetY = runner.targetPoint.y;
+
     // Ganesh Ji follows mouse cursor with buttery stability
     chaser.update(dt, this.cursorPos, this.isCursorActive, this.physics, this.audio, runner);
 
@@ -283,9 +291,33 @@ export class CourtyardSimulation {
     this.physics.applyForces(runner, dt);
     runner.update(dt, this.physics, this.particles, this.audio, chaser);
 
+    // End-of-frame points
+    const p1CatchX = chaser.catchPoint.x;
+    const p1CatchY = chaser.catchPoint.y;
+    const p1TargetX = runner.targetPoint.x;
+    const p1TargetY = runner.targetPoint.y;
+
+    // Continuous swept-segment closest approach calculation
+    const d0x = p0CatchX - p0TargetX;
+    const d0y = p0CatchY - p0TargetY;
+    const d1x = p1CatchX - p1TargetX;
+    const d1y = p1CatchY - p1TargetY;
+    const vx = d1x - d0x;
+    const vy = d1y - d0y;
+    const lenSq = vx * vx + vy * vy;
+    let tMin = 0;
+    if (lenSq > 0.001) {
+      tMin = Math.max(0, Math.min(1, -(d0x * vx + d0y * vy) / lenSq));
+    }
+    const closestX = d0x + tMin * vx;
+    const closestY = d0y + tMin * vy;
+    const sweptDist = Math.hypot(closestX, closestY);
+    const endDist = Math.hypot(d1x, d1y);
+    const effectiveDist = Math.min(sweptDist, endDist);
+    this.sweptMinDist = effectiveDist;
+
     // Check Body Target Points Match! (Ganesh Ji's catchPoint reaching Parvati Mata's targetPoint)
-    const distPoints = chaser.catchPoint.distanceTo(runner.targetPoint);
-    const isMatched = distPoints <= this.catchThreshold && !runner.isCaught;
+    const isMatched = effectiveDist <= this.catchThreshold && !runner.isCaught;
     chaser.isPointMatched = isMatched;
     runner.isPointMatched = isMatched;
 
@@ -359,7 +391,7 @@ export class CourtyardSimulation {
         boyMomentum: `(${runner.floatingMomentum.x.toFixed(1)}, ${runner.floatingMomentum.y.toFixed(1)})`,
         propsCount: this.modaks.length + this.diyas.length,
         windActive: this.getActiveWindCount(),
-        pointsDistance: Math.round(distPoints),
+        pointsDistance: Number(effectiveDist.toFixed(1)),
         pointsMatched: isMatched,
         isCaught: runner.isCaught,
         caughtCount: chaser.caughtCount,
@@ -759,43 +791,57 @@ export class CourtyardSimulation {
     const cp = chaser.catchPoint;
     const tp = runner.targetPoint;
     const dist = cp.distanceTo(tp);
-    const isMatched = dist <= this.catchThreshold;
+    const isMatched = (dist <= this.catchThreshold || this.sweptMinDist <= this.catchThreshold);
 
     // Show proximity alignment tether when characters are near
-    if (dist < 180) {
+    if (dist < 220) {
       ctx.save();
-      // Connecting beam
+      // Connecting laser beam
       ctx.beginPath();
       ctx.moveTo(cp.x, cp.y);
       ctx.lineTo(tp.x, tp.y);
-      ctx.lineWidth = isMatched ? 3.0 : 1.5;
+      ctx.lineWidth = isMatched ? 3.5 : 1.8;
       ctx.strokeStyle = isMatched 
-        ? "rgba(74, 222, 128, 0.95)" 
-        : "rgba(251, 191, 36, 0.45)";
-      if (!isMatched) ctx.setLineDash([4, 4]);
+        ? "rgba(34, 197, 94, 0.95)" 
+        : "rgba(251, 191, 36, 0.55)";
+      if (!isMatched) ctx.setLineDash([5, 4]);
+      ctx.stroke();
+
+      // Precision target reticle around the modak thali
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, 20, 0, Math.PI * 2);
+      ctx.strokeStyle = isMatched ? "rgba(34, 197, 94, 0.85)" : "rgba(56, 189, 248, 0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
       ctx.stroke();
 
       // If MATCHED: show lock-on reticle and prominent press shift prompt!
       if (isMatched && !runner.isCaught) {
         const midX = (cp.x + tp.x) / 2;
-        const midY = Math.min(cp.y, tp.y) - 26;
+        const midY = Math.min(cp.y, tp.y) - 28;
 
-        // Lock-on rotating halo
+        // Concentric lock-on pulsing rings
+        const ringPulse = Math.sin(Date.now() * 0.012) * 3;
         ctx.beginPath();
-        ctx.arc(tp.x, tp.y, 18 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
+        ctx.arc(tp.x, tp.y, 20 + ringPulse, 0, Math.PI * 2);
         ctx.strokeStyle = "#4ade80";
-        ctx.lineWidth = 2.2;
-        ctx.setLineDash([4, 2]);
+        ctx.lineWidth = 2.4;
+        ctx.setLineDash([]);
         ctx.stroke();
 
-        // Prompt Banner with 14px high-difficulty accuracy readout
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, 10, 0, Math.PI * 2);
+        ctx.strokeStyle = "#22c55e";
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // Prompt Banner with 20px high accuracy readout
         ctx.font = "bold 11px system-ui, sans-serif";
-        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 16px) - CATCH MOM (SHIFT)! ⚡`;
+        const promptText = `⚡ 100% ACCURACY LOCKED (${dist.toFixed(1)}px <= 20px) - CATCH MOM (SHIFT)! ⚡`;
         const tw = ctx.measureText(promptText).width;
-        ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
-        ctx.strokeStyle = "#4ade80";
+        ctx.fillStyle = "rgba(15, 23, 42, 0.94)";
+        ctx.strokeStyle = "#22c55e";
         ctx.lineWidth = 2;
-        ctx.setLineDash([]);
         ctx.beginPath();
         ctx.roundRect(midX - tw / 2 - 12, midY - 14, tw + 24, 26, 6);
         ctx.fill();

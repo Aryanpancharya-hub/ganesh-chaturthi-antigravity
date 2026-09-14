@@ -241,7 +241,7 @@
   <header>
     <div class="title-group">
       <h1>🪔 Ganesh Ji Chases Maa Parvati <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
-      <p>Chaser: Ganesh Ji (Follows Cursor to Win Modaks) &bull; Runner: Maa Parvati (Runs Away with Golden Modak Thali) &bull; Strict 16px Precision &bull; Press Shift to Catch!</p>
+      <p>Chaser: Ganesh Ji (Follows Cursor to Win Modaks) &bull; Runner: Maa Parvati (Runs Away with Golden Modak Thali) &bull; Calibrated 20px High Accuracy &bull; Press Shift to Catch!</p>
     </div>
     <div class="header-badges">
       <div class="badge" style="border-color:#f59e0b;">
@@ -251,7 +251,7 @@
         <span style="color:#f472b6;">RUNNER:</span> <strong style="color:#fbcfe8">MAA PARVATI 🌸</strong>
       </div>
       <div class="badge" style="border-color:#38bdf8;">
-        <span style="color:#38bdf8;">CATCH RADIUS:</span> <strong style="color:#fde047">16px (STRICT)</strong>
+        <span style="color:#38bdf8;">CATCH RADIUS:</span> <strong style="color:#fde047">20px (HIGH ACCURACY)</strong>
       </div>
       <div class="badge">
         <div class="badge-dot" id="ag-dot"></div>
@@ -274,7 +274,7 @@
       <div class="hud-value" id="hud-gravity">(0.00, -9.81, 0.00)</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Point Alignment (&le;16px Lock)</div>
+      <div class="hud-label">Point Alignment (&le;20px Lock)</div>
       <div class="hud-value" id="hud-mom">TRACKING</div>
     </div>
     <div class="hud-item">
@@ -335,11 +335,11 @@
       </div>
       <div class="inst-col">
         <strong>2. Maa Parvati Playful Evasion (Runner):</strong><br>
-        Maa Parvati playfully dashes away at 250 px/s with 500 px/s corner wall-kicks, 360 px/s floor vaults, and a 120ms reflex escape window!
+        Maa Parvati playfully dashes away at 250 px/s with stabilized ground contact, 500 px/s wall-kicks, 360 px/s floor vaults, and a 140ms reflex escape window!
       </div>
       <div class="inst-col">
-        <strong>3. Strict 16px Catch &amp; Quick Shift:</strong><br>
-        Align Ganesh Ji's reaching trunk/hand with Maa Parvati's modak thali within 16px. Press <strong>SHIFT</strong> to catch her, savor sweet modaks, and send prasad to the sanctum!
+        <strong>3. Calibrated 20px Catch &amp; Quick Shift:</strong><br>
+        Align Ganesh Ji's reaching trunk/hand with Maa Parvati's modak thali within 20px. Press <strong>SHIFT</strong> (with 110ms buffer) to catch her and savor sweet modaks!
       </div>
     </div>
   </div>
@@ -374,11 +374,11 @@
       hudGravity.textContent = telemetry.gravityVectorStr;
 
       if (telemetry.pointsMatched) {
-        hudMom.textContent = `16PX LOCKED! [QUICK SHIFT]`;
+        hudMom.textContent = `20PX LOCKED! [QUICK SHIFT]`;
         hudMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 16px)`;
+        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 20px)`;
         hudMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }

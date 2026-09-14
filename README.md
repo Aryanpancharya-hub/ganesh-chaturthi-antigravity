@@ -25,12 +25,15 @@ In this festive divine chase, the traditional roles are inverted:
      - **Sensing Radius ($185\text{px}$)**: Detects Ganesh Ji approaching and sprints away proactively ($250\text{ px/s}$).
      - **Corner Wall-Kick Leap ($500\text{ px/s}$)**: When trapped near either wall ($< 230\text{px}$), executes a breathtaking wall-kick somersault arc ($v_x = \pm 500\text{ px/s}, v_y = -450\text{ px/s}$) back into the open courtyard.
      - **Mid-Field Floor Vault ($360\text{ px/s}$)**: Leaps gracefully over Ganesh Ji when he approaches within $95\text{px}$ ($v_y = -380\text{ px/s}$).
-     - **Reflex Escape Window ($120\text{ms}$)**: When alignment locks within $16\text{px}$, players have a brief $120\text{ms}$ window to press Shift before Maa Parvati gracefully darts away!
+     - **Rock-Solid Kinematic Stability**: Enforces 1G ground locking ($v_y = 0$) and directional hysteresis ($0.5\text{s}$ deadband) to eliminate all micro-bouncing, jitter, and rapid sprite flipping.
+     - **Sub-Pixel Spatial Synchronization**: Real-time trigonometric transformation maps the physics `targetPoint` exactly onto the visual brass modak thali at any rotation angle!
+     - **Reflex Escape Window ($140\text{ms}$)**: When alignment locks within $20\text{px}$, players have a crisp $140\text{ms}$ window to press Shift before Maa Parvati gracefully slips away!
 
-3. **Strict 16px Catch Precision & Input Buffering**:
-   - **Strict $\le 16\text{px}$ Alignment Radius**: Match Ganesh Ji's reaching trunk/hand with Maa Parvati's brass modak thali.
-   - **70ms Shift Key Input Buffering**: Responsive key registration for rapid reaction timing.
-   - **Dynamic HUD Lock-On Telemetry**: Real-time indicator displaying `16PX LOCKED! [QUICK SHIFT]` with pulsing button illumination.
+3. **Calibrated 20px Catch Precision & Anti-Tunneling Accuracy**:
+   - **Calibrated $\le 20\text{px}$ Alignment Radius**: Generously and precisely encompasses the brass modak thali rim and Ganesh Ji's reaching palm.
+   - **Continuous Swept Alignment (Anti-Tunneling)**: Interpolates the closest approach segment across animation frames, guaranteeing zero missed hits even during high-velocity leaps!
+   - **110ms Shift Key Input Buffering**: Responsive key registration captures player reflexes reliably.
+   - **Dynamic HUD & Concentric Reticle**: Real-time indicator displaying `20PX LOCKED! [QUICK SHIFT]` with pulsating concentric green targeting rings.
 
 4. **Sacred Dual Reward Ceremony**:
    - **Stage 1 (Maa Parvati Feeds Ganesh Ji)**: Parvati lovingly yields, stops running, and offers delicious warm modaks to Ganesh Ji with celebratory eating animations and festive dialogue (*"Hehe little Ganesha! You caught Maa, take your sweet modaks! 🥟❤️"*).
@@ -44,7 +47,7 @@ In this festive divine chase, the traditional roles are inverted:
 | Control | Action |
 | :--- | :--- |
 | **Mouse Cursor** | Guide **Ganesh Ji** smoothly across the courtyard to chase Maa Parvati |
-| **Shift Key / Click "GANESH JI CATCHES MOM"** | Catch Maa Parvati when alignment locks within **$\le 16\text{px}$** to win modaks! |
+| **Shift Key / Click "GANESH JI CATCHES MOM"** | Catch Maa Parvati when alignment locks within **$\le 20\text{px}$** to win modaks! |
 | **Spacebar / Button** | Toggle **AG-04 Anti-Gravity Field** |
 | **Q / Left Button** | Toggle West Vayu Turbine (Wind Current Generator) |
 | **E / Right Button** | Toggle East Vayu Turbine (Wind Current Generator) |

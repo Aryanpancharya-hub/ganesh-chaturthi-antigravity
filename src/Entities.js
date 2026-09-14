@@ -178,11 +178,12 @@ export class BalGanesh {
   }
 
   updateCatchPoint(physics) {
-    if (this.reachUp) {
-      this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 36);
-    } else {
-      this.catchPoint.set(this.pos.x + this.facing * 24, this.pos.y - 18);
-    }
+    const reachOffset = this.reachArm * 12;
+    const reachUpOffset = this.reachUp ? -10 : 0;
+    this.catchPoint.set(
+      this.pos.x + this.facing * (22 + reachOffset),
+      this.pos.y + (-18 + reachUpOffset)
+    );
   }
 
   updateMooshak(dt, physics) {
@@ -565,11 +566,11 @@ export class ParvatiMata {
     // Autonomous behavior & agility (Parvati playfully running away with modaks)
     this.runSpeed = 250;
     this.dangerZoneRadius = 185;
-    this.catchThreshold = 16;
+    this.catchThreshold = 20; // Calibrated 20px precision threshold
     this.alignReflexTimer = 0;
     this.cornerDodgeCooldown = 0;
+    this.facingHysteresisTimer = 0;
     this.evasionCount = 0;
-    this.autoHopTimer = 1.6 + Math.random() * 2.0;
     this.turnTimer = 3.5 + Math.random() * 3.0;
 
     // Caught state
@@ -627,6 +628,7 @@ export class ParvatiMata {
   update(dt, physics, particleSystem, audioEngine, chaser) {
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
+    this.facingHysteresisTimer = Math.max(0, this.facingHysteresisTimer - dt);
 
     if (this.speechTimer > 0) {
       this.speechTimer -= dt;
@@ -655,7 +657,8 @@ export class ParvatiMata {
         this.isBlessing = false;
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
         this.facing = Math.random() < 0.5 ? 1 : -1;
-        this.vel.set(this.facing * this.runSpeed * 1.4, -380);
+        this.facingHysteresisTimer = 0.6;
+        this.vel.set(this.facing * this.runSpeed * 1.3, -360);
         this.say("Let us see if you can catch Maa again, Ganesha! 🚀", 1.8);
         audioEngine.playDashWhoosh(520);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -679,14 +682,15 @@ export class ParvatiMata {
       const launchDirX = chaserTrappingLeft ? 1 : -1;
 
       if (!physics.isAntiGravityActive) {
-        this.vel.x = launchDirX * (500 + Math.random() * 40);
-        this.vel.y = -440 - Math.random() * 40;
+        this.vel.x = launchDirX * 500;
+        this.vel.y = -450;
       } else {
-        this.vel.x = launchDirX * (460 + Math.random() * 40);
-        this.vel.y = (this.pos.y < chaser.pos.y ? -330 : 330);
+        this.vel.x = launchDirX * 460;
+        this.vel.y = (this.pos.y < chaser.pos.y ? -340 : 340);
       }
 
       this.facing = launchDirX;
+      this.facingHysteresisTimer = 0.6;
       this.dashTimer = 0.55;
       this.state = "DASHING";
       this.dashCooldown = 0.65;
@@ -710,12 +714,13 @@ export class ParvatiMata {
     }
     // B. PROACTIVE EVASIVE ACROBATICS (Mid-field & airborne)
     else if (distToChaserCatch < this.dangerZoneRadius) {
-      if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 30) {
+      if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 25) {
         // Floor vault leap when Ganesh Ji gets within 95px
         if (distToChaserCatch < 95 && this.dashCooldown <= 0) {
-          this.vel.y = -380 - Math.random() * 40;
-          this.vel.x = escapeDirX * (360 + Math.random() * 40);
+          this.vel.y = -380;
+          this.vel.x = escapeDirX * 360;
           this.facing = escapeDirX;
+          this.facingHysteresisTimer = 0.5;
           this.dashTimer = 0.45;
           this.state = "DASHING";
           this.dashCooldown = 0.65;
@@ -725,15 +730,19 @@ export class ParvatiMata {
           const evasionQuips = ["Hop away! 💨", "Modak is still with Maa! 🥟✨", "Try again, sweet Ganesha! 🌸", "Zoom! 🪔"];
           this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
         } else {
-          // Sprint burst away
+          // Smooth sprint burst away
           this.acc.x += escapeDirX * 720;
-          this.facing = escapeDirX;
+          if (this.facingHysteresisTimer <= 0) {
+            this.facing = escapeDirX;
+            this.facingHysteresisTimer = 0.35;
+          }
         }
-      } else if (this.pos.y < physics.groundY - 30 && distToChaserCatch < 85 && this.dashCooldown <= 0) {
+      } else if (this.pos.y < physics.groundY - 25 && distToChaserCatch < 85 && this.dashCooldown <= 0) {
         // Airborne feint
-        this.vel.y = -260;
-        this.vel.x = escapeDirX * 340;
+        this.vel.y = -270;
+        this.vel.x = escapeDirX * 350;
         this.facing = escapeDirX;
+        this.facingHysteresisTimer = 0.45;
         this.dashTimer = 0.42;
         this.state = "DASHING";
         this.dashCooldown = 0.65;
@@ -744,18 +753,22 @@ export class ParvatiMata {
       } else if (physics.isAntiGravityActive) {
         this.acc.x += escapeDirX * 540;
         this.acc.y += (chaser && this.pos.y < chaser.pos.y ? -220 : 220);
-        this.facing = escapeDirX;
+        if (this.facingHysteresisTimer <= 0) {
+          this.facing = escapeDirX;
+          this.facingHysteresisTimer = 0.35;
+        }
       }
     }
 
-    // 3. Razor-Sharp Reflex Escape: If points are matched (<= 16px), 0.12s reflex window!
+    // 3. Razor-Sharp Reflex Escape: If points are matched (<= 20px), 0.14s reflex window!
     const distPoints = chaser ? this.targetPoint.distanceTo(chaser.catchPoint) : 300;
     if (distPoints <= this.catchThreshold) {
       this.alignReflexTimer += dt;
-      if (this.alignReflexTimer >= 0.12) {
+      if (this.alignReflexTimer >= 0.14) {
         this.vel.x = escapeDirX * 440;
         this.vel.y = -240;
         this.facing = escapeDirX;
+        this.facingHysteresisTimer = 0.5;
         this.dashTimer = 0.45;
         this.state = "DASHING";
         this.alignReflexTimer = 0;
@@ -769,35 +782,36 @@ export class ParvatiMata {
       this.alignReflexTimer = 0;
     }
 
-    // 4. Automatic Running Drive
-    this.autoHopTimer -= dt;
+    // 4. Automatic Running Drive & Smooth Boundary Avoidance
     this.turnTimer -= dt;
 
-    if (!physics.isAntiGravityActive && this.state === "RUNNING" && this.autoHopTimer <= 0) {
-      this.vel.y = -260 - Math.random() * 60;
-      this.autoHopTimer = 2.0 + Math.random() * 2.0;
-    }
-
-    // Turn around at walls
-    if (this.pos.x < 110) {
+    // Smooth boundary turning with hysteresis to prevent oscillation
+    if (this.pos.x < 130 && this.facing === -1 && this.facingHysteresisTimer <= 0) {
       this.facing = 1;
-      this.turnTimer = 3.0 + Math.random() * 3.0;
-    } else if (this.pos.x > physics.width - 110) {
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 3.5 + Math.random() * 3.0;
+    } else if (this.pos.x > physics.width - 130 && this.facing === 1 && this.facingHysteresisTimer <= 0) {
       this.facing = -1;
-      this.turnTimer = 3.0 + Math.random() * 3.0;
-    } else if (this.turnTimer <= 0) {
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 3.5 + Math.random() * 3.0;
+    } else if (this.turnTimer <= 0 && this.facingHysteresisTimer <= 0) {
       this.facing *= -1;
-      this.turnTimer = 3.5 + Math.random() * 4.0;
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 4.0 + Math.random() * 3.5;
     }
 
-    const desiredVx = this.facing * this.runSpeed;
-    this.acc.x += (desiredVx - this.vel.x) * 5.8;
+    // Smooth horizontal drive (only apply running drive when not in a ballistic dash)
+    if (this.dashTimer <= 0) {
+      const desiredVx = this.facing * this.runSpeed;
+      this.acc.x += (desiredVx - this.vel.x) * 6.5;
+    }
 
-    // Handle dash state
+    // Dash timer and angle handling
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       this.state = "DASHING";
-      this.angle += this.facing * 24 * dt;
+      const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.25 * this.facing;
+      this.angle += (targetAngle - this.angle) * 8 * dt;
       this.trailTimer += dt;
       if (this.trailTimer > 0.03) {
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -807,13 +821,18 @@ export class ParvatiMata {
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
       }
     } else {
-      if (physics.isAntiGravityActive || this.pos.y < physics.groundY - 25) {
+      if (physics.isAntiGravityActive) {
         this.state = "FLOATING";
-        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.3 * this.facing;
+        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.22 * this.facing;
         this.angle += (targetAngle - this.angle) * 6 * dt;
+      } else if (this.pos.y < physics.groundY - 15) {
+        this.state = "FLOATING";
+        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.2 * this.facing;
+        this.angle += (targetAngle - this.angle) * 8 * dt;
       } else {
         this.state = "RUNNING";
-        this.angle += (0 - this.angle) * 10 * dt;
+        this.angle += (0 - this.angle) * 14 * dt;
+        if (Math.abs(this.angle) < 0.005) this.angle = 0;
       }
     }
 
@@ -824,56 +843,50 @@ export class ParvatiMata {
     this.floatingMomentum.copy(this.vel);
 
     // Boundary handling
-    const minX = 60, maxX = physics.width - 60;
+    const minX = 70, maxX = physics.width - 70;
     const minY = 50, maxY = physics.groundY;
 
     if (this.pos.x <= minX) {
       this.pos.x = minX;
-      if (distToChaserCatch < 230) {
-        this.vel.x = 500;
-        this.vel.y = -440;
-        this.facing = 1;
-        this.dashTimer = 0.50;
-        this.state = "DASHING";
-        this.evasionCount++;
-        audioEngine.playDashWhoosh(560);
-        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-      } else {
-        this.vel.x *= -0.7;
-        this.facing = 1;
-      }
+      this.vel.x = Math.max(0, this.vel.x);
+      this.facing = 1;
     } else if (this.pos.x >= maxX) {
       this.pos.x = maxX;
-      if (distToChaserCatch < 230) {
-        this.vel.x = -500;
-        this.vel.y = -440;
-        this.facing = -1;
-        this.dashTimer = 0.50;
-        this.state = "DASHING";
-        this.evasionCount++;
-        audioEngine.playDashWhoosh(560);
-        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-      } else {
-        this.vel.x *= -0.7;
-        this.facing = -1;
-      }
+      this.vel.x = Math.min(0, this.vel.x);
+      this.facing = -1;
     }
 
     if (this.pos.y < minY) {
       this.pos.y = minY;
       this.vel.y = Math.max(0, this.vel.y * -0.4);
-    } else if (this.pos.y > maxY) {
+    } else if (this.pos.y >= maxY) {
       this.pos.y = maxY;
       this.vel.y = 0;
-      if (this.state !== "DASHING" && !this.isCaught) this.state = "RUNNING";
+      if (this.dashTimer <= 0 && !this.isCaught) {
+        this.state = "RUNNING";
+      }
+    }
+
+    // 1G ground lock: when running on ground, clamp to groundY and zero vertical velocity
+    if (!physics.isAntiGravityActive && this.state === "RUNNING") {
+      this.pos.y = maxY;
+      this.vel.y = 0;
     }
 
     this.updateTargetPoint();
   }
 
   updateTargetPoint() {
-    // Target catch point is on the brass Modak Thali held in Maa Parvati's hands
-    this.targetPoint.set(this.pos.x + this.facing * 24, this.pos.y - 44);
+    // Exact local-to-world trigonometric transformation of the brass Modak Thali
+    const rad = this.angle || 0;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+    const hoverBob = (this.state === "FLOATING" || this.isCaught) ? Math.sin(Date.now() * 0.004) * 2.5 : 0;
+    const lx = this.facing * 24;
+    const ly = -44 + hoverBob;
+    const wx = lx * cosA - ly * sinA;
+    const wy = lx * sinA + ly * cosA;
+    this.targetPoint.set(this.pos.x + wx, this.pos.y + wy);
   }
 
   draw(ctx) {

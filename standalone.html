@@ -42,7 +42,7 @@
         </h1>
         <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/40">ZONE: AG-04</span>
       </div>
-      <p class="text-xs text-slate-400 mt-1">Chaser: Ganesh Ji (Follows Cursor to Win Modaks) &bull; Runner: Maa Parvati (Runs Away with Golden Modak Thali) &bull; Strict 16px Precision &bull; Press Shift to Catch!</p>
+      <p class="text-xs text-slate-400 mt-1">Chaser: Ganesh Ji (Follows Cursor to Win Modaks) &bull; Runner: Maa Parvati (Runs Away with Golden Modak Thali) &bull; Calibrated 20px High Accuracy &bull; Press Shift to Catch!</p>
     </div>
     <div class="flex items-center gap-3 text-xs">
       <div class="px-3 py-1 rounded-full border border-amber-500/50 bg-amber-950/40 font-mono flex items-center gap-1.5">
@@ -55,7 +55,7 @@
       </div>
       <div class="px-3 py-1 rounded-full border border-cyan-500/50 bg-cyan-950/40 font-mono flex items-center gap-1.5">
         <span class="text-cyan-300">CATCH RADIUS:</span>
-        <span class="text-amber-300 font-bold">16px (STRICT)</span>
+        <span class="text-amber-300 font-bold">20px (HIGH ACCURACY)</span>
       </div>
       <div id="badge-status" class="px-3 py-1 rounded-full border border-purple-800 bg-purple-950/60 flex items-center gap-2 font-mono">
         <span id="badge-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
@@ -80,7 +80,7 @@
       <div id="tele-gravity" class="text-base font-mono font-bold text-amber-300 mt-0.5">(0.00, -9.81, 0.00)</div>
     </div>
     <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
-      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Point Alignment (&le;16px Lock)</div>
+      <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Point Alignment (&le;20px Lock)</div>
       <div id="tele-mom" class="text-base font-mono font-bold text-emerald-400 mt-0.5">TRACKING</div>
     </div>
     <div class="bg-purple-950/30 border border-purple-900/40 rounded-xl p-2.5">
@@ -141,11 +141,11 @@
       </div>
       <div class="border-l-2 border-pink-500/60 pl-3">
         <span class="text-pink-300 font-semibold block mb-0.5">2. Maa Parvati Playful Evasion (Runner)</span>
-        Maa Parvati playfully dashes away at 250 px/s with 500 px/s corner wall-kicks, 360 px/s floor vaults, and a 120ms reflex escape window!
+        Maa Parvati playfully dashes away at 250 px/s with stabilized ground contact, 500 px/s wall-kicks, 360 px/s floor vaults, and a 140ms reflex escape window!
       </div>
       <div class="border-l-2 border-emerald-500/60 pl-3">
-        <span class="text-emerald-300 font-semibold block mb-0.5">3. Strict 16px Catch Lock &amp; Quick Shift</span>
-        Align Ganesh Ji's reaching trunk/hand with Maa Parvati's modak thali within 16px. Press <strong>SHIFT</strong> to catch her, savor sweet modaks, and send prasad to the sanctum!
+        <span class="text-emerald-300 font-semibold block mb-0.5">3. Calibrated 20px Catch &amp; Quick Shift</span>
+        Align Ganesh Ji's reaching trunk/hand with Maa Parvati's modak thali within 20px. Press <strong>SHIFT</strong> (with 110ms buffer) to catch her and savor sweet modaks!
       </div>
     </div>
   </div>
@@ -1251,11 +1251,12 @@ class BalGanesh {
   }
 
   updateCatchPoint(physics) {
-    if (this.reachUp) {
-      this.catchPoint.set(this.pos.x + this.facing * 18, this.pos.y - 36);
-    } else {
-      this.catchPoint.set(this.pos.x + this.facing * 24, this.pos.y - 18);
-    }
+    const reachOffset = this.reachArm * 12;
+    const reachUpOffset = this.reachUp ? -10 : 0;
+    this.catchPoint.set(
+      this.pos.x + this.facing * (22 + reachOffset),
+      this.pos.y + (-18 + reachUpOffset)
+    );
   }
 
   updateMooshak(dt, physics) {
@@ -1638,11 +1639,11 @@ class ParvatiMata {
     // Autonomous behavior & agility (Parvati playfully running away with modaks)
     this.runSpeed = 250;
     this.dangerZoneRadius = 185;
-    this.catchThreshold = 16;
+    this.catchThreshold = 20; // Calibrated 20px precision threshold
     this.alignReflexTimer = 0;
     this.cornerDodgeCooldown = 0;
+    this.facingHysteresisTimer = 0;
     this.evasionCount = 0;
-    this.autoHopTimer = 1.6 + Math.random() * 2.0;
     this.turnTimer = 3.5 + Math.random() * 3.0;
 
     // Caught state
@@ -1700,6 +1701,7 @@ class ParvatiMata {
   update(dt, physics, particleSystem, audioEngine, chaser) {
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.cornerDodgeCooldown = Math.max(0, this.cornerDodgeCooldown - dt);
+    this.facingHysteresisTimer = Math.max(0, this.facingHysteresisTimer - dt);
 
     if (this.speechTimer > 0) {
       this.speechTimer -= dt;
@@ -1728,7 +1730,8 @@ class ParvatiMata {
         this.isBlessing = false;
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
         this.facing = Math.random() < 0.5 ? 1 : -1;
-        this.vel.set(this.facing * this.runSpeed * 1.4, -380);
+        this.facingHysteresisTimer = 0.6;
+        this.vel.set(this.facing * this.runSpeed * 1.3, -360);
         this.say("Let us see if you can catch Maa again, Ganesha! 🚀", 1.8);
         audioEngine.playDashWhoosh(520);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -1752,14 +1755,15 @@ class ParvatiMata {
       const launchDirX = chaserTrappingLeft ? 1 : -1;
 
       if (!physics.isAntiGravityActive) {
-        this.vel.x = launchDirX * (500 + Math.random() * 40);
-        this.vel.y = -440 - Math.random() * 40;
+        this.vel.x = launchDirX * 500;
+        this.vel.y = -450;
       } else {
-        this.vel.x = launchDirX * (460 + Math.random() * 40);
-        this.vel.y = (this.pos.y < chaser.pos.y ? -330 : 330);
+        this.vel.x = launchDirX * 460;
+        this.vel.y = (this.pos.y < chaser.pos.y ? -340 : 340);
       }
 
       this.facing = launchDirX;
+      this.facingHysteresisTimer = 0.6;
       this.dashTimer = 0.55;
       this.state = "DASHING";
       this.dashCooldown = 0.65;
@@ -1783,12 +1787,13 @@ class ParvatiMata {
     }
     // B. PROACTIVE EVASIVE ACROBATICS (Mid-field & airborne)
     else if (distToChaserCatch < this.dangerZoneRadius) {
-      if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 30) {
+      if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 25) {
         // Floor vault leap when Ganesh Ji gets within 95px
         if (distToChaserCatch < 95 && this.dashCooldown <= 0) {
-          this.vel.y = -380 - Math.random() * 40;
-          this.vel.x = escapeDirX * (360 + Math.random() * 40);
+          this.vel.y = -380;
+          this.vel.x = escapeDirX * 360;
           this.facing = escapeDirX;
+          this.facingHysteresisTimer = 0.5;
           this.dashTimer = 0.45;
           this.state = "DASHING";
           this.dashCooldown = 0.65;
@@ -1798,15 +1803,19 @@ class ParvatiMata {
           const evasionQuips = ["Hop away! 💨", "Modak is still with Maa! 🥟✨", "Try again, sweet Ganesha! 🌸", "Zoom! 🪔"];
           this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
         } else {
-          // Sprint burst away
+          // Smooth sprint burst away
           this.acc.x += escapeDirX * 720;
-          this.facing = escapeDirX;
+          if (this.facingHysteresisTimer <= 0) {
+            this.facing = escapeDirX;
+            this.facingHysteresisTimer = 0.35;
+          }
         }
-      } else if (this.pos.y < physics.groundY - 30 && distToChaserCatch < 85 && this.dashCooldown <= 0) {
+      } else if (this.pos.y < physics.groundY - 25 && distToChaserCatch < 85 && this.dashCooldown <= 0) {
         // Airborne feint
-        this.vel.y = -260;
-        this.vel.x = escapeDirX * 340;
+        this.vel.y = -270;
+        this.vel.x = escapeDirX * 350;
         this.facing = escapeDirX;
+        this.facingHysteresisTimer = 0.45;
         this.dashTimer = 0.42;
         this.state = "DASHING";
         this.dashCooldown = 0.65;
@@ -1817,18 +1826,22 @@ class ParvatiMata {
       } else if (physics.isAntiGravityActive) {
         this.acc.x += escapeDirX * 540;
         this.acc.y += (chaser && this.pos.y < chaser.pos.y ? -220 : 220);
-        this.facing = escapeDirX;
+        if (this.facingHysteresisTimer <= 0) {
+          this.facing = escapeDirX;
+          this.facingHysteresisTimer = 0.35;
+        }
       }
     }
 
-    // 3. Razor-Sharp Reflex Escape: If points are matched (<= 16px), 0.12s reflex window!
+    // 3. Razor-Sharp Reflex Escape: If points are matched (<= 20px), 0.14s reflex window!
     const distPoints = chaser ? this.targetPoint.distanceTo(chaser.catchPoint) : 300;
     if (distPoints <= this.catchThreshold) {
       this.alignReflexTimer += dt;
-      if (this.alignReflexTimer >= 0.12) {
+      if (this.alignReflexTimer >= 0.14) {
         this.vel.x = escapeDirX * 440;
         this.vel.y = -240;
         this.facing = escapeDirX;
+        this.facingHysteresisTimer = 0.5;
         this.dashTimer = 0.45;
         this.state = "DASHING";
         this.alignReflexTimer = 0;
@@ -1842,35 +1855,36 @@ class ParvatiMata {
       this.alignReflexTimer = 0;
     }
 
-    // 4. Automatic Running Drive
-    this.autoHopTimer -= dt;
+    // 4. Automatic Running Drive & Smooth Boundary Avoidance
     this.turnTimer -= dt;
 
-    if (!physics.isAntiGravityActive && this.state === "RUNNING" && this.autoHopTimer <= 0) {
-      this.vel.y = -260 - Math.random() * 60;
-      this.autoHopTimer = 2.0 + Math.random() * 2.0;
-    }
-
-    // Turn around at walls
-    if (this.pos.x < 110) {
+    // Smooth boundary turning with hysteresis to prevent oscillation
+    if (this.pos.x < 130 && this.facing === -1 && this.facingHysteresisTimer <= 0) {
       this.facing = 1;
-      this.turnTimer = 3.0 + Math.random() * 3.0;
-    } else if (this.pos.x > physics.width - 110) {
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 3.5 + Math.random() * 3.0;
+    } else if (this.pos.x > physics.width - 130 && this.facing === 1 && this.facingHysteresisTimer <= 0) {
       this.facing = -1;
-      this.turnTimer = 3.0 + Math.random() * 3.0;
-    } else if (this.turnTimer <= 0) {
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 3.5 + Math.random() * 3.0;
+    } else if (this.turnTimer <= 0 && this.facingHysteresisTimer <= 0) {
       this.facing *= -1;
-      this.turnTimer = 3.5 + Math.random() * 4.0;
+      this.facingHysteresisTimer = 0.5;
+      this.turnTimer = 4.0 + Math.random() * 3.5;
     }
 
-    const desiredVx = this.facing * this.runSpeed;
-    this.acc.x += (desiredVx - this.vel.x) * 5.8;
+    // Smooth horizontal drive (only apply running drive when not in a ballistic dash)
+    if (this.dashTimer <= 0) {
+      const desiredVx = this.facing * this.runSpeed;
+      this.acc.x += (desiredVx - this.vel.x) * 6.5;
+    }
 
-    // Handle dash state
+    // Dash timer and angle handling
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       this.state = "DASHING";
-      this.angle += this.facing * 24 * dt;
+      const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.25 * this.facing;
+      this.angle += (targetAngle - this.angle) * 8 * dt;
       this.trailTimer += dt;
       if (this.trailTimer > 0.03) {
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
@@ -1880,13 +1894,18 @@ class ParvatiMata {
         this.state = physics.isAntiGravityActive ? "FLOATING" : "RUNNING";
       }
     } else {
-      if (physics.isAntiGravityActive || this.pos.y < physics.groundY - 25) {
+      if (physics.isAntiGravityActive) {
         this.state = "FLOATING";
-        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 40) * 0.3 * this.facing;
+        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.22 * this.facing;
         this.angle += (targetAngle - this.angle) * 6 * dt;
+      } else if (this.pos.y < physics.groundY - 15) {
+        this.state = "FLOATING";
+        const targetAngle = Math.atan2(this.vel.y, Math.abs(this.vel.x) + 50) * 0.2 * this.facing;
+        this.angle += (targetAngle - this.angle) * 8 * dt;
       } else {
         this.state = "RUNNING";
-        this.angle += (0 - this.angle) * 10 * dt;
+        this.angle += (0 - this.angle) * 14 * dt;
+        if (Math.abs(this.angle) < 0.005) this.angle = 0;
       }
     }
 
@@ -1897,56 +1916,50 @@ class ParvatiMata {
     this.floatingMomentum.copy(this.vel);
 
     // Boundary handling
-    const minX = 60, maxX = physics.width - 60;
+    const minX = 70, maxX = physics.width - 70;
     const minY = 50, maxY = physics.groundY;
 
     if (this.pos.x <= minX) {
       this.pos.x = minX;
-      if (distToChaserCatch < 230) {
-        this.vel.x = 500;
-        this.vel.y = -440;
-        this.facing = 1;
-        this.dashTimer = 0.50;
-        this.state = "DASHING";
-        this.evasionCount++;
-        audioEngine.playDashWhoosh(560);
-        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-      } else {
-        this.vel.x *= -0.7;
-        this.facing = 1;
-      }
+      this.vel.x = Math.max(0, this.vel.x);
+      this.facing = 1;
     } else if (this.pos.x >= maxX) {
       this.pos.x = maxX;
-      if (distToChaserCatch < 230) {
-        this.vel.x = -500;
-        this.vel.y = -440;
-        this.facing = -1;
-        this.dashTimer = 0.50;
-        this.state = "DASHING";
-        this.evasionCount++;
-        audioEngine.playDashWhoosh(560);
-        particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-      } else {
-        this.vel.x *= -0.7;
-        this.facing = -1;
-      }
+      this.vel.x = Math.min(0, this.vel.x);
+      this.facing = -1;
     }
 
     if (this.pos.y < minY) {
       this.pos.y = minY;
       this.vel.y = Math.max(0, this.vel.y * -0.4);
-    } else if (this.pos.y > maxY) {
+    } else if (this.pos.y >= maxY) {
       this.pos.y = maxY;
       this.vel.y = 0;
-      if (this.state !== "DASHING" && !this.isCaught) this.state = "RUNNING";
+      if (this.dashTimer <= 0 && !this.isCaught) {
+        this.state = "RUNNING";
+      }
+    }
+
+    // 1G ground lock: when running on ground, clamp to groundY and zero vertical velocity
+    if (!physics.isAntiGravityActive && this.state === "RUNNING") {
+      this.pos.y = maxY;
+      this.vel.y = 0;
     }
 
     this.updateTargetPoint();
   }
 
   updateTargetPoint() {
-    // Target catch point is on the brass Modak Thali held in Maa Parvati's hands
-    this.targetPoint.set(this.pos.x + this.facing * 24, this.pos.y - 44);
+    // Exact local-to-world trigonometric transformation of the brass Modak Thali
+    const rad = this.angle || 0;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+    const hoverBob = (this.state === "FLOATING" || this.isCaught) ? Math.sin(Date.now() * 0.004) * 2.5 : 0;
+    const lx = this.facing * 24;
+    const ly = -44 + hoverBob;
+    const wx = lx * cosA - ly * sinA;
+    const wy = lx * sinA + ly * cosA;
+    this.targetPoint.set(this.pos.x + wx, this.pos.y + wy);
   }
 
   draw(ctx) {
@@ -2863,13 +2876,14 @@ class CourtyardSimulation {
       this.diyas.push(new Diya(140 + i * 180, this.physics.groundY - 4));
     }
 
-    // 6. Sacred Offerings & Reward Tracking (14px Strict Precision - High Difficulty)
+    // 6. Sacred Offerings & Reward Tracking (20px Calibrated Precision)
     this.offeringModaks = [];
     this.prasadGaneshCount = 0;
     this.aaravModakCount = 0;
     this.altarBlessingTimer = 0;
-    this.catchThreshold = 16; // Strict 14px accuracy threshold for High Difficulty
+    this.catchThreshold = 20; // Calibrated 20px accuracy threshold
     this.shiftBufferTimer = 0; // Input buffer for Shift key
+    this.sweptMinDist = 999;   // Anti-tunneling swept distance tracker
   }
 
   bindEvents() {
@@ -2938,7 +2952,7 @@ class CourtyardSimulation {
     // Press Shift key to catch when points match (with precision buffer)
     window.addEventListener("keydown", (e) => {
       if (e.key === "Shift") {
-        this.shiftBufferTimer = 0.07; // Buffer Shift for 70ms in High Difficulty
+        this.shiftBufferTimer = 0.11; // Buffer Shift for 110ms for responsive registration
         this.attemptCatch();
       }
     });
@@ -2949,7 +2963,8 @@ class CourtyardSimulation {
     const runner = this.runner || this.parvatiMata;
     if (!chaser || !runner) return false;
     const dist = chaser.catchPoint.distanceTo(runner.targetPoint);
-    if (dist <= this.catchThreshold && !runner.isCaught) {
+    const effectiveDist = Math.min(dist, this.sweptMinDist);
+    if (effectiveDist <= this.catchThreshold && !runner.isCaught) {
       chaser.triggerCatchSuccess(runner);
       runner.triggerCaught(chaser);
 
@@ -3059,6 +3074,12 @@ class CourtyardSimulation {
     const chaser = this.chaser || this.balGanesh;
     const runner = this.runner || this.parvatiMata;
 
+    // Record start-of-frame positions for anti-tunneling swept alignment
+    const p0CatchX = chaser.catchPoint.x;
+    const p0CatchY = chaser.catchPoint.y;
+    const p0TargetX = runner.targetPoint.x;
+    const p0TargetY = runner.targetPoint.y;
+
     // Ganesh Ji follows mouse cursor with buttery stability
     chaser.update(dt, this.cursorPos, this.isCursorActive, this.physics, this.audio, runner);
 
@@ -3066,9 +3087,33 @@ class CourtyardSimulation {
     this.physics.applyForces(runner, dt);
     runner.update(dt, this.physics, this.particles, this.audio, chaser);
 
+    // End-of-frame points
+    const p1CatchX = chaser.catchPoint.x;
+    const p1CatchY = chaser.catchPoint.y;
+    const p1TargetX = runner.targetPoint.x;
+    const p1TargetY = runner.targetPoint.y;
+
+    // Continuous swept-segment closest approach calculation
+    const d0x = p0CatchX - p0TargetX;
+    const d0y = p0CatchY - p0TargetY;
+    const d1x = p1CatchX - p1TargetX;
+    const d1y = p1CatchY - p1TargetY;
+    const vx = d1x - d0x;
+    const vy = d1y - d0y;
+    const lenSq = vx * vx + vy * vy;
+    let tMin = 0;
+    if (lenSq > 0.001) {
+      tMin = Math.max(0, Math.min(1, -(d0x * vx + d0y * vy) / lenSq));
+    }
+    const closestX = d0x + tMin * vx;
+    const closestY = d0y + tMin * vy;
+    const sweptDist = Math.hypot(closestX, closestY);
+    const endDist = Math.hypot(d1x, d1y);
+    const effectiveDist = Math.min(sweptDist, endDist);
+    this.sweptMinDist = effectiveDist;
+
     // Check Body Target Points Match! (Ganesh Ji's catchPoint reaching Parvati Mata's targetPoint)
-    const distPoints = chaser.catchPoint.distanceTo(runner.targetPoint);
-    const isMatched = distPoints <= this.catchThreshold && !runner.isCaught;
+    const isMatched = effectiveDist <= this.catchThreshold && !runner.isCaught;
     chaser.isPointMatched = isMatched;
     runner.isPointMatched = isMatched;
 
@@ -3142,7 +3187,7 @@ class CourtyardSimulation {
         boyMomentum: `(${runner.floatingMomentum.x.toFixed(1)}, ${runner.floatingMomentum.y.toFixed(1)})`,
         propsCount: this.modaks.length + this.diyas.length,
         windActive: this.getActiveWindCount(),
-        pointsDistance: Math.round(distPoints),
+        pointsDistance: Number(effectiveDist.toFixed(1)),
         pointsMatched: isMatched,
         isCaught: runner.isCaught,
         caughtCount: chaser.caughtCount,
@@ -3542,43 +3587,57 @@ class CourtyardSimulation {
     const cp = chaser.catchPoint;
     const tp = runner.targetPoint;
     const dist = cp.distanceTo(tp);
-    const isMatched = dist <= this.catchThreshold;
+    const isMatched = (dist <= this.catchThreshold || this.sweptMinDist <= this.catchThreshold);
 
     // Show proximity alignment tether when characters are near
-    if (dist < 180) {
+    if (dist < 220) {
       ctx.save();
-      // Connecting beam
+      // Connecting laser beam
       ctx.beginPath();
       ctx.moveTo(cp.x, cp.y);
       ctx.lineTo(tp.x, tp.y);
-      ctx.lineWidth = isMatched ? 3.0 : 1.5;
+      ctx.lineWidth = isMatched ? 3.5 : 1.8;
       ctx.strokeStyle = isMatched 
-        ? "rgba(74, 222, 128, 0.95)" 
-        : "rgba(251, 191, 36, 0.45)";
-      if (!isMatched) ctx.setLineDash([4, 4]);
+        ? "rgba(34, 197, 94, 0.95)" 
+        : "rgba(251, 191, 36, 0.55)";
+      if (!isMatched) ctx.setLineDash([5, 4]);
+      ctx.stroke();
+
+      // Precision target reticle around the modak thali
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, 20, 0, Math.PI * 2);
+      ctx.strokeStyle = isMatched ? "rgba(34, 197, 94, 0.85)" : "rgba(56, 189, 248, 0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
       ctx.stroke();
 
       // If MATCHED: show lock-on reticle and prominent press shift prompt!
       if (isMatched && !runner.isCaught) {
         const midX = (cp.x + tp.x) / 2;
-        const midY = Math.min(cp.y, tp.y) - 26;
+        const midY = Math.min(cp.y, tp.y) - 28;
 
-        // Lock-on rotating halo
+        // Concentric lock-on pulsing rings
+        const ringPulse = Math.sin(Date.now() * 0.012) * 3;
         ctx.beginPath();
-        ctx.arc(tp.x, tp.y, 18 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
+        ctx.arc(tp.x, tp.y, 20 + ringPulse, 0, Math.PI * 2);
         ctx.strokeStyle = "#4ade80";
-        ctx.lineWidth = 2.2;
-        ctx.setLineDash([4, 2]);
+        ctx.lineWidth = 2.4;
+        ctx.setLineDash([]);
         ctx.stroke();
 
-        // Prompt Banner with 14px high-difficulty accuracy readout
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, 10, 0, Math.PI * 2);
+        ctx.strokeStyle = "#22c55e";
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // Prompt Banner with 20px high accuracy readout
         ctx.font = "bold 11px system-ui, sans-serif";
-        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 16px) - CATCH MOM (SHIFT)! ⚡`;
+        const promptText = `⚡ 100% ACCURACY LOCKED (${dist.toFixed(1)}px <= 20px) - CATCH MOM (SHIFT)! ⚡`;
         const tw = ctx.measureText(promptText).width;
-        ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
-        ctx.strokeStyle = "#4ade80";
+        ctx.fillStyle = "rgba(15, 23, 42, 0.94)";
+        ctx.strokeStyle = "#22c55e";
         ctx.lineWidth = 2;
-        ctx.setLineDash([]);
         ctx.beginPath();
         ctx.roundRect(midX - tw / 2 - 12, midY - 14, tw + 24, 26, 6);
         ctx.fill();
@@ -3656,11 +3715,11 @@ class CourtyardSimulation {
     const sim = new CourtyardSimulation(canvas, (telemetry) => {
       teleGravity.textContent = telemetry.gravityVectorStr;
       if (telemetry.pointsMatched) {
-        teleMom.textContent = "16PX LOCKED! [QUICK SHIFT]";
+        teleMom.textContent = "20PX LOCKED! [QUICK SHIFT]";
         teleMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        teleMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 16px)`;
+        teleMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 20px)`;
         teleMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }
