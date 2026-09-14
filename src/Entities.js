@@ -27,12 +27,13 @@ export class BalGanesh {
     this.targetPoint = new Vector2(x, y - 18);
     this.isPointMatched = false;
 
-    // Autonomous behavior & agility variables (Medium Dodge balance)
-    this.runSpeed = 210;
-    this.dangerZoneRadius = 125;
-    this.catchThreshold = 28;
+    // Autonomous behavior & agility variables (High Difficulty Divine Agility)
+    this.runSpeed = 260;
+    this.dangerZoneRadius = 190;
+    this.catchThreshold = 14;
     this.alignReflexTimer = 0;
     this.cornerDodgeCooldown = 0;
+    this.evasionCount = 0;
     this.autoHopTimer = 1.4 + Math.random() * 2.0;
     this.turnTimer = 3.5 + Math.random() * 3.0;
 
@@ -72,12 +73,12 @@ export class BalGanesh {
     this.facing = Math.sign(chaser.pos.x - this.pos.x) || 1;
 
     const caughtDialogues = [
-      "Pranam Mata Parvati! Your modaks are the sweetest! 🥟🙏✨",
-      "Delicious! Thank you, Maa! 🥟❤️",
-      "Yummy! Blessed modak from Maa Parvati! 🥟😋",
-      "Mata's love is sweeter than all the modaks in the universe! 🥟💖"
+      "Hehe Mom, you outsmarted my divine dodge! Your modak is the sweetest! 🥟❤️",
+      "Caught by Mom against all odds! Delicious modak, Maa! 🥟✨",
+      "Pranam Mata! Maa's love is swifter than the wind! 🥟💖",
+      "Delicious! Thank you, Mom! Best modak in the universe! 🥟😋"
     ];
-    this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.0);
+    this.say(caughtDialogues[Math.floor(Math.random() * caughtDialogues.length)], 2.2);
   }
 
   triggerAerialDash(dir, force = 640, particleSystem, audioEngine) {
@@ -87,12 +88,13 @@ export class BalGanesh {
     this.facing = Math.sign(dir.x) || this.facing;
     this.dashTimer = 0.45;
     this.state = "DASHING";
+    this.evasionCount++;
     if (audioEngine) audioEngine.playDashWhoosh(560);
     if (particleSystem) {
       particleSystem.addDistortionWave(this.pos.x, this.pos.y, 120, 1.2);
       particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
     }
-    const dashQuips = ["Wheee! 💨", "Ganpati Bappa Morya! 🪔", "Bal Ganesh zooms! ✨"];
+    const dashQuips = ["Wheee! 💨", "Ganpati Bappa Morya! 🪔", "Bal Ganesh zooms away! ✨"];
     this.say(dashQuips[Math.floor(Math.random() * dashQuips.length)], 1.2);
   }
 
@@ -139,104 +141,108 @@ export class BalGanesh {
       return;
     }
 
-    // 2. Medium Dodge Evasion AI: Sensing Maa Parvati's approach!
+    // 2. High-Difficulty Divine Evasion AI: Sensing Mom's approach!
     const distToChaserCatch = this.pos.distanceTo(chaser.catchPoint);
     const escapeDirX = Math.sign(this.pos.x - chaser.pos.x) || this.facing;
 
-    // A. CORNER TRAP DETECTION & MEDIUM WALL-KICK DODGE
-    const isNearLeftCorner = this.pos.x < 220;
-    const isNearRightCorner = this.pos.x > physics.width - 220;
-    const chaserTrappingLeft = isNearLeftCorner && chaser.pos.x > this.pos.x && (chaser.pos.x - this.pos.x) < 220;
-    const chaserTrappingRight = isNearRightCorner && chaser.pos.x < this.pos.x && (this.pos.x - chaser.pos.x) < 220;
+    // A. CORNER TRAP DETECTION & LONG DIVINE WALL-KICK DODGE
+    const isNearLeftCorner = this.pos.x < 230;
+    const isNearRightCorner = this.pos.x > physics.width - 230;
+    const chaserTrappingLeft = isNearLeftCorner && chaser.pos.x > this.pos.x && (chaser.pos.x - this.pos.x) < 230;
+    const chaserTrappingRight = isNearRightCorner && chaser.pos.x < this.pos.x && (this.pos.x - chaser.pos.x) < 230;
 
     if ((chaserTrappingLeft || chaserTrappingRight) && this.cornerDodgeCooldown <= 0) {
-      // Launch moderately toward open center of courtyard (Medium Dodge: ~320 px/s)
+      // Launch decisively with high velocity toward open center (Long Dodge: ~520 px/s, vy: -460 px/s)
       const launchDirX = chaserTrappingLeft ? 1 : -1;
       
       if (!physics.isAntiGravityActive) {
-        this.vel.x = launchDirX * (320 + Math.random() * 40);
-        this.vel.y = -350 - Math.random() * 40; // Manageable arched leap
+        this.vel.x = launchDirX * (520 + Math.random() * 40);
+        this.vel.y = -460 - Math.random() * 40; // High-flying somersault leap across arena
       } else {
-        this.vel.x = launchDirX * (300 + Math.random() * 30);
-        this.vel.y = (this.pos.y < chaser.pos.y ? -220 : 240);
+        this.vel.x = launchDirX * (480 + Math.random() * 40);
+        this.vel.y = (this.pos.y < chaser.pos.y ? -350 : 350);
       }
 
       this.facing = launchDirX;
-      this.dashTimer = 0.50; // Medium dodge duration
+      this.dashTimer = 0.55;
       this.state = "DASHING";
-      this.dashCooldown = 1.0;
-      this.cornerDodgeCooldown = 2.4; // Fair cooldown allowing player to close in
+      this.dashCooldown = 0.65;
+      this.cornerDodgeCooldown = 0.95; // Rapid evasion cooldown in hard mode
       this.alignReflexTimer = 0;
+      this.evasionCount++;
 
-      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 140, 1.4);
-      for (let s = 0; s < 14; s++) {
-        particleSystem.addSparkle(this.pos.x + (Math.random() - 0.5) * 30, this.pos.y + (Math.random() - 0.5) * 30, "#fde047");
+      particleSystem.addDistortionWave(this.pos.x, this.pos.y, 160, 1.6);
+      for (let s = 0; s < 18; s++) {
+        particleSystem.addSparkle(this.pos.x + (Math.random() - 0.5) * 36, this.pos.y + (Math.random() - 0.5) * 36, "#fde047");
       }
-      audioEngine.playDashWhoosh(560);
+      audioEngine.playDashWhoosh(580);
 
       const cornerQuips = [
-        "Bal Ganesh takes a playful leap! 💨",
+        "Bal Ganesh executes a divine leap! 💨",
         "Can't corner little Ganesha! ⚡",
-        "Acrobatic hop, Mata! ✨",
+        "Too quick, Mom! ✨",
         "Wheee! Ganpati Bappa Morya! 🪔"
       ];
-      this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.4);
+      this.say(cornerQuips[Math.floor(Math.random() * cornerQuips.length)], 1.3);
     }
     // B. PROACTIVE EVASIVE ACROBATICS (Mid-field & airborne)
     else if (distToChaserCatch < this.dangerZoneRadius) {
       if (!physics.isAntiGravityActive && this.pos.y >= physics.groundY - 30) {
-        // Floor vault leap when chaser gets within 80px
-        if (distToChaserCatch < 80 && this.dashCooldown <= 0) {
-          this.vel.y = -330 - Math.random() * 40;
-          this.vel.x = escapeDirX * (280 + Math.random() * 40);
+        // Floor vault leap when chaser gets within 95px
+        if (distToChaserCatch < 95 && this.dashCooldown <= 0) {
+          this.vel.y = -390 - Math.random() * 40;
+          this.vel.x = escapeDirX * (380 + Math.random() * 40);
           this.facing = escapeDirX;
-          this.dashTimer = 0.40;
+          this.dashTimer = 0.45;
           this.state = "DASHING";
-          this.dashCooldown = 0.95;
+          this.dashCooldown = 0.65;
+          this.evasionCount++;
           particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-          audioEngine.playDashWhoosh(440);
-          const evasionQuips = ["Hop away! 💨", "Almost got me, Maa! ✨", "Hehe, try again, Mata! 🥟", "Zoom! 🪔"];
-          this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.1);
+          audioEngine.playDashWhoosh(500);
+          const evasionQuips = ["Vault leap! 💨", "Too quick, Mom! ✨", "Hehe, try again, Maa! 🥟", "Zoom! 🪔"];
+          this.say(evasionQuips[Math.floor(Math.random() * evasionQuips.length)], 1.0);
         } else {
           // Sprint burst away from chaser
-          this.acc.x += escapeDirX * 520;
+          this.acc.x += escapeDirX * 750;
           this.facing = escapeDirX;
         }
-      } else if (this.pos.y < physics.groundY - 30 && distToChaserCatch < 75 && this.dashCooldown <= 0) {
+      } else if (this.pos.y < physics.groundY - 30 && distToChaserCatch < 85 && this.dashCooldown <= 0) {
         // Airborne feint / mid-air flip
-        this.vel.y = -220;
-        this.vel.x = escapeDirX * 300;
+        this.vel.y = -280;
+        this.vel.x = escapeDirX * 360;
         this.facing = escapeDirX;
-        this.dashTimer = 0.38;
+        this.dashTimer = 0.42;
         this.state = "DASHING";
-        this.dashCooldown = 1.0;
+        this.dashCooldown = 0.65;
+        this.evasionCount++;
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
-        audioEngine.playDashWhoosh(480);
-        this.say("Mid-air leap! 💨", 1.0);
+        audioEngine.playDashWhoosh(520);
+        this.say("Mid-air leap! 💨", 0.9);
       } else if (physics.isAntiGravityActive) {
         // In AG-04 low-buoyancy: glide away using atmospheric currents
-        this.acc.x += escapeDirX * 450;
-        this.acc.y += (this.pos.y < chaser.pos.y ? -180 : 180);
+        this.acc.x += escapeDirX * 580;
+        this.acc.y += (this.pos.y < chaser.pos.y ? -240 : 240);
         this.facing = escapeDirX;
       }
     }
 
-    // 3. Balanced Reflex Escape: If points are closely matched (<= 28px), 0.36s reflex window!
+    // 3. Razor-Sharp Reflex Escape: If points are matched (<= 14px), 0.10s (100ms) reflex window!
     const distPoints = this.targetPoint.distanceTo(chaser.catchPoint);
     if (distPoints <= this.catchThreshold) {
       this.alignReflexTimer += dt;
-      if (this.alignReflexTimer >= 0.36) {
-        // Emergency escape slide dash after fair 0.36s window
-        this.vel.x = escapeDirX * 350;
-        this.vel.y = -220;
+      if (this.alignReflexTimer >= 0.10) {
+        // Emergency escape slide dash after razor-sharp 100ms window
+        this.vel.x = escapeDirX * 460;
+        this.vel.y = -260;
         this.facing = escapeDirX;
-        this.dashTimer = 0.40;
+        this.dashTimer = 0.45;
         this.state = "DASHING";
         this.alignReflexTimer = 0;
-        this.dashCooldown = 1.0;
-        this.say("Quick hop away! 💨", 1.0);
-        audioEngine.playDashWhoosh(480);
-        particleSystem.addDistortionWave(this.pos.x, this.pos.y, 90, 0.9);
+        this.dashCooldown = 0.65;
+        this.evasionCount++;
+        this.say("Lightning escape! 💨", 0.9);
+        audioEngine.playDashWhoosh(520);
+        particleSystem.addDistortionWave(this.pos.x, this.pos.y, 110, 1.1);
       }
     } else {
       this.alignReflexTimer = 0;
@@ -306,14 +312,15 @@ export class BalGanesh {
 
     if (this.pos.x <= minX) {
       this.pos.x = minX;
-      if (distToChaserCatch < 200) {
-        // Medium wall-kick spring out of corner
-        this.vel.x = 320;
-        this.vel.y = -350;
+      if (distToChaserCatch < 230) {
+        // Long divine wall-kick spring out of corner
+        this.vel.x = 520;
+        this.vel.y = -460;
         this.facing = 1;
-        this.dashTimer = 0.45;
+        this.dashTimer = 0.50;
         this.state = "DASHING";
-        audioEngine.playDashWhoosh(520);
+        this.evasionCount++;
+        audioEngine.playDashWhoosh(560);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
       } else {
         this.vel.x *= -0.7;
@@ -321,14 +328,15 @@ export class BalGanesh {
       }
     } else if (this.pos.x >= maxX) {
       this.pos.x = maxX;
-      if (distToChaserCatch < 200) {
-        // Medium wall-kick spring out of corner
-        this.vel.x = -320;
-        this.vel.y = -350;
+      if (distToChaserCatch < 230) {
+        // Long divine wall-kick spring out of corner
+        this.vel.x = -520;
+        this.vel.y = -460;
         this.facing = -1;
-        this.dashTimer = 0.45;
+        this.dashTimer = 0.50;
         this.state = "DASHING";
-        audioEngine.playDashWhoosh(520);
+        this.evasionCount++;
+        audioEngine.playDashWhoosh(560);
         particleSystem.addDashTrail(this.pos.x, this.pos.y, this.vel.x, this.vel.y);
       } else {
         this.vel.x *= -0.7;
@@ -712,6 +720,7 @@ export class BalGanesh {
 // Backwards compatibility aliases
 export const Boy = BalGanesh;
 export const Aarav = BalGanesh;
+export const GaneshJi = BalGanesh;
 
 
 // ==========================================
@@ -757,10 +766,10 @@ export class ParvatiMata {
     this.reachArm = 1.0;
 
     const parvatiDialogues = [
-      "Ganesha, my sweet child! Have this delicious warm modak! 🥟❤️",
-      "Caught you, Bal Ganesha! Maa has fresh sweet prasad for you! 🥟✨",
-      "Sweet prasad for you, my little Vighnaharta! Peace, joy & wisdom! 🥟💖",
-      "Eat heartily, my dear Ganesha! Maa's love is with you always! 🪔🙏"
+      "Finally caught you, my clever little Ganesh Ji! Have this warm modak! 🥟❤️",
+      "Aha! Mom's love caught up to you, Bal Ganesha! 🥟✨",
+      "Sweet prasad for you, my sweet Ganesh Ji! Peace, joy & wisdom! 🥟💖",
+      "Eat heartily, my dear Ganesha! Mom's love is with you always! 🪔🙏"
     ];
     this.say(parvatiDialogues[Math.floor(Math.random() * parvatiDialogues.length)], 2.2);
   }
@@ -1238,7 +1247,6 @@ export class ParvatiMata {
 }
 
 // Backwards compatibility aliases
-export const GaneshJi = ParvatiMata;
 export const Mom = ParvatiMata;
 export const Priya = ParvatiMata;
 

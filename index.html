@@ -240,15 +240,18 @@
 
   <header>
     <div class="title-group">
-      <h1>🪔 Maa Parvati &amp; Bal Ganesh <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
-      <p>Playable Parvati Mata &bull; Bal Ganesh (Lord Ganesha) Medium Dodge &bull; High Accuracy Alignment (&le;28px) &amp; press Shift &bull; 🥟 Blessed Modak Rewards</p>
+      <h1>🪔 Mom (Maa Parvati) &amp; Ganesh Ji <span style="font-size:0.75rem; color:#f59e0b; font-weight:normal;">[ZONE ID: AG-04]</span></h1>
+      <p>Chaser: Mom (Maa Parvati) &bull; Runner: Ganesh Ji (Lord Ganesha) &bull; High Difficulty Mode (14px Strict Precision &amp; Divine Agility) &bull; Press Shift to Catch</p>
     </div>
     <div class="header-badges">
       <div class="badge" style="border-color:#f59e0b;">
-        <span style="color:#fde047;">KINEMATICS:</span> <strong style="color:#22c55e">STABLE HOVER</strong>
+        <span style="color:#fde047;">KINEMATICS:</span> <strong style="color:#22c55e">MOM STABLE HOVER</strong>
+      </div>
+      <div class="badge" style="border-color:#ef4444;">
+        <span style="color:#ef4444;">DIFFICULTY:</span> <strong style="color:#f87171">HARD / DIVINE AGILITY ⚡</strong>
       </div>
       <div class="badge" style="border-color:#38bdf8;">
-        <span style="color:#38bdf8;">DODGE:</span> <strong style="color:#fde047">MEDIUM</strong>
+        <span style="color:#38bdf8;">CATCH RADIUS:</span> <strong style="color:#fde047">14px (STRICT)</strong>
       </div>
       <div class="badge">
         <div class="badge-dot" id="ag-dot"></div>
@@ -271,15 +274,15 @@
       <div class="hud-value" id="hud-gravity">(0.00, -9.81, 0.00)</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Point Alignment (&le;28px Accuracy Lock)</div>
+      <div class="hud-label">Point Alignment (&le;14px Precision Lock)</div>
       <div class="hud-value" id="hud-mom">TRACKING</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Bal Ganesh State &amp; Catches</div>
-      <div class="hud-value" id="hud-boy-state">RUNNING | Caught: 0</div>
+      <div class="hud-label">Ganesh Ji State &amp; Evasions</div>
+      <div class="hud-value" id="hud-boy-state">RUNNING | Evasions: 0 | Caught: 0</div>
     </div>
     <div class="hud-item" style="border-color: rgba(251, 191, 36, 0.4);">
-      <div class="hud-label">🥟 Bal Ganesh Modaks Eaten</div>
+      <div class="hud-label">🥟 Ganesh Ji Modaks Eaten</div>
       <div class="hud-value" id="hud-aarav-modak" style="color:#fde047;">0</div>
     </div>
     <div class="hud-item" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(30, 20, 10, 0.8);">
@@ -291,7 +294,7 @@
   <!-- Controls Bar -->
   <div class="controls-bar">
     <button class="btn btn-primary" id="btn-catch" style="background: linear-gradient(135deg, #16a34a 0%, #059669 100%); border-color: #4ade80;">
-      <span>⚡ EMBRACE BAL GANESHA</span>
+      <span>⚡ MOM CATCHES GANESH JI</span>
       <kbd>Shift</kbd>
     </button>
     <button class="btn btn-primary" id="btn-toggle-ag">
@@ -327,16 +330,16 @@
   <div class="instructions">
     <div class="instruction-grid">
       <div class="inst-col">
-        <strong>1. Parvati Mata Follows Cursor:</strong><br>
-        Guide Maa Parvati with smooth critically-damped spring stability and anti-jitter smoothing, reaching out to lovingly embrace her playful son Bal Ganesh with sweet modaks.
+        <strong>1. Mom (Maa Parvati) Follows Cursor:</strong><br>
+        Guide Mom with buttery smooth critically-damped spring stability and anti-jitter smoothing, reaching out to lovingly catch her elusive child Ganesh Ji with warm modaks.
       </div>
       <div class="inst-col">
-        <strong>2. Bal Ganesh Executes Medium Dodges:</strong><br>
-        Bal Ganesh runs automatically with balanced agility ($210 px/s$), performing moderate corner wall-kicks ($320 px/s$) and acrobatic vaults across the courtyard with Mooshak Raj.
+        <strong>2. Ganesh Ji Divine Agility (High Difficulty):</strong><br>
+        Ganesh Ji sprints at $260 px/s$, detects Mom from $190 px$, and executes long $520 px/s$ wall-kick somersaults and mid-field floor vaults with Mooshak Raj. Trapping him is rare!
       </div>
       <div class="inst-col">
-        <strong>3. Accurate Catch Lock (&le;28px) &amp; Shift:</strong><br>
-        Align Maa Parvati's modak hand with Bal Ganesh's chest jewel. When locked within 28px, press <strong>SHIFT</strong> (with buffered reflex window) to embrace him and offer sacred prasad!
+        <strong>3. Strict 14px Catch Lock &amp; Quick Shift:</strong><br>
+        Match Mom's modak hand with Ganesh Ji's chest jewel within 14px. You have only a 100ms reflex window before he darts away! Press <strong>SHIFT</strong> quickly to catch him!
       </div>
     </div>
   </div>
@@ -371,20 +374,20 @@
       hudGravity.textContent = telemetry.gravityVectorStr;
 
       if (telemetry.pointsMatched) {
-        hudMom.textContent = `28PX LOCKED! [PRESS SHIFT]`;
+        hudMom.textContent = `14PX LOCKED! [QUICK SHIFT]`;
         hudMom.style.color = "#4ade80";
         btnCatch.classList.add("pulse-glow");
       } else {
-        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 28px)`;
+        hudMom.textContent = `ALIGNING (${telemetry.pointsDistance}px / 14px)`;
         hudMom.style.color = "#fbbf24";
         btnCatch.classList.remove("pulse-glow");
       }
 
       if (telemetry.isCaught) {
-        hudBoyState.textContent = `LOVING EMBRACE WITH BAL GANESH 🥟`;
+        hudBoyState.textContent = `MOM EMBRACING GANESH JI 🥟`;
         hudBoyState.style.color = "#f43f5e";
       } else {
-        hudBoyState.textContent = `RUNNING | Caught: ${telemetry.caughtCount}`;
+        hudBoyState.textContent = `RUNNING | Evasions: ${telemetry.evasionCount} | Caught: ${telemetry.caughtCount}`;
         hudBoyState.style.color = "#38bdf8";
       }
 

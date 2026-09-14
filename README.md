@@ -1,6 +1,6 @@
-# 🪔 Maa Parvati & Bal Ganesh - Anti-Gravity Courtyard [Zone ID: AG-04]
+# 🪔 Mom (Maa Parvati) & Ganesh Ji - Anti-Gravity Courtyard [Zone ID: AG-04]
 
-A high-fidelity, interactive gameplay physics simulation set in a festive Indian courtyard during Ganesh Chaturthi. Experience a mystical zero-gravity realm where **Maa Parvati (Parvati Mata)** gracefully glides across the courtyard with divine kinematics to lovingly catch her mischievous son **Bal Ganesh (Lord Ganesha)**, feed him fresh sweet Modaks, and consecrate sacred offerings at the sanctum altar.
+A high-fidelity, interactive gameplay physics simulation set in a festive Indian courtyard during Ganesh Chaturthi. Experience a mystical zero-gravity realm in **High-Difficulty Divine Chase Mode**, where **Mom (Maa Parvati)** gracefully glides with buttery kinematic stability to lovingly catch her elusive, ultra-agile son **Ganesh Ji (Lord Ganesha / Bal Ganesh)**, feed him sweet Modaks, and consecrate sacred offerings at the sanctum altar.
 
 🎮 **Live GitHub Pages Demo**: [Play Online](https://Aryanpancharya-hub.github.io/ganesh-chaturthi-antigravity/)
 
@@ -8,40 +8,44 @@ A high-fidelity, interactive gameplay physics simulation set in a festive Indian
 
 ## 🌟 Game Overview
 
-In this divine edition, you directly guide **Maa Parvati (Parvati Mata)** with your cursor. Maa Parvati glides with smooth, critically-damped kinematics while her beloved child **Bal Ganesh (Lord Ganesha)** playfully runs, dodges, and performs acrobatic leaps across the courtyard accompanied by **Mooshak Raj**:
+In this high-difficulty divine edition, you directly guide **Mom (Maa Parvati)** with your cursor. Mom glides with smooth, critically-damped kinematics while her beloved child **Ganesh Ji (Lord Ganesha)** playfully outsmarts her with divine agility, long wall-kick somersaults, and floor vaults across the courtyard accompanied by **Mooshak Raj**:
 
-1. **Playable Maa Parvati (Parvati Mata)**:
-   - **Divine Iconography**: Ornate golden Mukut crown with ruby crest and pearl strings, long lustrous dark hair adorned with a garland of fragrant white jasmine flowers (*Gajra*), auspicious red Kumkum bindi with golden sandalwood crescent, and kohl-lined lotus eyes.
+1. **Playable Mom (Maa Parvati - Chaser)**:
+   - **Divine Iconography**: Ornate golden Mukut crown with ruby crest, long lustrous dark hair adorned with fragrant white jasmine flowers (*Gajra*), auspicious red Kumkum bindi with golden sandalwood crescent, and kohl-lined lotus eyes.
    - **Royal Attire**: Splendid crimson-red and golden Kanjeevaram silk sari with shimmering Zari borders, cinched with an ornate golden *Kamarbandh*, and a translucent golden *Pallu* (veil) floating in the breeze.
-   - **Motherly Gestures**: Reaching hands holding a steaming fresh golden modak ready to lovingly feed Bal Ganesh, and embracing arm.
+   - **Motherly Gestures**: Reaching hands holding a steaming fresh golden modak ready to lovingly feed Ganesh Ji, and embracing arms.
    - **Prabhavali Halo**: Multi-layered celestial halo with golden rays and warm crimson aura radiating divine light.
 
-2. **Mischievous Runner: Bal Ganesh (Lord Ganesha)**:
-   - **Divine Child Iconography**: Petite golden Mukut with ruby gem, cute elephant face with soft cheeks, large fluttering ears with pink inner lobes, curved Vakratunda trunk playfully holding a modak, and cute white Ekadanta tusk.
+2. **Mischievous Runner: Ganesh Ji (Lord Ganesha - Runner)**:
+   - **Divine Child Iconography**: Petite golden Mukut with ruby gem, cute elephant face with soft cheeks, large fluttering ears with pink inner lobes, curved Vakratunda trunk holding a modak, and cute white Ekadanta tusk.
    - **Lambodara Form**: Adorable pot belly adorned with the diagonal sacred *Yajnopavita* (Janeu thread) and golden necklace.
    - **Pitambar Silk Dhoti**: Radiant golden-yellow dhoti with saffron pleats and red borders, and a fluttering celestial scarf (Angavastram) trailing behind him.
    - **Mooshak Raj**: Lord Ganesha's devoted companion mouse scampering alongside him with synchronized steps and a tiny treat.
-   - **Happy Eating Animation**: When caught, Bal Ganesh's eyes curve into happy crescents (`^ _ ^`), his mouth chews rhythmically with modak crumbs, floating red hearts (`❤️`), and golden sparkle stars!
+   - **Happy Eating Animation**: When Mom manages to catch him against all odds, Ganesh Ji's eyes curve into happy smiling crescents (`^ _ ^`), his mouth chews rhythmically with sweet modak crumbs, floating red hearts (`❤️`), and golden sparkle stars!
 
 3. **Kinematic Movement Stability & Zero Jitter**:
-   - **Anti-Jitter Deadzone ($< 6\text{px}$)**: Eliminates micro-stutter by smoothly dampening target velocity to zero when cursor is hovered near Maa Parvati.
+   - **Anti-Jitter Deadzone ($< 6\text{px}$)**: Eliminates micro-stutter by smoothly dampening target velocity to zero when cursor is hovered near Mom.
    - **Facing Hysteresis ($> 10\text{px}$)**: Prevents erratic sprite-flipping near the cursor pivot.
    - **Critically Damped Glide**: Smooth spring-damper physics ($k = 9.5 \cdot dt$) for fluid horizontal tracking.
    - **1G Ground-Lock Stability**: Vertical position stays firmly locked to the courtyard floor ($vy = 0$) during 1G, transitioning into ethereal celestial hovering inside the AG-04 field.
 
-4. **Bal Ganesh Medium Dodge Balance**:
-   - **Calibrated Run Speed**: Balanced to $210\text{ px/s}$ with a $125\text{px}$ danger perception radius.
-   - **Manageable Corner Wall-Kick Hop**: When cornered near haveli walls, Bal Ganesh leaps with an arched wall-kick hop ($320\text{ px/s}$ and $v_y = -350\text{ px/s}$) rather than an impossible cross-screen hypersonic dash, keeping gameplay challenging yet fair!
-   - **Fair 0.36s Reflex Escape**: Bal Ganesh waits $360\text{ms}$ upon lock-on before performing an escape slide, giving players ample reaction time.
+4. **High-Difficulty Divine Agility & Evasion Mechanics ("Make It Difficult")**:
+   - **High Running Speed ($260\text{ px/s}$)**: Sprints playfully with rapid directional changes and responsive footing.
+   - **Expanded Threat Perception ($190\text{px}$)**: Ganesh Ji spots Mom approaching from a distance and sprints away before Mom can get close.
+   - **Long Divine Wall-Kick Somersault ($520\text{ px/s}$)**: When cornered near walls ($< 230\text{px}$), Ganesh Ji leaps across the arena in a high-flying arc ($v_x = \pm 520\text{ px/s}, v_y = -460\text{ px/s}$) with golden sparkles and whoosh SFX!
+   - **Mid-Field Floor Vault ($380\text{ px/s}$)**: Vaults over Mom when she approaches within $95\text{px}$ ($v_y = -390\text{ px/s}$).
+   - **Rapid Evasion Cooldown ($0.95\text{s}$)**: Slashed from 2.4s so Mom cannot easily trap him in corners.
+   - **Razor-Sharp Reflex Escape ($0.10\text{s} / 100\text{ms}$)**: Upon entering catch alignment, players have only $100\text{ms}$ to strike Shift before Ganesh Ji darts away!
 
-5. **Improved 28px Catch Accuracy & Shift Input Buffering**:
-   - **Expanded $\le 28\text{px}$ Alignment Radius**: Doubled from the previous strict 14px threshold to 28px.
-   - **120ms Shift Key Input Buffering**: Pressing `Shift` up to 120ms before or during alignment registers instantly with zero dropped frames.
-   - **Dynamic HUD Lock-On Telemetry**: Real-time laser reticle indicators displaying `⚡ ACCURACY LOCKED (XXpx <= 28px) - PRESS SHIFT! ⚡`.
+5. **Strict 14px Precision Catch & Input Buffering**:
+   - **Strict $\le 14\text{px}$ Alignment Radius**: Pinpoint accuracy required to align Mom's modak hand with Ganesh Ji's chest jewel.
+   - **70ms Shift Key Input Buffering**: Precise timing window for pressing Shift.
+   - **Dynamic HUD Lock-On Telemetry**: Real-time laser reticle displaying `⚡ ACCURACY LOCKED (XXpx <= 14px) - QUICK SHIFT! ⚡`.
 
 6. **Sacred Dual Reward Ceremony**:
-   - **Stage 1 (Maa Parvati Feeds Bal Ganesh)**: Maa Parvati embraces Bal Ganesh and feeds him sweet modaks with chew animations, modak crumbs, and joyful dialogues (*"Pranam Mata Parvati! Your modaks are the sweetest!"*).
-   - **Stage 2 (Consecration of Sanctum Altar)**: A blessed Modak travels along a parabolic quadratic Bézier curve to the sanctum altar, activating rotating golden halo rays, temple chimes, and the divine blessing banner (*"✦ ॐ नमः शिवाय & गणेशाय नमः! MAA PARVATI'S BLESSINGS BESTOWED! 🙏 ✦"*).
+   - **Stage 1 (Mom Feeds Ganesh Ji)**: Mom embraces Ganesh Ji and feeds him sweet modaks with chew animations and joyful dialogues (*"Hehe Mom, you outsmarted my divine dodge! Your modak is the sweetest! 🥟❤️"*).
+   - **Stage 2 (Consecration of Sanctum Altar)**: A blessed Modak travels along a parabolic quadratic Bézier curve to the sanctum altar, activating rotating golden halo rays, temple chimes, and the triumphant blessing banner:
+     `✦ ॐ गणेशाय नमः! MOM CAUGHT GANESH JI AGAINST ALL ODDS! BLESSINGS BESTOWED! 🙏 ✦`
 
 ---
 
@@ -49,8 +53,8 @@ In this divine edition, you directly guide **Maa Parvati (Parvati Mata)** with y
 
 | Control | Action |
 | :--- | :--- |
-| **Mouse Cursor** | Guide **Maa Parvati (Parvati Mata)** smoothly across the courtyard |
-| **Shift Key / Click "EMBRACE"** | Embrace & Feed Bal Ganesh when alignment locks within **$\le 28\text{px}$** (with 120ms buffer) |
+| **Mouse Cursor** | Guide **Mom (Maa Parvati)** smoothly across the courtyard |
+| **Shift Key / Click "MOM CATCHES GANESH JI"** | Catch & Feed Ganesh Ji when alignment locks within **$\le 14\text{px}$** (with 70ms buffer) |
 | **Spacebar / Button** | Toggle **AG-04 Anti-Gravity Field** |
 | **Q / Left Button** | Toggle West Vayu Turbine (Wind Current Generator) |
 | **E / Right Button** | Toggle East Vayu Turbine (Wind Current Generator) |
@@ -97,14 +101,14 @@ Zero external MP3/WAV files required! The entire soundscape is generated in real
 ├── index.html                  # Main web application entry point (Modular ES)
 ├── standalone.html             # Single-file bundled edition (runs directly from disk)
 ├── test_physics.py             # Gravity vector & Verlet constraint validation
-├── test_rewards_and_agility.py # Parvati Mata stability, Bal Ganesh dodge & 28px accuracy tests
+├── test_rewards_and_agility.py # Mom stability, Ganesh Ji divine dodges & 14px accuracy tests
 ├── src/
 │   ├── Vector2.js              # 2D Vector mathematics & utility methods
 │   ├── PhysicsEngine.js        # AG-04 gravity & Verlet rope solver
-│   ├── Entities.js             # Bal Ganesh runner, Parvati Mata divine chaser & Mooshak Raj
+│   ├── Entities.js             # Ganesh Ji runner, Mom (Maa Parvati) chaser & Mooshak Raj
 │   ├── Particles.js            # Spark, dust mote, and lotus petal visual FX
 │   ├── AudioEngine.js          # Procedural Web Audio API soundscape
-│   └── Simulation.js           # Master loop, 28px telemetry, shift buffer & catch orchestration
+│   └── Simulation.js           # Master loop, 14px strict telemetry, shift buffer & catch orchestration
 └── README.md                   # Project documentation
 ```
 

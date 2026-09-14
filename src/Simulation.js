@@ -78,12 +78,12 @@ export class CourtyardSimulation {
       this.diyas.push(new Diya(140 + i * 180, this.physics.groundY - 4));
     }
 
-    // 6. Sacred Offerings & Reward Tracking (28px High Precision Accuracy)
+    // 6. Sacred Offerings & Reward Tracking (14px Strict Precision - High Difficulty)
     this.offeringModaks = [];
     this.prasadGaneshCount = 0;
     this.aaravModakCount = 0;
     this.altarBlessingTimer = 0;
-    this.catchThreshold = 28; // Improved 28px accuracy threshold
+    this.catchThreshold = 14; // Strict 14px accuracy threshold for High Difficulty
     this.shiftBufferTimer = 0; // Input buffer for Shift key
   }
 
@@ -151,7 +151,7 @@ export class CourtyardSimulation {
     // Press Shift key to catch when points match (with precision buffer)
     window.addEventListener("keydown", (e) => {
       if (e.key === "Shift") {
-        this.shiftBufferTimer = 0.12; // Buffer Shift for 120ms
+        this.shiftBufferTimer = 0.07; // Buffer Shift for 70ms in High Difficulty
         this.attemptCatch();
       }
     });
@@ -165,7 +165,7 @@ export class CourtyardSimulation {
       chaser.triggerCatchSuccess(this.boy);
       this.boy.triggerCaught(chaser);
 
-      // Stage 1: Ganesh Ji offers Aarav sweet modak reward
+      // Stage 1: Mom feeds Ganesh Ji sweet modak reward
       this.aaravModakCount++;
       this.audio.playModakMunch();
 
@@ -356,6 +356,8 @@ export class CourtyardSimulation {
         pointsMatched: isMatched,
         isCaught: this.boy.isCaught,
         caughtCount: this.boy.caughtCount,
+        evasionCount: this.boy.evasionCount || 0,
+        catchThreshold: this.catchThreshold,
         balGaneshModakCount: this.aaravModakCount,
         aaravModakCount: this.aaravModakCount,
         prasadAltarCount: this.prasadGaneshCount,
@@ -693,7 +695,7 @@ export class CourtyardSimulation {
       ctx.fillStyle = "#fef08a";
       ctx.shadowColor = "#eab308";
       ctx.shadowBlur = 14;
-      ctx.fillText("✦ ॐ नमः शिवाय & गणेशाय नमः! MAA PARVATI'S BLESSINGS BESTOWED! 🙏 ✦", ax, ay - 75);
+      ctx.fillText("✦ ॐ गणेशाय नमः! MOM CAUGHT GANESH JI AGAINST ALL ODDS! BLESSINGS BESTOWED! 🙏 ✦", ax, ay - 75);
       ctx.restore();
     }
 
@@ -776,9 +778,9 @@ export class CourtyardSimulation {
         ctx.setLineDash([4, 2]);
         ctx.stroke();
 
-        // Prompt Banner with 28px accuracy readout
+        // Prompt Banner with 14px high-difficulty accuracy readout
         ctx.font = "bold 11px system-ui, sans-serif";
-        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 28px) - PRESS SHIFT! ⚡`;
+        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 14px) - QUICK SHIFT! ⚡`;
         const tw = ctx.measureText(promptText).width;
         ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
         ctx.strokeStyle = "#4ade80";
