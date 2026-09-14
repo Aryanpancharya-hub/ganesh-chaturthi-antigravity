@@ -38,12 +38,14 @@ export class CourtyardSimulation {
   }
 
   initEntities() {
-    // 1. Characters: Parvati Mata is the chaser, Bal Ganesh (Lord Ganesha) is the runner
-    this.balGanesh = new BalGanesh(this.width * 0.48, this.physics.groundY);
-    this.parvatiMata = new ParvatiMata(this.width * 0.28, this.physics.groundY);
-    this.boy = this.balGanesh;
-    this.chaser = this.parvatiMata;
-    this.mom = this.parvatiMata; // Backwards compatibility alias
+    // 1. Characters: Bal Ganesh is the CAUGHTER (follows cursor to get modaks),
+    //    Parvati Mata is the RUNNER (playfully evading with the modak thali!)
+    this.balGanesh = new BalGanesh(this.width * 0.28, this.physics.groundY);
+    this.parvatiMata = new ParvatiMata(this.width * 0.60, this.physics.groundY);
+    this.chaser = this.balGanesh;
+    this.runner = this.parvatiMata;
+    this.boy = this.parvatiMata;    // Backwards compatibility alias for runner
+    this.mom = this.balGanesh;      // Backwards compatibility alias for chaser
 
     // 2. Torans (Festive marigold garlands strung between courtyard pillars)
     this.torans = [
@@ -83,7 +85,7 @@ export class CourtyardSimulation {
     this.prasadGaneshCount = 0;
     this.aaravModakCount = 0;
     this.altarBlessingTimer = 0;
-    this.catchThreshold = 14; // Strict 14px accuracy threshold for High Difficulty
+    this.catchThreshold = 16; // Strict 14px accuracy threshold for High Difficulty
     this.shiftBufferTimer = 0; // Input buffer for Shift key
   }
 
@@ -131,15 +133,17 @@ export class CourtyardSimulation {
       }
 
       // 3. If points matched, click can also catch!
-      if (this.mom && this.boy && this.mom.catchPoint.distanceTo(this.boy.targetPoint) <= this.catchThreshold) {
+      const chaser = this.chaser || this.balGanesh;
+      const runner = this.runner || this.parvatiMata;
+      if (chaser && runner && chaser.catchPoint.distanceTo(runner.targetPoint) <= this.catchThreshold) {
         if (this.attemptCatch()) return;
       }
 
-      // 4. Click near boy triggers aerial dash
-      const distToBoy = Math.hypot(clickX - this.boy.pos.x, clickY - this.boy.pos.y);
-      if (distToBoy < 160) {
-        const dir = this.boy.pos.clone().sub(new Vector2(clickX, clickY)).normalize();
-        this.boy.triggerAerialDash(dir, 680, this.particles, this.audio);
+      // 4. Click near runner triggers aerial dash
+      const distToRunner = Math.hypot(clickX - runner.pos.x, clickY - runner.pos.y);
+      if (distToRunner < 160) {
+        const dir = runner.pos.clone().sub(new Vector2(clickX, clickY)).normalize();
+        runner.triggerAerialDash(dir, 680, this.particles, this.audio);
         this.particles.addDistortionWave(clickX, clickY, 130, 1.2);
         return;
       }
@@ -158,14 +162,15 @@ export class CourtyardSimulation {
   }
 
   attemptCatch() {
-    const chaser = this.chaser || this.mom;
-    if (!chaser || !this.boy) return false;
-    const dist = chaser.catchPoint.distanceTo(this.boy.targetPoint);
-    if (dist <= this.catchThreshold && !this.boy.isCaught) {
-      chaser.triggerCatchSuccess(this.boy);
-      this.boy.triggerCaught(chaser);
+    const chaser = this.chaser || this.balGanesh;
+    const runner = this.runner || this.parvatiMata;
+    if (!chaser || !runner) return false;
+    const dist = chaser.catchPoint.distanceTo(runner.targetPoint);
+    if (dist <= this.catchThreshold && !runner.isCaught) {
+      chaser.triggerCatchSuccess(runner);
+      runner.triggerCaught(chaser);
 
-      // Stage 1: Mom feeds Ganesh Ji sweet modak reward
+      // Stage 1: Ganesh Ji wins the delicious modak reward
       this.aaravModakCount++;
       this.audio.playModakMunch();
 
@@ -176,15 +181,15 @@ export class CourtyardSimulation {
       setTimeout(() => this.audio.playTempleChime(1056, 0.5), 330);
 
       // Celebration FX on contact
-      this.particles.addDistortionWave(this.boy.targetPoint.x, this.boy.targetPoint.y, 180, 1.8);
+      this.particles.addDistortionWave(runner.targetPoint.x, runner.targetPoint.y, 180, 1.8);
       for (let i = 0; i < 26; i++) {
-        this.particles.addSparkle(this.boy.targetPoint.x, this.boy.targetPoint.y, "#fde047");
+        this.particles.addSparkle(runner.targetPoint.x, runner.targetPoint.y, "#fde047");
       }
 
       // Stage 2: Sacred Offering Modak ascends to Lord Ganesha's Altar!
       setTimeout(() => {
-        const startX = chaser.catchPoint.x;
-        const startY = chaser.catchPoint.y;
+        const startX = runner.targetPoint.x;
+        const startY = runner.targetPoint.y;
         const targetX = this.width * 0.5;
         const targetY = this.physics.groundY - 26; // Lord Ganesha's brass thaali
 
@@ -267,25 +272,27 @@ export class CourtyardSimulation {
     // 2. Audio Engine transition sync
     this.audio.setAntiGravityTransition(agFactor);
 
-    // 3. Characters Step
-    const chaser = this.chaser || this.mom;
-    // Lord Ganesha follows and behaves according to mouse cursor with buttery stability
-    chaser.update(dt, this.cursorPos, this.isCursorActive, this.physics, this.audio, this.boy);
+    // 3. Characters Step (Ganesh Ji Chaser, Parvati Mata Runner)
+    const chaser = this.chaser || this.balGanesh;
+    const runner = this.runner || this.parvatiMata;
 
-    // Aarav runs automatically with Medium Dodge evasion
-    this.physics.applyForces(this.boy, dt);
-    this.boy.update(dt, this.physics, this.particles, this.audio, chaser);
+    // Ganesh Ji follows mouse cursor with buttery stability
+    chaser.update(dt, this.cursorPos, this.isCursorActive, this.physics, this.audio, runner);
 
-    // Check Body Target Points Match! (Improved 28px accurate threshold)
-    const distPoints = chaser.catchPoint.distanceTo(this.boy.targetPoint);
-    const isMatched = distPoints <= this.catchThreshold && !this.boy.isCaught;
+    // Parvati Mata runs automatically, keeping modak thali away
+    this.physics.applyForces(runner, dt);
+    runner.update(dt, this.physics, this.particles, this.audio, chaser);
+
+    // Check Body Target Points Match! (Ganesh Ji's catchPoint reaching Parvati Mata's targetPoint)
+    const distPoints = chaser.catchPoint.distanceTo(runner.targetPoint);
+    const isMatched = distPoints <= this.catchThreshold && !runner.isCaught;
     chaser.isPointMatched = isMatched;
-    this.boy.isPointMatched = isMatched;
+    runner.isPointMatched = isMatched;
 
     // Shift key buffer check: if buffered and matched, trigger catch!
     if (this.shiftBufferTimer > 0) {
       this.shiftBufferTimer -= dt;
-      if (isMatched && !this.boy.isCaught) {
+      if (isMatched && !runner.isCaught) {
         this.attemptCatch();
         this.shiftBufferTimer = 0;
       }
@@ -294,7 +301,7 @@ export class CourtyardSimulation {
     // 4. Wind Generators
     const allProps = [...this.modaks, ...this.diyas];
     for (const fan of this.windGenerators) {
-      fan.update(dt, this.particles, this.boy, allProps);
+      fan.update(dt, this.particles, runner, allProps);
     }
 
     // 5. Dynamic Props (Modaks & Diyas)
@@ -302,8 +309,8 @@ export class CourtyardSimulation {
       this.physics.applyForces(modak, dt);
       modak.update(dt, this.physics, this.audio);
       // Interaction with boy
-      if (this.boy.pos.distanceTo(modak.pos) < this.boy.radius + modak.radius) {
-        modak.vel.add(this.boy.vel.clone().multiplyScalar(0.4));
+      if (runner.pos.distanceTo(modak.pos) < runner.radius + modak.radius) {
+        modak.vel.add(runner.vel.clone().multiplyScalar(0.4));
         this.particles.addSparkle(modak.pos.x, modak.pos.y, "#fef08a");
       }
     }
@@ -330,7 +337,7 @@ export class CourtyardSimulation {
     const windPushX = (this.windGenerators[0].isActive ? 90 : 0) + (this.windGenerators[1].isActive ? -90 : 0);
     for (const toran of this.torans) {
       toran.update(dt, effectiveGravityY, windPushX);
-      toran.interactWithBody(this.boy.pos, 35);
+      toran.interactWithBody(runner.pos, 35);
     }
 
     // 8. Levers
@@ -347,16 +354,16 @@ export class CourtyardSimulation {
         gravityVectorStr: this.physics.getPhysicalGravityVectorString(),
         isAntiGravity: this.physics.isAntiGravityActive,
         transitionProgress: agFactor,
-        boyVelocity: this.boy.vel.length(),
-        boyState: this.boy.state,
-        boyMomentum: `(${this.boy.floatingMomentum.x.toFixed(1)}, ${this.boy.floatingMomentum.y.toFixed(1)})`,
+        boyVelocity: runner.vel.length(),
+        boyState: runner.state,
+        boyMomentum: `(${runner.floatingMomentum.x.toFixed(1)}, ${runner.floatingMomentum.y.toFixed(1)})`,
         propsCount: this.modaks.length + this.diyas.length,
         windActive: this.getActiveWindCount(),
         pointsDistance: Math.round(distPoints),
         pointsMatched: isMatched,
-        isCaught: this.boy.isCaught,
-        caughtCount: this.boy.caughtCount,
-        evasionCount: this.boy.evasionCount || 0,
+        isCaught: runner.isCaught,
+        caughtCount: chaser.caughtCount,
+        evasionCount: runner.evasionCount || 0,
         catchThreshold: this.catchThreshold,
         balGaneshModakCount: this.aaravModakCount,
         aaravModakCount: this.aaravModakCount,
@@ -364,10 +371,12 @@ export class CourtyardSimulation {
         prasadGaneshCount: this.prasadGaneshCount,
         altarBlessing: this.altarBlessingTimer > 0,
         chaserState: chaser.state,
-        momState: chaser.state,
-        boySpeech: this.boy.speechText,
+        momState: runner.state,
+        runnerState: runner.state,
+        boySpeech: runner.speechText,
+        runnerSpeech: runner.speechText,
         chaserSpeech: chaser.speechText,
-        momSpeech: chaser.speechText,
+        momSpeech: runner.speechText,
       });
     }
   }
@@ -695,7 +704,7 @@ export class CourtyardSimulation {
       ctx.fillStyle = "#fef08a";
       ctx.shadowColor = "#eab308";
       ctx.shadowBlur = 14;
-      ctx.fillText("✦ ॐ गणेशाय नमः! MOM CAUGHT GANESH JI AGAINST ALL ODDS! BLESSINGS BESTOWED! 🙏 ✦", ax, ay - 75);
+      ctx.fillText("✦ ॐ गणेशाय नमः! GANESH JI CAUGHT MAA PARVATI & WON THE BLESSED MODAK! 🙏 🥟 ✦", ax, ay - 75);
       ctx.restore();
     }
 
@@ -744,10 +753,11 @@ export class CourtyardSimulation {
   }
 
   drawPointAlignmentGuide(ctx) {
-    const chaser = this.chaser || this.mom;
-    if (!chaser || !this.boy) return;
+    const chaser = this.chaser || this.balGanesh;
+    const runner = this.runner || this.parvatiMata;
+    if (!chaser || !runner) return;
     const cp = chaser.catchPoint;
-    const tp = this.boy.targetPoint;
+    const tp = runner.targetPoint;
     const dist = cp.distanceTo(tp);
     const isMatched = dist <= this.catchThreshold;
 
@@ -766,7 +776,7 @@ export class CourtyardSimulation {
       ctx.stroke();
 
       // If MATCHED: show lock-on reticle and prominent press shift prompt!
-      if (isMatched && !this.boy.isCaught) {
+      if (isMatched && !runner.isCaught) {
         const midX = (cp.x + tp.x) / 2;
         const midY = Math.min(cp.y, tp.y) - 26;
 
@@ -780,7 +790,7 @@ export class CourtyardSimulation {
 
         // Prompt Banner with 14px high-difficulty accuracy readout
         ctx.font = "bold 11px system-ui, sans-serif";
-        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 14px) - QUICK SHIFT! ⚡`;
+        const promptText = `⚡ ACCURACY LOCKED (${Math.round(dist)}px <= 16px) - CATCH MOM (SHIFT)! ⚡`;
         const tw = ctx.measureText(promptText).width;
         ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
         ctx.strokeStyle = "#4ade80";
@@ -821,14 +831,15 @@ export class CourtyardSimulation {
     ctx.fillStyle = "#38bdf8";
     ctx.fill();
 
-    // Proximity line to boy
-    const dist = this.cursorPos.distanceTo(this.boy.pos);
+    // Proximity line to runner (Maa Parvati)
+    const runner = this.runner || this.parvatiMata;
+    const dist = this.cursorPos.distanceTo(runner.pos);
     if (dist < 260) {
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(this.boy.pos.x, this.boy.pos.y);
-      ctx.strokeStyle = dist < this.boy.repulsionRadius ? "rgba(244, 63, 94, 0.65)" : "rgba(251, 191, 36, 0.35)";
-      ctx.lineWidth = dist < this.boy.repulsionRadius ? 2 : 1;
+      ctx.lineTo(runner.pos.x, runner.pos.y);
+      ctx.strokeStyle = dist < runner.radius * 2 ? "rgba(244, 63, 94, 0.65)" : "rgba(251, 191, 36, 0.35)";
+      ctx.lineWidth = dist < runner.radius * 2 ? 2 : 1;
       ctx.setLineDash([4, 4]);
       ctx.stroke();
     }

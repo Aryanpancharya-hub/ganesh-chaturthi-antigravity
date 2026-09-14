@@ -17,150 +17,30 @@ class Vector2:
     def distance_to(self, other):
         return math.hypot(self.x - other.x, self.y - other.y)
 
+
 class MockBalGanesh:
-    def __init__(self, x, y, width=1000.0):
-        self.pos = Vector2(x, y)
-        self.vel = Vector2(160, 0)
-        self.facing = 1
-        self.state = "RUNNING"
-        self.target_point = Vector2(x, y - 18)
-        self.run_speed = 260          # High Difficulty Divine Agility
-        self.danger_zone_radius = 190 # Expanded danger perception radius
-        self.catch_threshold = 14     # Strict 14px catch threshold
-        self.dash_cooldown = 0.0
-        self.corner_dodge_cooldown = 0.0
-        self.align_reflex_timer = 0.0
-        self.dash_timer = 0.0
-        self.evasion_count = 0
-        self.is_point_matched = False
-        self.is_caught = False
-        self.caught_timer = 0.0
-        self.caught_count = 0
-        self.modaks_eaten_count = 0
-        self.is_eating = False
-        self.speech_text = ""
-        self.width = width
-
-    def update_target_point(self):
-        self.target_point.x = self.pos.x
-        self.target_point.y = self.pos.y - 18
-
-    def trigger_caught(self, chaser):
-        self.is_caught = True
-        self.caught_timer = 3.6
-        self.state = "CAUGHT"
-        self.caught_count += 1
-        self.modaks_eaten_count += 1
-        self.is_eating = True
-        self.vel.set(0, 0)
-        self.facing = 1 if chaser.pos.x > self.pos.x else -1
-        self.speech_text = "Hehe Mom, you outsmarted my divine dodge! Your modak is the sweetest! \U0001F95F\u2764\uFE0F"
-
-    def update_evasion_test(self, dt, chaser, is_anti_gravity=False, ground_y=520.0):
-        self.dash_cooldown = max(0.0, self.dash_cooldown - dt)
-        self.corner_dodge_cooldown = max(0.0, self.corner_dodge_cooldown - dt)
-        dist_to_chaser = self.pos.distance_to(chaser.catch_point)
-        dist_points = self.target_point.distance_to(chaser.catch_point)
-        escape_dir_x = 1 if self.pos.x >= chaser.pos.x else -1
-
-        evasion_triggered = None
-
-        # A. Corner Trap Detection & Long Divine Wall-Kick Dodge
-        is_near_left_corner = self.pos.x < 230
-        is_near_right_corner = self.pos.x > self.width - 230
-        chaser_trapping_left = is_near_left_corner and chaser.pos.x > self.pos.x and (chaser.pos.x - self.pos.x) < 230
-        chaser_trapping_right = is_near_right_corner and chaser.pos.x < self.pos.x and (self.pos.x - chaser.pos.x) < 230
-
-        if (chaser_trapping_left or chaser_trapping_right) and self.corner_dodge_cooldown <= 0:
-            launch_dir = 1 if chaser_trapping_left else -1
-            if not is_anti_gravity:
-                self.vel.x = launch_dir * 520.0  # Long high-velocity somersault leap
-                self.vel.y = -460.0
-            else:
-                self.vel.x = launch_dir * 480.0
-                self.vel.y = -350.0 if self.pos.y < chaser.pos.y else 350.0
-            self.facing = launch_dir
-            self.dash_timer = 0.55
-            self.state = "DASHING"
-            self.dash_cooldown = 0.65
-            self.corner_dodge_cooldown = 0.95
-            self.align_reflex_timer = 0.0
-            self.evasion_count += 1
-            evasion_triggered = "CORNER_WALL_KICK"
-            return evasion_triggered
-
-        # B. Proactive Mid-field & Airborne Evasion
-        elif dist_to_chaser < self.danger_zone_radius:
-            if not is_anti_gravity and self.pos.y >= ground_y - 30:
-                if dist_to_chaser < 95 and self.dash_cooldown <= 0:
-                    self.vel.y = -390.0
-                    self.vel.x = escape_dir_x * 380.0
-                    self.facing = escape_dir_x
-                    self.dash_timer = 0.45
-                    self.state = "DASHING"
-                    self.dash_cooldown = 0.65
-                    self.evasion_count += 1
-                    evasion_triggered = "VAULT_LEAP"
-                else:
-                    self.vel.x += escape_dir_x * 750.0 * dt
-                    evasion_triggered = "SPRINT_BURST"
-            elif self.pos.y < ground_y - 30 and dist_to_chaser < 85 and self.dash_cooldown <= 0:
-                self.vel.y = -280.0
-                self.vel.x = escape_dir_x * 360.0
-                self.facing = escape_dir_x
-                self.dash_timer = 0.42
-                self.state = "DASHING"
-                self.dash_cooldown = 0.65
-                self.evasion_count += 1
-                evasion_triggered = "AIR_FEINT"
-            elif is_anti_gravity:
-                self.vel.x += escape_dir_x * 580.0 * dt
-                self.vel.y += -240.0 * dt if self.pos.y < chaser.pos.y else 240.0 * dt
-                evasion_triggered = "AG_SURF"
-
-        # C. Razor-Sharp Reflex Escape when points matched (<= 14px, 0.10s window)
-        if dist_points <= self.catch_threshold:
-            self.align_reflex_timer += dt
-            if self.align_reflex_timer >= 0.10:
-                self.vel.x = escape_dir_x * 460.0
-                self.vel.y = -260.0
-                self.facing = escape_dir_x
-                self.dash_timer = 0.45
-                self.state = "DASHING"
-                self.align_reflex_timer = 0.0
-                self.dash_cooldown = 0.65
-                self.evasion_count += 1
-                evasion_triggered = "REFLEX_ESCAPE"
-        else:
-            self.align_reflex_timer = 0.0
-
-        return evasion_triggered
-
-# Backwards compatibility aliases
-MockBoy = MockBalGanesh
-MockAarav = MockBalGanesh
-MockGaneshJi = MockBalGanesh
-
-class MockParvatiMata:
+    """
+    Lord Ganesha (Ganesh Ji / Bal Ganesh) - Player-Controlled Chaser
+    Follows mouse cursor with critically-damped spring kinematics, anti-jitter deadzone,
+    facing hysteresis, and reaching trunk/hand catchPoint.
+    """
     def __init__(self, x, y):
         self.pos = Vector2(x, y)
         self.vel = Vector2(0, 0)
         self.facing = 1
         self.reach_up = False
-        self.catch_point = Vector2(x + 24, y - 44)
+        self.catch_point = Vector2(x + 24, y - 18)
         self.is_point_matched = False
-        self.is_blessing = False
-        self.is_hugging = False
-        self.bless_timer = 0.0
+        self.is_eating = False
+        self.caught_count = 0
+        self.modaks_eaten_count = 0
         self.speech_text = ""
+        self.state = "CHASING"
 
     def update_catch_point(self):
-        if self.reach_up:
-            self.catch_point.x = self.pos.x + self.facing * 18
-            self.catch_point.y = self.pos.y - 68
-        else:
-            self.catch_point.x = self.pos.x + self.facing * 26
-            self.catch_point.y = self.pos.y - 42
+        reach_offset_x = self.facing * 24
+        reach_offset_y = -35 if self.reach_up else -18
+        self.catch_point.set(self.pos.x + reach_offset_x, self.pos.y + reach_offset_y)
 
     def update_kinematics(self, dt, cursor_pos, is_cursor_active=True, is_anti_gravity=False, ground_y=520.0):
         if is_cursor_active:
@@ -174,7 +54,7 @@ class MockParvatiMata:
             # Anti-jitter deadzone (< 6px dampens velocity smoothly to 0)
             desired_vx = 0.0
             if dist_to_cursor_x > 6:
-                max_speed = 270.0
+                max_speed = 280.0
                 desired_vx = (1.0 if dx > 0 else -1.0) * min(max_speed, (dist_to_cursor_x - 6) * 4.4)
 
             # Spring-damper horizontal tracking
@@ -192,19 +72,150 @@ class MockParvatiMata:
                 # 1G Ground-lock stability (no vertical jitter)
                 self.pos.y += (ground_y - self.pos.y) * 12.0 * dt
                 self.vel.y = 0.0
-                self.reach_up = cursor_pos.y < (ground_y - 45)
+                self.reach_up = cursor_pos.y < (ground_y - 35)
 
         self.update_catch_point()
 
-    def trigger_catch_success(self, boy):
-        self.is_blessing = True
-        self.is_hugging = True
-        self.bless_timer = 3.6
-        self.speech_text = "Finally caught you, my clever little Ganesh Ji! Have this warm modak! \U0001F95F\u2764\uFE0F"
+    def trigger_catch_success(self, runner):
+        self.caught_count += 1
+        self.modaks_eaten_count += 1
+        self.is_eating = True
+        self.state = "CELEBRATING"
+        self.speech_text = "Yay Maa! Caught you! Modaks are mine! 🥟❤️"
 
-# Backwards compatibility aliases
+
+# Aliases
+MockChaser = MockBalGanesh
+MockGaneshJi = MockBalGanesh
+
+
+class MockParvatiMata:
+    """
+    Maa Parvati (Parvati Mata / Mom) - Autonomous Agile Runner
+    Playfully runs away holding brass modak thali (targetPoint), executing
+    corner wall-kicks, floor vaults, and reflex dodges.
+    """
+    def __init__(self, x, y, width=1000.0):
+        self.pos = Vector2(x, y)
+        self.vel = Vector2(160, 0)
+        self.facing = -1
+        self.state = "RUNNING"
+        self.target_point = Vector2(x - 24, y - 44)
+        self.run_speed = 250          # Playful evasion sprint
+        self.danger_zone_radius = 185 # Danger perception radius
+        self.catch_threshold = 16     # Strict 16px catch threshold
+        self.dash_cooldown = 0.0
+        self.corner_dodge_cooldown = 0.0
+        self.align_reflex_timer = 0.0
+        self.dash_timer = 0.0
+        self.evasion_count = 0
+        self.is_point_matched = False
+        self.is_caught = False
+        self.caught_timer = 0.0
+        self.caught_count = 0
+        self.speech_text = ""
+        self.width = width
+
+    def update_target_point(self):
+        thali_offset_x = self.facing * 24
+        thali_offset_y = -44
+        self.target_point.set(self.pos.x + thali_offset_x, self.pos.y + thali_offset_y)
+
+    def trigger_caught(self, chaser):
+        self.is_caught = True
+        self.caught_timer = 3.6
+        self.state = "CAUGHT"
+        self.caught_count += 1
+        self.vel.set(0, 0)
+        self.facing = 1 if chaser.pos.x > self.pos.x else -1
+        self.speech_text = "Hehe little Ganesha! You caught Maa, take your sweet modaks! 🥟❤️"
+
+    def update_evasion_test(self, dt, chaser, is_anti_gravity=False, ground_y=520.0):
+        self.dash_cooldown = max(0.0, self.dash_cooldown - dt)
+        self.corner_dodge_cooldown = max(0.0, self.corner_dodge_cooldown - dt)
+        dist_to_chaser = self.pos.distance_to(chaser.catch_point)
+        dist_points = self.target_point.distance_to(chaser.catch_point)
+        escape_dir_x = 1 if self.pos.x >= chaser.pos.x else -1
+
+        evasion_triggered = None
+
+        # A. Corner Trap Detection & Long Wall-Kick Dodge
+        is_near_left_corner = self.pos.x < 230
+        is_near_right_corner = self.pos.x > self.width - 230
+        chaser_trapping_left = is_near_left_corner and chaser.pos.x > self.pos.x and (chaser.pos.x - self.pos.x) < 230
+        chaser_trapping_right = is_near_right_corner and chaser.pos.x < self.pos.x and (self.pos.x - chaser.pos.x) < 230
+
+        if (chaser_trapping_left or chaser_trapping_right) and self.corner_dodge_cooldown <= 0:
+            launch_dir = 1 if chaser_trapping_left else -1
+            if not is_anti_gravity:
+                self.vel.x = launch_dir * 500.0  # High-velocity somersault leap away from corner
+                self.vel.y = -450.0
+            else:
+                self.vel.x = launch_dir * 460.0
+                self.vel.y = -340.0 if self.pos.y < chaser.pos.y else 340.0
+            self.facing = launch_dir
+            self.dash_timer = 0.55
+            self.state = "DASHING"
+            self.dash_cooldown = 0.65
+            self.corner_dodge_cooldown = 0.95
+            self.align_reflex_timer = 0.0
+            self.evasion_count += 1
+            evasion_triggered = "CORNER_WALL_KICK"
+            return evasion_triggered
+
+        # B. Proactive Mid-field & Airborne Evasion
+        elif dist_to_chaser < self.danger_zone_radius:
+            if not is_anti_gravity and self.pos.y >= ground_y - 30:
+                if dist_to_chaser < 95 and self.dash_cooldown <= 0:
+                    self.vel.y = -380.0
+                    self.vel.x = escape_dir_x * 360.0
+                    self.facing = escape_dir_x
+                    self.dash_timer = 0.45
+                    self.state = "DASHING"
+                    self.dash_cooldown = 0.65
+                    self.evasion_count += 1
+                    evasion_triggered = "VAULT_LEAP"
+                else:
+                    self.vel.x += escape_dir_x * 720.0 * dt
+                    evasion_triggered = "SPRINT_BURST"
+            elif self.pos.y < ground_y - 30 and dist_to_chaser < 85 and self.dash_cooldown <= 0:
+                self.vel.y = -270.0
+                self.vel.x = escape_dir_x * 350.0
+                self.facing = escape_dir_x
+                self.dash_timer = 0.42
+                self.state = "DASHING"
+                self.dash_cooldown = 0.65
+                self.evasion_count += 1
+                evasion_triggered = "AIR_FEINT"
+            elif is_anti_gravity:
+                self.vel.x += escape_dir_x * 560.0 * dt
+                self.vel.y += -240.0 * dt if self.pos.y < chaser.pos.y else 240.0 * dt
+                evasion_triggered = "AG_SURF"
+
+        # C. Reflex Escape when points matched (<= 16px, 0.12s window)
+        if dist_points <= self.catch_threshold:
+            self.align_reflex_timer += dt
+            if self.align_reflex_timer >= 0.12:
+                self.vel.x = escape_dir_x * 440.0
+                self.vel.y = -250.0
+                self.facing = escape_dir_x
+                self.dash_timer = 0.45
+                self.state = "DASHING"
+                self.align_reflex_timer = 0.0
+                self.dash_cooldown = 0.65
+                self.evasion_count += 1
+                evasion_triggered = "REFLEX_ESCAPE"
+        else:
+            self.align_reflex_timer = 0.0
+
+        return evasion_triggered
+
+
+# Aliases
+MockRunner = MockParvatiMata
 MockMom = MockParvatiMata
 MockPriya = MockParvatiMata
+
 
 class MockOfferingModak:
     def __init__(self, start_x, start_y, target_x, target_y, on_arrive):
@@ -234,17 +245,17 @@ class MockOfferingModak:
             if self.on_arrive:
                 self.on_arrive()
 
+
 class SimulationRewardSystem:
     def __init__(self, chaser, runner, altar_x=500.0, altar_y=494.0):
         self.chaser = chaser
-        self.mom = chaser
-        self.parvati = chaser
+        self.bal_ganesh = chaser
         self.runner = runner
-        self.boy = runner
-        self.bal_ganesh = runner
+        self.parvati = runner
+        self.mom = runner
         self.altar_x = altar_x
         self.altar_y = altar_y
-        self.catch_threshold = 14.0  # Strict 14px lock-on threshold for High Difficulty
+        self.catch_threshold = 16.0  # Strict 16px lock-on threshold
         self.shift_buffer_timer = 0.0 # 70ms Shift key buffer
         self.bal_ganesh_modak_count = 0
         self.aarav_modak_count = 0
@@ -276,11 +287,11 @@ class SimulationRewardSystem:
         if is_matched and not self.runner.is_caught:
             self.chaser.trigger_catch_success(self.runner)
             self.runner.trigger_caught(self.chaser)
-            # Stage 1: Mom feeds Ganesh Ji
+            # Stage 1: Ganesh Ji wins modak
             self.bal_ganesh_modak_count += 1
             self.aarav_modak_count += 1
 
-            # Stage 2: Offering modak flight to sanctum altar
+            # Stage 2: Consecrated offering modak flight to sanctum altar
             def on_arrive():
                 self.prasad_altar_count += 1
                 self.prasad_ganesh_count += 1
@@ -294,132 +305,133 @@ class SimulationRewardSystem:
             return True
         return False
 
+
 def test_rewards_and_agility():
     print("==========================================================================")
-    print("TEST SUITE: MOM STABILITY, GANESH JI DIVINE DODGES & 14PX CATCH ACCURACY")
+    print("TEST SUITE: GANESH JI (CHASER) & MAA PARVATI (RUNNER) INVERTED ROLES")
     print("==========================================================================")
 
     ground_y = 520.0
-    parvati = MockParvatiMata(200.0, ground_y)
-    bal_ganesh = MockBalGanesh(400.0, ground_y, width=1000.0)
-    sim = SimulationRewardSystem(parvati, bal_ganesh, altar_x=500.0, altar_y=494.0)
+    bal_ganesh = MockBalGanesh(200.0, ground_y)
+    parvati = MockParvatiMata(400.0, ground_y, width=1000.0)
+    sim = SimulationRewardSystem(bal_ganesh, parvati, altar_x=500.0, altar_y=494.0)
 
-    # 1. Test Mom Kinematics: Deadzone & Ground Stability
-    print("\n--- 1. Testing Mom Movement Stability & Anti-Jitter Deadzone ---")
-    parvati.pos.set(200.0, ground_y)
-    parvati.vel.set(20.0, 0.0)
+    # 1. Test Ganesh Ji Chaser Kinematics: Deadzone & Ground Stability
+    print("\n--- 1. Testing Ganesh Ji Movement Stability & Anti-Jitter Deadzone ---")
+    bal_ganesh.pos.set(200.0, ground_y)
+    bal_ganesh.vel.set(20.0, 0.0)
     cursor_pos = Vector2(204.0, ground_y)
-    parvati.update_kinematics(0.05, cursor_pos, is_cursor_active=True, is_anti_gravity=False, ground_y=ground_y)
-    assert abs(parvati.vel.x) < 20.0, f"Deadzone should dampen velocity, got vx = {parvati.vel.x}"
-    assert parvati.vel.y == 0.0, "1G ground lock must have vy == 0"
-    assert parvati.pos.y == ground_y, "1G ground lock must remain pinned to groundY"
-    print(f"[PASS] Anti-Jitter Deadzone (<6px): vx damped to {parvati.vel.x:.2f} px/s, vy locked at 0.0")
+    bal_ganesh.update_kinematics(0.05, cursor_pos, is_cursor_active=True, is_anti_gravity=False, ground_y=ground_y)
+    assert abs(bal_ganesh.vel.x) < 20.0, f"Deadzone should dampen velocity, got vx = {bal_ganesh.vel.x}"
+    assert bal_ganesh.vel.y == 0.0, "1G ground lock must have vy == 0"
+    assert bal_ganesh.pos.y == ground_y, "1G ground lock must remain pinned to groundY"
+    print(f"[PASS] Anti-Jitter Deadzone (<6px): vx damped to {bal_ganesh.vel.x:.2f} px/s, vy locked at 0.0")
 
     cursor_pos.set(350.0, ground_y)
-    parvati.update_kinematics(0.05, cursor_pos, is_cursor_active=True, is_anti_gravity=False, ground_y=ground_y)
-    assert parvati.vel.x > 50.0, f"Mom should glide smoothly rightward, got vx = {parvati.vel.x}"
-    assert parvati.facing == 1, "Mom should face rightward towards cursor"
-    print(f"[PASS] Smooth glide tracking: vx = {parvati.vel.x:.2f} px/s towards target")
+    bal_ganesh.update_kinematics(0.05, cursor_pos, is_cursor_active=True, is_anti_gravity=False, ground_y=ground_y)
+    assert bal_ganesh.vel.x > 50.0, f"Ganesh Ji should glide smoothly rightward, got vx = {bal_ganesh.vel.x}"
+    assert bal_ganesh.facing == 1, "Ganesh Ji should face rightward towards cursor"
+    print(f"[PASS] Smooth glide tracking: vx = {bal_ganesh.vel.x:.2f} px/s towards target")
 
-    # 2. Test Corner Trap Detection & Long Wall-Kick Dodge (Left Corner)
-    print("\n--- 2. Testing Corner Trap Detection & Long Dodge (Left Corner) ---")
-    bal_ganesh.pos.set(150.0, ground_y)   # Near left corner (x < 230)
-    parvati.pos.set(260.0, ground_y)      # Mom closing in (260 - 150 = 110 < 230)
-    parvati.update_catch_point()
-    bal_ganesh.update_target_point()
-    evasion = bal_ganesh.update_evasion_test(0.016, parvati, is_anti_gravity=False, ground_y=ground_y)
+    # 2. Test Maa Parvati Corner Trap Detection & Long Wall-Kick Dodge (Left Corner)
+    print("\n--- 2. Testing Maa Parvati Corner Trap Detection & Long Dodge (Left Corner) ---")
+    parvati.pos.set(150.0, ground_y)   # Near left corner (x < 230)
+    bal_ganesh.pos.set(260.0, ground_y) # Ganesh Ji closing in (260 - 150 = 110 < 230)
+    bal_ganesh.update_catch_point()
+    parvati.update_target_point()
+    evasion = parvati.update_evasion_test(0.016, bal_ganesh, is_anti_gravity=False, ground_y=ground_y)
     assert evasion == "CORNER_WALL_KICK", f"Left corner trap must trigger CORNER_WALL_KICK, got: {evasion}"
-    assert 500.0 <= bal_ganesh.vel.x <= 560.0, f"Long dodge vx should be around 520 px/s, got: {bal_ganesh.vel.x}"
-    assert -480.0 <= bal_ganesh.vel.y <= -440.0, f"Long dodge vy should be around -460 px/s, got: {bal_ganesh.vel.y}"
-    assert bal_ganesh.facing == 1, "Ganesh Ji must face rightward into open courtyard"
-    assert bal_ganesh.state == "DASHING", "Ganesh Ji must enter DASHING state"
-    assert bal_ganesh.evasion_count >= 1, "Evasion count must increment"
-    print(f"[PASS] Left Corner Long Wall-Kick Dodge: vx = {bal_ganesh.vel.x:.1f} px/s, vy = {bal_ganesh.vel.y:.1f} px/s (High-Flying Leap!)")
+    assert 480.0 <= parvati.vel.x <= 540.0, f"Long dodge vx should be around 500 px/s, got: {parvati.vel.x}"
+    assert -470.0 <= parvati.vel.y <= -430.0, f"Long dodge vy should be around -450 px/s, got: {parvati.vel.y}"
+    assert parvati.facing == 1, "Maa Parvati must face rightward into open courtyard"
+    assert parvati.state == "DASHING", "Maa Parvati must enter DASHING state"
+    assert parvati.evasion_count >= 1, "Evasion count must increment"
+    print(f"[PASS] Left Corner Long Wall-Kick Dodge: vx = {parvati.vel.x:.1f} px/s, vy = {parvati.vel.y:.1f} px/s (Graceful High Leap!)")
 
-    # 3. Test Corner Trap Detection & Long Wall-Kick Dodge (Right Corner)
-    print("\n--- 3. Testing Corner Trap Detection & Long Dodge (Right Corner) ---")
-    bal_ganesh.corner_dodge_cooldown = 0.0 # reset cooldown
-    bal_ganesh.pos.set(880.0, ground_y)    # Near right corner (1000 - 880 = 120 < 230)
-    parvati.pos.set(760.0, ground_y)       # Mom closing in from left
-    parvati.update_catch_point()
-    bal_ganesh.update_target_point()
-    evasion = bal_ganesh.update_evasion_test(0.016, parvati, is_anti_gravity=False, ground_y=ground_y)
+    # 3. Test Maa Parvati Corner Trap Detection & Long Wall-Kick Dodge (Right Corner)
+    print("\n--- 3. Testing Maa Parvati Corner Trap Detection & Long Dodge (Right Corner) ---")
+    parvati.corner_dodge_cooldown = 0.0 # reset cooldown
+    parvati.pos.set(880.0, ground_y)    # Near right corner (1000 - 880 = 120 < 230)
+    bal_ganesh.pos.set(760.0, ground_y) # Ganesh Ji closing in from left
+    bal_ganesh.update_catch_point()
+    parvati.update_target_point()
+    evasion = parvati.update_evasion_test(0.016, bal_ganesh, is_anti_gravity=False, ground_y=ground_y)
     assert evasion == "CORNER_WALL_KICK", f"Right corner trap must trigger CORNER_WALL_KICK, got: {evasion}"
-    assert -560.0 <= bal_ganesh.vel.x <= -500.0, f"Long dodge vx should be around -520 px/s, got: {bal_ganesh.vel.x}"
-    assert bal_ganesh.facing == -1, "Ganesh Ji must face leftward into open courtyard"
-    print(f"[PASS] Right Corner Long Wall-Kick Dodge: vx = {bal_ganesh.vel.x:.1f} px/s, vy = {bal_ganesh.vel.y:.1f} px/s")
+    assert -540.0 <= parvati.vel.x <= -480.0, f"Long dodge vx should be around -500 px/s, got: {parvati.vel.x}"
+    assert parvati.facing == -1, "Maa Parvati must face leftward into open courtyard"
+    print(f"[PASS] Right Corner Long Wall-Kick Dodge: vx = {parvati.vel.x:.1f} px/s, vy = {parvati.vel.y:.1f} px/s")
 
     # 4. Test Mid-Field Threat Perception & Floor Vault Leap
     print("\n--- 4. Testing Mid-Field Threat Perception & Floor Vault Leap ---")
-    bal_ganesh.corner_dodge_cooldown = 1.0 # not in corner
-    bal_ganesh.dash_cooldown = 0.0
-    bal_ganesh.pos.set(500.0, ground_y)
-    parvati.pos.set(430.0, ground_y)       # Close mid-field (< 95px)
-    parvati.update_catch_point()
-    bal_ganesh.update_target_point()
-    evasion = bal_ganesh.update_evasion_test(0.016, parvati, is_anti_gravity=False, ground_y=ground_y)
+    parvati.corner_dodge_cooldown = 1.0 # not in corner
+    parvati.dash_cooldown = 0.0
+    parvati.pos.set(500.0, ground_y)
+    bal_ganesh.pos.set(430.0, ground_y) # Close mid-field (< 95px)
+    bal_ganesh.update_catch_point()
+    parvati.update_target_point()
+    evasion = parvati.update_evasion_test(0.016, bal_ganesh, is_anti_gravity=False, ground_y=ground_y)
     assert evasion == "VAULT_LEAP", f"Mid-field threat must trigger VAULT_LEAP, got: {evasion}"
-    assert -410.0 <= bal_ganesh.vel.y <= -370.0, f"Ganesh Ji vault vy should be around -390 px/s, got: {bal_ganesh.vel.y}"
-    assert 360.0 <= abs(bal_ganesh.vel.x) <= 420.0, f"Ganesh Ji vault vx should be around 380 px/s, got: {bal_ganesh.vel.x}"
-    print(f"[PASS] Mid-field Floor Vault Leap: vy = {bal_ganesh.vel.y:.1f} px/s, vx = {bal_ganesh.vel.x:.1f} px/s")
+    assert -400.0 <= parvati.vel.y <= -360.0, f"Parvati vault vy should be around -380 px/s, got: {parvati.vel.y}"
+    assert 340.0 <= abs(parvati.vel.x) <= 390.0, f"Parvati vault vx should be around 360 px/s, got: {parvati.vel.x}"
+    print(f"[PASS] Mid-field Floor Vault Leap: vy = {parvati.vel.y:.1f} px/s, vx = {parvati.vel.x:.1f} px/s")
 
-    # 5. Test Strict 14px Catch Threshold & Accuracy Lock
-    print("\n--- 5. Testing Strict 14px Catch Threshold ---")
-    # 18px distance (rejected!)
-    parvati.catch_point.set(bal_ganesh.target_point.x + 18.0, bal_ganesh.target_point.y)
+    # 5. Test Strict 16px Catch Threshold & Accuracy Lock
+    print("\n--- 5. Testing Strict 16px Catch Threshold ---")
+    # 20px distance (rejected!)
+    bal_ganesh.catch_point.set(parvati.target_point.x + 20.0, parvati.target_point.y)
     dist, matched = sim.check_alignment()
-    assert not matched, f"18px should NOT match (strict threshold 14px), dist = {dist}"
-    assert sim.attempt_catch() is False, "Catch must fail at 18px"
-    print(f"[PASS] 18px distance correctly rejected! (Strict threshold is 14px)")
+    assert not matched, f"20px should NOT match (strict threshold 16px), dist = {dist}"
+    assert sim.attempt_catch() is False, "Catch must fail at 20px"
+    print(f"[PASS] 20px distance correctly rejected! (Strict threshold is 16px)")
 
-    # 12px distance (matches!)
-    parvati.catch_point.set(bal_ganesh.target_point.x + 12.0, bal_ganesh.target_point.y)
+    # 14px distance (matches!)
+    bal_ganesh.catch_point.set(parvati.target_point.x + 14.0, parvati.target_point.y)
     dist, matched = sim.check_alignment()
-    assert matched, f"12px must match (strict threshold 14px), dist = {dist}"
-    print(f"[PASS] 12px distance successfully locked! (dist = {dist:.1f}px <= 14px)")
+    assert matched, f"14px must match (strict threshold 16px), dist = {dist}"
+    print(f"[PASS] 14px distance successfully locked! (dist = {dist:.1f}px <= 16px)")
 
     # 6. Test Shift Key Input Buffering (70ms buffer)
     print("\n--- 6. Testing Shift Key Input Buffering (70ms buffer) ---")
-    parvati.catch_point.set(bal_ganesh.target_point.x + 25.0, bal_ganesh.target_point.y)
+    bal_ganesh.catch_point.set(parvati.target_point.x + 25.0, parvati.target_point.y)
     sim.press_shift()
     assert sim.shift_buffer_timer == 0.07, "Shift buffer should be set to 70ms"
     sim.update(0.02) # 50ms left
-    assert not bal_ganesh.is_caught, "Ganesh Ji should not be caught yet while out of range"
-    # Now moves into 14px range within remaining buffer window
-    parvati.catch_point.set(bal_ganesh.target_point.x + 10.0, bal_ganesh.target_point.y)
+    assert not parvati.is_caught, "Parvati should not be caught yet while out of range"
+    # Now moves into 16px range within remaining buffer window
+    bal_ganesh.catch_point.set(parvati.target_point.x + 12.0, parvati.target_point.y)
     sim.update(0.02)
-    assert bal_ganesh.is_caught is True, "Buffered Shift key must trigger catch once alignment enters 14px threshold"
+    assert parvati.is_caught is True, "Buffered Shift key must trigger catch once alignment enters 16px threshold"
     print(f"[PASS] 70ms Shift Key Buffer successfully registered catch upon alignment!")
 
-    # 7. Test Razor-Sharp Reflex Escape (<= 14px held for >= 0.10s)
-    print("\n--- 7. Testing Razor-Sharp Reflex Escape Window (0.10s) ---")
-    bal_ganesh.is_caught = False
-    bal_ganesh.corner_dodge_cooldown = 1.0
-    bal_ganesh.dash_cooldown = 0.5
-    bal_ganesh.align_reflex_timer = 0.0
-    parvati.catch_point.set(bal_ganesh.target_point.x + 10.0, bal_ganesh.target_point.y)
+    # 7. Test Razor-Sharp Reflex Escape (<= 16px held for >= 0.12s)
+    print("\n--- 7. Testing Razor-Sharp Reflex Escape Window (0.12s) ---")
+    parvati.is_caught = False
+    parvati.corner_dodge_cooldown = 1.0
+    parvati.dash_cooldown = 0.5
+    parvati.align_reflex_timer = 0.0
+    bal_ganesh.catch_point.set(parvati.target_point.x + 12.0, parvati.target_point.y)
 
-    # At 0.05s, reflex not yet triggered
-    evasion_early = bal_ganesh.update_evasion_test(0.05, parvati)
-    assert evasion_early != "REFLEX_ESCAPE", f"Reflex should not trigger before 0.10s, got: {evasion_early}"
-    assert round(bal_ganesh.align_reflex_timer, 2) == 0.05, f"Reflex timer must be 0.05s, got: {bal_ganesh.align_reflex_timer}"
-    print(f"[PASS] t = 0.05s: Ganesh Ji maintains lock-on target, timer = {bal_ganesh.align_reflex_timer:.2f}s (Brief window)")
+    # At 0.06s, reflex not yet triggered
+    evasion_early = parvati.update_evasion_test(0.06, bal_ganesh)
+    assert evasion_early != "REFLEX_ESCAPE", f"Reflex should not trigger before 0.12s, got: {evasion_early}"
+    assert round(parvati.align_reflex_timer, 2) == 0.06, f"Reflex timer must be 0.06s, got: {parvati.align_reflex_timer}"
+    print(f"[PASS] t = 0.06s: Ganesh Ji maintains lock-on target, timer = {parvati.align_reflex_timer:.2f}s (Brief window)")
 
-    # Advance past 0.10s (+0.06s = 0.11s)
-    evasion_reflex = bal_ganesh.update_evasion_test(0.06, parvati)
-    assert evasion_reflex == "REFLEX_ESCAPE", f"Must trigger REFLEX_ESCAPE at >= 0.10s, got: {evasion_reflex}"
-    assert abs(bal_ganesh.vel.x) == 460.0, f"Reflex escape velocity must be 460 px/s, got: {bal_ganesh.vel.x}"
-    print(f"[PASS] t = 0.11s: Razor-sharp Reflex Escape triggered! vx = {bal_ganesh.vel.x:.1f} px/s, vy = {bal_ganesh.vel.y:.1f} px/s")
+    # Advance past 0.12s (+0.07s = 0.13s)
+    evasion_reflex = parvati.update_evasion_test(0.07, bal_ganesh)
+    assert evasion_reflex == "REFLEX_ESCAPE", f"Must trigger REFLEX_ESCAPE at >= 0.12s, got: {evasion_reflex}"
+    assert abs(parvati.vel.x) == 440.0, f"Reflex escape velocity must be 440 px/s, got: {parvati.vel.x}"
+    print(f"[PASS] t = 0.13s: Razor-sharp Reflex Escape triggered! vx = {parvati.vel.x:.1f} px/s, vy = {parvati.vel.y:.1f} px/s")
 
-    # 8. Test Dual Reward System (Mom feeds Ganesh Ji & Sanctum Altar Offering)
+    # 8. Test Dual Reward System (Ganesh Ji wins modaks & Sanctum Altar Offering)
     print("\n--- 8. Testing Successful Catch & Dual Reward Stages ---")
-    bal_ganesh.is_caught = False
-    parvati.catch_point.set(bal_ganesh.target_point.x + 10.0, bal_ganesh.target_point.y)
+    parvati.is_caught = False
+    bal_ganesh.catch_point.set(parvati.target_point.x + 12.0, parvati.target_point.y)
     caught = sim.attempt_catch()
     assert caught is True, "attempt_catch() should return True"
-    assert bal_ganesh.is_caught is True, "Ganesh Ji should be caught"
+    assert parvati.is_caught is True, "Parvati should be caught"
     assert sim.bal_ganesh_modak_count == 2, "Ganesh Ji modak count should increment"
-    print(f"[PASS] Stage 1: Mom feeds Ganesh Ji sweet modaks! Modaks eaten = {sim.bal_ganesh_modak_count}")
+    print(f"[PASS] Stage 1: Maa Parvati yields sweet modaks to Ganesh Ji! Modaks won = {sim.bal_ganesh_modak_count}")
 
     # Advance offering modak flight to sanctum altar
     assert len(sim.offering_modaks) >= 1, "OfferingModak must be launched"
@@ -431,6 +443,7 @@ def test_rewards_and_agility():
     print(f"[PASS] Stage 2: Sacred Modak arrived at Sanctum Altar! Prasad count = {sim.prasad_altar_count}")
     print(f"[PASS] Divine Blessing Aura Active (3.2s)")
 
+
 if __name__ == "__main__":
     test_rewards_and_agility()
-    print("\n>>> ALL MOM & GANESH JI AGILITY & REWARD TESTS PASSED! <<<")
+    print("\n>>> ALL INVERTED ROLES AGILITY & REWARD TESTS PASSED! <<<")
